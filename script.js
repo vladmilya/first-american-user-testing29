@@ -1778,7 +1778,8 @@ function renderCampaignsList() {
                 </button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
     
     updateCurrentCampaignDisplay();
 }
