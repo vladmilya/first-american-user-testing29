@@ -59,7 +59,7 @@ function generateTitleSlide() {
     return `
         <div class="slide slide-title">
             <div>
-                <h1>User Testing Insights Report</h1>
+                <h1>User Testing Synthesizer</h1>
                 <p style="margin-top: 1rem;">First American ISS P4.1 Iterative Testing</p>
                 <p style="margin-top: 2rem; font-size: 1.25rem;">January 2026</p>
                 <p style="margin-top: 0.5rem;">6 Participants | 3 Feature Areas</p>

@@ -1,4 +1,4 @@
-// User Testing Insights Report - Interactive Script
+// User Testing Synthesizer - Interactive Script
 
 // State management
 const state = {
