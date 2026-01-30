@@ -2613,6 +2613,11 @@ body {
     height: 24px;
 }
 
+/* Current Campaign Files Container */
+.current-campaign-files-container {
+    margin-top: 1.5rem;
+}
+
 /* Campaign Files Display */
 .campaign-files-section {
     margin-top: 1.5rem;
