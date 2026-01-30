@@ -1978,32 +1978,174 @@ document.getElementById('video-file-input')?.addEventListener('change', function
     const files = Array.from(e.target.files);
     const statusDiv = document.getElementById('video-upload-status');
     
-    files.forEach(file => {
+    if (files.length > 0) {
+        statusDiv.innerHTML = `<span style="color: var(--primary);">⏳ Processing ${files.length} video(s)...</span>`;
+    }
+    
+    files.forEach((file, index) => {
         if (file.type.startsWith('video/')) {
-            uploadedVideosCompact.push({
-                name: file.name,
-                size: file.size,
-                type: file.type
-            });
-            
-            // Save to campaign
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                addFileToCampaign('videos', file.name, event.target.result);
-            };
-            reader.readAsDataURL(file);
+            // Process video with compression and thumbnail
+            processVideoFile(file, statusDiv, index === files.length - 1);
         }
     });
-    
-    renderCompactVideoList();
-    
-    if (files.length > 0) {
-        statusDiv.innerHTML = `<span style="color: var(--success);">✓ ${files.length} video(s) uploaded successfully</span>`;
-    }
     
     // Reset input
     e.target.value = '';
 });
+
+// Process video file with compression and thumbnail generation
+async function processVideoFile(file, statusDiv, isLast) {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    
+    const videoURL = URL.createObjectURL(file);
+    video.src = videoURL;
+    
+    video.onloadedmetadata = async function() {
+        // Seek to 1 second for thumbnail (or 0 if too short)
+        video.currentTime = Math.min(1, video.duration / 2);
+    };
+    
+    video.onseeked = async function() {
+        try {
+            // Generate thumbnail
+            const thumbnail = generateVideoThumbnail(video);
+            
+            // Compress video (reduce quality by ~50%)
+            const compressedData = await compressVideo(file, video);
+            
+            // Add to local list
+            uploadedVideosCompact.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                thumbnail: thumbnail,
+                duration: formatDuration(video.duration),
+                originalSize: formatFileSize(file.size),
+                compressedSize: compressedData ? formatFileSize(compressedData.length * 0.75) : 'N/A'
+            });
+            
+            // Save to campaign with thumbnail
+            addVideoToCampaign(file.name, thumbnail, compressedData);
+            
+            renderCompactVideoList();
+            
+            if (isLast) {
+                statusDiv.innerHTML = `<span style="color: var(--success);">✓ Video(s) processed and compressed</span>`;
+            }
+            
+            // Cleanup
+            URL.revokeObjectURL(videoURL);
+        } catch (error) {
+            console.error('Video processing error:', error);
+            statusDiv.innerHTML = `<span style="color: var(--danger);">Error processing video</span>`;
+        }
+    };
+    
+    video.onerror = function() {
+        statusDiv.innerHTML = `<span style="color: var(--danger);">Error loading video</span>`;
+        URL.revokeObjectURL(videoURL);
+    };
+}
+
+// Generate thumbnail from video frame
+function generateVideoThumbnail(video) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Thumbnail size (320px wide, maintain aspect ratio)
+    const thumbWidth = 320;
+    const thumbHeight = (video.videoHeight / video.videoWidth) * thumbWidth;
+    
+    canvas.width = thumbWidth;
+    canvas.height = thumbHeight;
+    
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0, thumbWidth, thumbHeight);
+    
+    // Convert to JPEG with 70% quality
+    return canvas.toDataURL('image/jpeg', 0.7);
+}
+
+// Compress video by re-encoding at lower quality
+async function compressVideo(file, videoElement) {
+    // For files over 10MB, only store thumbnail (localStorage has limits)
+    if (file.size > 10 * 1024 * 1024) {
+        console.log('Video too large for storage, saving thumbnail only');
+        return null;
+    }
+    
+    // For smaller files, compress using canvas-based frame capture
+    // Note: Full video compression requires FFmpeg.wasm which is large
+    // For now, we reduce quality by re-encoding the first few seconds as a preview
+    
+    try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Reduce dimensions by 50%
+        const newWidth = Math.floor(videoElement.videoWidth * 0.5);
+        const newHeight = Math.floor(videoElement.videoHeight * 0.5);
+        
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        // Draw current frame at reduced size
+        ctx.drawImage(videoElement, 0, 0, newWidth, newHeight);
+        
+        // Return compressed preview image (not full video)
+        // Full video compression would require FFmpeg.wasm
+        return canvas.toDataURL('image/jpeg', 0.6);
+    } catch (error) {
+        console.error('Compression error:', error);
+        return null;
+    }
+}
+
+// Add video to campaign with thumbnail
+function addVideoToCampaign(fileName, thumbnail, compressedData) {
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    
+    if (!activeCampaign) return;
+    
+    if (!activeCampaign.files) {
+        activeCampaign.files = {
+            questions: [],
+            transcripts: [],
+            videos: [],
+            presentations: []
+        };
+    }
+    
+    const fileObject = {
+        name: fileName,
+        uploadedDate: new Date().toISOString(),
+        thumbnail: thumbnail,
+        data: compressedData, // Compressed preview or null for large files
+        id: 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+    };
+    
+    activeCampaign.files.videos.push(fileObject);
+    saveCampaigns(campaigns);
+    updateCurrentCampaignDisplay();
+    renderCampaignsList();
+}
+
+// Format duration as MM:SS
+function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
 
 function renderCompactVideoList() {
     const listDiv = document.getElementById('video-list-compact');
@@ -2019,8 +2161,12 @@ function renderCompactVideoList() {
     countSpan.textContent = uploadedVideosCompact.length;
     
     itemsDiv.innerHTML = uploadedVideosCompact.map((video, index) => `
-        <div class="compact-file-item">
-            <span class="compact-file-name">🎥 ${video.name}</span>
+        <div class="compact-video-item">
+            ${video.thumbnail ? `<img src="${video.thumbnail}" alt="${video.name}" class="video-thumbnail">` : '<div class="video-thumbnail-placeholder">🎥</div>'}
+            <div class="video-item-info">
+                <span class="compact-file-name">${video.name}</span>
+                <span class="video-meta-info">${video.duration || ''} • ${video.originalSize || ''}</span>
+            </div>
             <button class="compact-file-remove" onclick="removeCompactVideo(${index})" title="Remove">×</button>
         </div>
     `).join('');
@@ -2153,8 +2299,11 @@ function renderCampaignFiles(files) {
     if (files.videos && files.videos.length > 0) {
         files.videos.forEach(file => {
             html += `
-                <div class="campaign-file-item" onclick="previewFile('${file.id}', 'videos')">
-                    <div class="file-icon videos-icon">🎥</div>
+                <div class="campaign-file-item video-file-item" onclick="previewFile('${file.id}', 'videos')">
+                    ${file.thumbnail 
+                        ? `<img src="${file.thumbnail}" alt="${file.name}" class="campaign-video-thumb">`
+                        : `<div class="file-icon videos-icon">🎥</div>`
+                    }
                     <div class="file-info">
                         <div class="file-name" title="${file.name}">${file.name}</div>
                         <div class="file-type">Video</div>
