@@ -399,12 +399,30 @@ function renderInsights(insights) {
 function renderExecutiveSummary(insights) {
     const section = document.querySelector('#executive-summary .summary-content');
     
-    // Get participant details from synthesisData
+    // Get participant details and metadata from synthesisData
     const participants = (typeof synthesisData !== 'undefined' && synthesisData.participantDetails) 
         ? synthesisData.participantDetails 
         : [];
     
+    const metadata = (typeof synthesisData !== 'undefined' && synthesisData.metadata) 
+        ? synthesisData.metadata 
+        : {};
+    
     section.innerHTML = `
+        ${metadata.studyBackground ? `
+            <div style="background: var(--surface); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--primary); margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.25rem;">📋 Study Background</h3>
+                <p style="line-height: 1.7; color: var(--text); margin: 0;">${metadata.studyBackground}</p>
+            </div>
+        ` : ''}
+        
+        ${metadata.studyGoals ? `
+            <div style="background: var(--surface); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--secondary); margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--secondary); font-size: 1.25rem;">🎯 Study Goals</h3>
+                <p style="line-height: 1.7; color: var(--text); margin: 0;">${metadata.studyGoals}</p>
+            </div>
+        ` : ''}
+        
         <h3 style="margin-bottom: 1rem; color: var(--primary);">👥 Research Participants</h3>
         <p style="color: var(--text-light); margin-bottom: 1.5rem;">Click on any participant to view their detailed profile, experience, and key contributions to this research.</p>
         

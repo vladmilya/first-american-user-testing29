@@ -23,7 +23,9 @@ var synthesisData = {
       "Santa Rosa, CA",
       "Bonney Lake, WA",
       "Seattle, WA"
-    ]
+    ],
+    studyBackground: "The Settlement Statement (SS) serves as the central platform where details and funds are entered and balanced. Changes to funds and details automatically sync across all linked datasets. Instead of entering funds through source screens like FAST or Ignite, escrow teams will input all information directly through the SS. This Interactive Settlement Statement will become the primary entry point for all commercial and residential transaction fees and charges for Direct Escrow Officers, HSD, GOST, and EPS. The ISS UX team is currently developing an MVP/proof-of-concept for the Settlement and Accounting experience.",
+    studyGoals: "This round of iterative testing focused on updates made to the experience of: in-line editing, auto-comparison of CD vs SS, the handling of Real Estate Broker Compensation splits and the auto-deposit recognition."
   },
 
   participantDetails: [
@@ -189,6 +191,27 @@ Users want automation to assist their work, not replace their judgment and verif
       category: "Design Preference",
       description: "5 out of 6 users explicitly preferred full row highlighting over minimal highlights when editing or reviewing discrepancies. Helps maintain visual alignment across buyer/seller columns and prevents entering data on wrong lines.",
       evidence: "Jason: 'I like the full row highlighted. It just helps my vision go to what specific fee I'm working on.' Kayla: 'I like the highlights on the whole row... makes it easier to read all the way across... attracts my eye.' Emily: 'I like the whole row highlighted... catches your eye more... keeps you in line because I've entered them on wrong incorrect line [before].' Bree: 'I like when things are highlighted, that helps me... brings it into focus better.'"
+    },
+    {
+      title: "GAB Code Integration Concerns Create Hesitation to Edit Payee Names",
+      severity: "high",
+      category: "Data Integrity",
+      description: "Multiple users expressed concern that editing payee names directly on settlement statement might permanently change the global address book (GAB codes), affecting other users' files. This creates hesitation to use inline editing for vendor names even when needed.",
+      evidence: "Emily: 'I'd be worried if I changed it and it's connected to a GAB Code, I might mess up someone else's file... We have GAB codes set up for vendors, and I wouldn't want to mess those up.' Christina: 'I'm worried if I change one line item name, will it update the other charges to that same payee.' Bree: 'If I change a payee name, does it change it in the address book for everyone?'"
+    },
+    {
+      title: "Keyboard Navigation Expected for Efficiency",
+      severity: "medium",
+      category: "Workflow Preference",
+      description: "Users expressed strong preference for keyboard navigation (Tab, Arrow keys) to move between editable fields without mouse clicks. Some mentioned Fast previously had arrow-down navigation that was removed, and they miss that efficiency.",
+      evidence: "Emily: 'If I'm typing fees in loan charges I tab, they used to arrow down to go to the next fee, but they took it away.' Amanda: 'I'd like to be able to tab through fields and use arrow keys to go down columns.' Kayla: 'Wants to be able to tab through. That's how she prefers to maneuver.'"
+    },
+    {
+      title: "Toast Notifications Frequently Missed - Need More Prominent Confirmations",
+      severity: "medium",
+      category: "Usability Issue",
+      description: "Multiple users failed to notice toast messages confirming saves, errors, or state changes. Some looked for visual persistence of errors (red highlighting) rather than temporary notifications.",
+      evidence: "Kayla: 'She just didn't notice the toast message.' Christina: 'She thinks she would want the red to stay there so she remembers to go back and correct it.' Bree: 'Would want the red error highlight to stay if she doesn't make the change the other way so that it reminds her.'"
     }
   ],
 
@@ -423,6 +446,54 @@ Users want automation to assist their work, not replace their judgment and verif
       frequency: 3,
       category: "notifications",
       quote: "Emily: 'I just don't like emails... I have that go to my deleted folder... I don't want 10 more emails. I only really cared about mine.' Kayla: 'Pop-ups would honestly just get ignored.'"
+    },
+    {
+      description: "GAB Code/Address Book concerns - worry that editing payee names on settlement statement might permanently change global address book",
+      participants: "Emily, Christina, Jason, Kayla",
+      severity: "high",
+      frequency: 4,
+      category: "data_integrity",
+      quote: "Emily: 'I'd be worried if I changed it and it's connected to a GAB Code, I might mess up someone else's file.' Christina: 'I'm worried if she changes one line item name, will update the other charges to that same [payee] and mess someone else's files up.'"
+    },
+    {
+      description: "No confirmation dialog when rejecting wires - users worry about accidentally deleting with no 'are you sure?' prompt",
+      participants: "Emily, Christina, Amanda",
+      severity: "medium",
+      frequency: 3,
+      category: "usability",
+      quote: "Emily: 'For deleting things, I like a little more \"are you sure?\"' Amanda: 'It kinda disappeared... I'm not sure where it went.'"
+    },
+    {
+      description: "Toast notifications not noticed - users miss system confirmations and error messages",
+      participants: "Kayla, Bree, Christina",
+      severity: "medium",
+      frequency: 3,
+      category: "usability",
+      quote: "Kayla: 'She just didn't notice the toast message.' Christina: 'At least it notifies you, we don't always get that now.'"
+    },
+    {
+      description: "Blue text meaning unclear - inconsistent with Fast system conventions where blue means hyperlink",
+      participants: "Emily, Christina, Bree, Jason",
+      severity: "low",
+      frequency: 4,
+      category: "visual_design",
+      quote: "Jason: 'Blue to me means it's hyperlinked.' Emily: 'Isn't sure what the blue copy is about - thinks it has to do with POCs.' Christina: 'Isn't sure what the blue copy indicates.'"
+    },
+    {
+      description: "Need dropdowns for deposit type selection - users want click-to-select menu instead of typing (Seller/Buyer/Other)",
+      participants: "Emily, Kayla",
+      severity: "low",
+      frequency: 2,
+      category: "workflow",
+      quote: "Emily: 'I'm assuming it would be a drop down menu - so she doesn't have to go back to the keyboard.' Kayla: 'She clicks directly, but wants a drop down and not to have to type.'"
+    },
+    {
+      description: "Confusion between 'Charge Details' vs 'Manage Charges' - users expect consistent button labels when error messages reference different location",
+      participants: "Christina, Bree, Jason",
+      severity: "medium",
+      frequency: 3,
+      category: "usability",
+      quote: "Bree: 'Reads the toast message, is a little confused that it says Charge Details but it's \"Manages Charges\" where she would go.' Jason: 'It would be fine if I knew where \"charge details\" were.'"
     }
   ],
 
@@ -496,6 +567,55 @@ Users want automation to assist their work, not replace their judgment and verif
       context: "Cultural shift from manual control to assisted automation",
       category: "behavioral",
       feature: "CD Comparison"
+    },
+    {
+      quote: "I don't like emails, there is an email I get, but I have it go to my deleted folder so I just watch the board throughout the day. I don't want to see anyone else's wires, I only care about mine.",
+      participant: "Emily (User 2)",
+      context: "Explaining why office-wide email notifications don't work - created email rule to auto-delete them",
+      category: "preference",
+      feature: "Notifications"
+    },
+    {
+      quote: "It's nice to have a second set [of eyes] for lack of another term... looking at it and finding quickly where we're off.",
+      participant: "Christina (User 1)",
+      context: "Reacting to automated CD comparison feature - values having system catch errors she might miss",
+      category: "trust",
+      feature: "CD Comparison"
+    },
+    {
+      quote: "I like to see everything in one swoop... I feel like I gotta see it all, and I know the look of it. I'm like, something's missing there.",
+      participant: "Kayla (User 6)",
+      context: "Explaining why she dislikes excessive scrolling - relies on visual memory of full screen layout",
+      category: "preference",
+      feature: "General UI"
+    },
+    {
+      quote: "I like the whole row highlighted... catches your eye more... keeps you in line because I've entered them on wrong incorrect line [before].",
+      participant: "Emily (User 2)",
+      context: "Preference for full row highlighting to prevent data entry errors on wrong line",
+      category: "preference",
+      feature: "Inline Editing"
+    },
+    {
+      quote: "This is definitely not something I thought we'd be doing, so this is great, a lot of new positive changes. It will save me a lot of time and will bring people a lot of confidence who are learning to do that part of the job.",
+      participant: "Bree (User 3)",
+      context: "Overall reaction to inline editing feature - sees training benefits beyond time savings",
+      category: "enthusiasm",
+      feature: "Inline Editing"
+    },
+    {
+      quote: "We want one place to check, email would be great.",
+      participant: "Amanda (User 4)",
+      context: "Explaining team preference for email notifications over having to check multiple systems",
+      category: "preference",
+      feature: "Notifications"
+    },
+    {
+      quote: "A lot of things live in people's head.",
+      participant: "Christina (User 1)",
+      context: "Explaining why automation needs manual verification - institutional knowledge often not documented",
+      category: "behavioral",
+      feature: "General"
     }
   ],
 
@@ -571,6 +691,38 @@ Users want automation to assist their work, not replace their judgment and verif
       rationale: "Users uncertain about consequences of rejecting wires. Emily expressed concern about 'too easy to get rid of' with no record.",
       impact: "Prevents accidental deletions, clarifies system behavior, provides safety net",
       relatedTheme: "Uncertainty about system behavior"
+    },
+    {
+      title: "Clarify GAB Code behavior when editing payee names inline",
+      priority: "p0",
+      description: "Add explicit messaging explaining whether inline payee name edits affect only current transaction or update global address book. Consider making SS edits local-only with option to 'Update GAB Code' as separate action.",
+      rationale: "4 users expressed high concern about accidentally changing GAB codes that would affect other users' files. This fear creates hesitation to use inline editing for vendor names even when legitimately needed.",
+      impact: "Removes barrier to using inline edit, prevents accidental global changes, maintains data integrity",
+      relatedTheme: "GAB Code/Address Book Concerns"
+    },
+    {
+      title: "Make toast notifications more prominent with persistent error indicators",
+      priority: "p1",
+      description: "Replace or supplement toast messages with persistent visual indicators (red borders, warning icons) that remain until user addresses the issue. Add sound/animation for critical errors.",
+      rationale: "3 users completely missed toast notifications. Users want red error highlighting to persist as reminder rather than disappearing after few seconds.",
+      impact: "Ensures users see important system feedback, reduces errors from missed notifications",
+      relatedTheme: "Toast notifications frequently missed"
+    },
+    {
+      title: "Add dropdown menus for deposit type selection (Buyer/Seller/Other)",
+      priority: "p2",
+      description: "Replace text input fields for deposit types with click-to-select dropdown menus to reduce keyboard switching and typing errors.",
+      rationale: "Users prefer clicking selections over typing when options are limited. Reduces typos and standardizes data entry.",
+      impact: "Speeds up deposit entry, reduces errors, improves user experience",
+      relatedTheme: "Workflow efficiency"
+    },
+    {
+      title: "Align button labels with error message references",
+      priority: "p2",
+      description: "Ensure error messages reference exact button names users see on screen (e.g., if button says 'Manage Charges,' error should say 'Manage Charges' not 'Charge Details').",
+      rationale: "3 users confused when toast error referenced 'Charge Details' but button said 'Manage Charges.' Inconsistent terminology reduces error recovery success.",
+      impact: "Improves error recovery, reduces user frustration, maintains consistency",
+      relatedTheme: "Usability"
     }
   ],
 
