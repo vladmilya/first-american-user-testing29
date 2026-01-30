@@ -596,8 +596,41 @@ function filterFindings(filters) {
 function renderThemes(themes) {
     const section = document.querySelector('#themes .themes-container');
     
-    section.innerHTML = themes.map(theme => `
-        <div class="card theme-card">
+    // Get unique categories
+    const categories = [...new Set(themes.map(t => t.category))].sort();
+    
+    // Create filter buttons
+    const filterHTML = `
+        <div class="themes-filters">
+            <div class="filter-group">
+                <label>Filter by Category:</label>
+                <button class="filter-btn active" data-filter="category" data-value="all">All</button>
+                ${categories.map(cat => `
+                    <button class="filter-btn" data-filter="category" data-value="${cat}">
+                        ${cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Store themes globally for filtering
+    window.allThemes = themes;
+    
+    section.innerHTML = filterHTML + '<div class="themes-grid"></div>';
+    
+    // Render theme cards
+    renderThemeCards(themes);
+    
+    // Initialize filters
+    initializeThemeFilters();
+}
+
+function renderThemeCards(themes) {
+    const grid = document.querySelector('#themes .themes-grid');
+    
+    grid.innerHTML = themes.map(theme => `
+        <div class="card theme-card" data-category="${theme.category}">
             <div class="theme-header">
                 <h3>${theme.theme}</h3>
                 <span class="frequency">${theme.frequency} mentions</span>
@@ -620,6 +653,37 @@ function renderThemes(themes) {
             ` : ''}
         </div>
     `).join('');
+}
+
+function initializeThemeFilters() {
+    const filterButtons = document.querySelectorAll('#themes .filter-btn');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const filterValue = btn.getAttribute('data-value');
+            
+            // Update active state
+            filterButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Filter themes
+            filterThemes(filterValue);
+        });
+    });
+}
+
+function filterThemes(category) {
+    const cards = document.querySelectorAll('#themes .theme-card');
+    
+    cards.forEach(card => {
+        const cardCategory = card.getAttribute('data-category');
+        
+        if (category === 'all' || cardCategory === category) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 }
 
 function renderPainPoints(painPoints) {

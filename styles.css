@@ -631,6 +631,19 @@ body {
     gap: 1rem;
 }
 
+.themes-filters {
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+}
+
+.themes-grid {
+    display: grid;
+    gap: 1rem;
+}
+
 .pain-points-list {
     display: grid;
     gap: 1rem;
