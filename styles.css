@@ -286,6 +286,55 @@ body {
     background: var(--primary-dark);
 }
 
+/* Category-specific active colors */
+.filter-btn.active[data-value="positive"] {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+.filter-btn.active[data-value="behavioral"] {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.filter-btn.active[data-value="pain"] {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: white;
+}
+
+.filter-btn.active[data-value="gap"] {
+    background: #f59e0b;
+    border-color: #f59e0b;
+    color: white;
+}
+
+.filter-btn.active[data-value="preference"] {
+    background: #a855f7;
+    border-color: #a855f7;
+    color: white;
+}
+
+.filter-btn.active[data-value="concern"] {
+    background: #ea580c;
+    border-color: #ea580c;
+    color: white;
+}
+
+.filter-btn.active[data-value="context"] {
+    background: #6b7280;
+    border-color: #6b7280;
+    color: white;
+}
+
+.filter-btn.active[data-value="expectation"] {
+    background: #e11d48;
+    border-color: #e11d48;
+    color: white;
+}
+
 /* Theme Card */
 .theme-card {
     composes: card;
