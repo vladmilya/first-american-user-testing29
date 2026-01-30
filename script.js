@@ -2260,19 +2260,20 @@ function openFilePreviewModal(file, campaign, fileType) {
     // Display file preview based on type
     const fileExt = file.name.split('.').pop().toLowerCase();
     
-    if (file.data) {
+    // Function to display file content
+    function displayFileContent(fileData) {
         if (fileExt === 'pdf') {
             modalContent.innerHTML = `
-                <iframe src="${file.data}" style="width: 100%; height: 500px; border: none;"></iframe>
+                <iframe src="${fileData}" style="width: 100%; height: 500px; border: none;"></iframe>
             `;
         } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) {
             modalContent.innerHTML = `
-                <img src="${file.data}" style="max-width: 100%; height: auto;" alt="${file.name}">
+                <img src="${fileData}" style="max-width: 100%; height: auto;" alt="${file.name}">
             `;
-        } else if (file.data.startsWith('data:video')) {
+        } else if (fileData.startsWith('data:video')) {
             modalContent.innerHTML = `
                 <video controls style="max-width: 100%; height: auto;">
-                    <source src="${file.data}" type="${file.data.split(';')[0].split(':')[1]}">
+                    <source src="${fileData}" type="${fileData.split(';')[0].split(':')[1]}">
                     Your browser does not support the video tag.
                 </video>
             `;
@@ -2292,14 +2293,62 @@ function openFilePreviewModal(file, campaign, fileType) {
         }
         
         // Setup download button
+        downloadBtn.style.display = 'inline-flex';
         downloadBtn.onclick = () => {
             const a = document.createElement('a');
-            a.href = file.data;
+            a.href = fileData;
             a.download = file.name;
             a.click();
         };
+    }
+    
+    if (file.data) {
+        displayFileContent(file.data);
+    } else if (file.id && file.id.startsWith('file-orig-')) {
+        // Original research file - load from external JSON
+        modalContent.innerHTML = `
+            <div style="padding: 3rem; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                <h3 style="color: var(--primary);">Loading ${file.name}...</h3>
+                <p style="color: var(--text-light); margin-top: 1rem;">Please wait while the file is being loaded</p>
+            </div>
+        `;
+        
+        // Fetch original file data
+        fetch('./original-files-data.json')
+            .then(response => {
+                if (!response.ok) throw new Error('File data not available');
+                return response.json();
+            })
+            .then(data => {
+                if (data[file.id]) {
+                    displayFileContent(data[file.id]);
+                } else {
+                    throw new Error('File not found in data');
+                }
+            })
+            .catch(error => {
+                modalContent.innerHTML = `
+                    <div style="padding: 3rem; text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">✅</div>
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">${file.name}</h3>
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--success); margin: 1.5rem 0;">
+                            <p style="color: var(--text); margin: 0; font-weight: 500;">
+                                📊 This file has been processed and synthesized into the report
+                            </p>
+                        </div>
+                        <p style="color: var(--text-light); margin-top: 1rem;">
+                            <strong>Uploaded:</strong> ${new Date(file.uploadedDate).toLocaleDateString()}
+                        </p>
+                        <p style="color: var(--text-light); font-size: 0.875rem; margin-top: 0.5rem;">
+                            The insights from this document are reflected in the Executive Summary, Key Findings, Themes, Pain Points, and Recommendations sections.
+                        </p>
+                    </div>
+                `;
+                downloadBtn.style.display = 'none';
+            });
     } else {
-        // File was processed by AI - show info card
+        // File without data - show processed message
         modalContent.innerHTML = `
             <div style="padding: 3rem; text-align: center;">
                 <div style="font-size: 4rem; margin-bottom: 1.5rem;">✅</div>
