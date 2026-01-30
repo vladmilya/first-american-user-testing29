@@ -101,6 +101,62 @@ body {
     font-weight: 600;
 }
 
+/* Parent navigation item */
+.nav-parent {
+    position: relative;
+}
+
+.nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.toggle-icon {
+    font-size: 1.25rem;
+    font-weight: 300;
+    transition: transform 0.3s ease;
+    color: var(--text-light);
+}
+
+.nav-toggle.expanded .toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* Sub-menu */
+.sub-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.sub-menu.expanded {
+    max-height: 200px;
+}
+
+.sub-nav-link {
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    font-size: 0.9375rem;
+    margin-bottom: 0.125rem;
+    position: relative;
+}
+
+.sub-nav-link::before {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--text-light);
+    border-radius: 50%;
+}
+
 .search-box {
     margin-top: 2rem;
 }

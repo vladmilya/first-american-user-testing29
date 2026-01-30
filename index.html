@@ -28,8 +28,16 @@
                 <li><a href="#recommendations" class="nav-link">Recommendations</a></li>
                 <li><a href="#research-questions" class="nav-link">📋 Discussion Guide (All Questions)</a></li>
                 <li><a href="#presentation" class="nav-link">📊 Presentation</a></li>
-                <li><a href="#transcripts" class="nav-link">📄 Interview Transcripts</a></li>
-                <li><a href="#upload-videos" class="nav-link">🎥 Upload Videos</a></li>
+                <li class="nav-parent">
+                    <a href="#" class="nav-link nav-toggle" onclick="toggleSubMenu(event)">
+                        🔧 Build Report
+                        <span class="toggle-icon">›</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li><a href="#transcripts" class="nav-link sub-nav-link">📄 Interview Transcripts</a></li>
+                        <li><a href="#upload-videos" class="nav-link sub-nav-link">🎥 Upload Videos</a></li>
+                    </ul>
+                </li>
             </ul>
             
             <div class="search-box">

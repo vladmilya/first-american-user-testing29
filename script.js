@@ -23,11 +23,29 @@ function initializeNavigation() {
     
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
+            // Skip if it's a toggle link
+            if (link.classList.contains('nav-toggle')) {
+                return;
+            }
+            
             e.preventDefault();
             const targetId = link.getAttribute('href').substring(1);
             navigateToSection(targetId);
         });
     });
+}
+
+// Toggle sub-menu
+function toggleSubMenu(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const toggleLink = event.currentTarget;
+    const subMenu = toggleLink.nextElementSibling;
+    
+    // Toggle expanded class
+    toggleLink.classList.toggle('expanded');
+    subMenu.classList.toggle('expanded');
 }
 
 function navigateToSection(sectionId) {
