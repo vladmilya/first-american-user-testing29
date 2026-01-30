@@ -1639,3 +1639,255 @@ function toggleFAQ() {
     content.classList.toggle('expanded');
     icon.classList.toggle('rotated');
 }
+
+// ========== CAMPAIGN MANAGEMENT FUNCTIONS ==========
+
+// Initialize campaigns on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initializeCampaigns();
+    renderCampaignsList();
+});
+
+// Campaign storage structure
+function initializeCampaigns() {
+    const campaigns = getCampaigns();
+    
+    // If no campaigns exist, create the default one
+    if (campaigns.length === 0) {
+        const defaultCampaign = {
+            id: 'campaign-' + Date.now(),
+            name: 'ISS Iterative Testing 4.1',
+            createdDate: new Date().toISOString(),
+            isActive: true
+        };
+        campaigns.push(defaultCampaign);
+        saveCampaigns(campaigns);
+    }
+}
+
+// Get campaigns from localStorage
+function getCampaigns() {
+    const stored = localStorage.getItem('uxd_campaigns');
+    return stored ? JSON.parse(stored) : [];
+}
+
+// Save campaigns to localStorage
+function saveCampaigns(campaigns) {
+    localStorage.setItem('uxd_campaigns', JSON.stringify(campaigns));
+}
+
+// Get active campaign
+function getActiveCampaign() {
+    const campaigns = getCampaigns();
+    return campaigns.find(c => c.isActive) || campaigns[0];
+}
+
+// Set active campaign
+function setActiveCampaign(campaignId) {
+    const campaigns = getCampaigns();
+    campaigns.forEach(c => {
+        c.isActive = (c.id === campaignId);
+    });
+    saveCampaigns(campaigns);
+    updateCurrentCampaignDisplay();
+    renderCampaignsList();
+}
+
+// Update current campaign display
+function updateCurrentCampaignDisplay() {
+    const campaign = getActiveCampaign();
+    const titleEl = document.getElementById('current-campaign-title');
+    if (titleEl && campaign) {
+        titleEl.textContent = campaign.name;
+    }
+}
+
+// Render campaigns list
+function renderCampaignsList() {
+    const listContainer = document.getElementById('campaigns-list');
+    if (!listContainer) return;
+    
+    const campaigns = getCampaigns();
+    
+    if (campaigns.length === 0) {
+        listContainer.innerHTML = '<p style="color: var(--text-light); text-align: center; padding: 2rem;">No campaigns yet. Create your first campaign!</p>';
+        return;
+    }
+    
+    listContainer.innerHTML = campaigns.map(campaign => `
+        <div class="campaign-card ${campaign.isActive ? 'active' : ''}" data-id="${campaign.id}">
+            <div class="campaign-card-icon">${campaign.isActive ? '✓' : '📋'}</div>
+            <div class="campaign-card-content">
+                <h4>${campaign.name}</h4>
+                <p>Created: ${new Date(campaign.createdDate).toLocaleDateString()}</p>
+                ${campaign.isActive ? '<span class="active-badge">Active</span>' : ''}
+            </div>
+            <div class="campaign-actions">
+                ${!campaign.isActive ? `
+                    <button class="action-btn switch-btn" onclick="setActiveCampaign('${campaign.id}')" title="Switch to this campaign">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                    </button>
+                ` : ''}
+                <button class="action-btn edit-btn" onclick="openEditCampaignModal('${campaign.id}')" title="Edit campaign">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </button>
+                <button class="action-btn delete-btn" onclick="openDeleteModal('${campaign.id}')" title="Delete campaign">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    updateCurrentCampaignDisplay();
+}
+
+// Open create campaign modal
+function openCreateCampaignModal() {
+    const modal = document.getElementById('campaign-modal');
+    const modalTitle = document.getElementById('campaign-modal-title');
+    const input = document.getElementById('campaign-name-input');
+    const saveBtn = document.querySelector('.save-campaign-btn');
+    
+    modalTitle.textContent = 'Create New Campaign';
+    input.value = '';
+    saveBtn.textContent = 'Create Campaign';
+    saveBtn.setAttribute('data-mode', 'create');
+    saveBtn.removeAttribute('data-campaign-id');
+    
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 100);
+}
+
+// Open edit campaign modal
+function openEditCampaignModal(campaignId) {
+    const campaigns = getCampaigns();
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (!campaign) return;
+    
+    const modal = document.getElementById('campaign-modal');
+    const modalTitle = document.getElementById('campaign-modal-title');
+    const input = document.getElementById('campaign-name-input');
+    const saveBtn = document.querySelector('.save-campaign-btn');
+    
+    modalTitle.textContent = 'Edit Campaign';
+    input.value = campaign.name;
+    saveBtn.textContent = 'Save Changes';
+    saveBtn.setAttribute('data-mode', 'edit');
+    saveBtn.setAttribute('data-campaign-id', campaignId);
+    
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 100);
+}
+
+// Close campaign modal
+function closeCampaignModal() {
+    const modal = document.getElementById('campaign-modal');
+    modal.style.display = 'none';
+}
+
+// Save campaign (create or edit)
+function saveCampaign() {
+    const input = document.getElementById('campaign-name-input');
+    const saveBtn = document.querySelector('.save-campaign-btn');
+    const mode = saveBtn.getAttribute('data-mode');
+    const campaignId = saveBtn.getAttribute('data-campaign-id');
+    const name = input.value.trim();
+    
+    if (!name) {
+        alert('Please enter a campaign name');
+        return;
+    }
+    
+    const campaigns = getCampaigns();
+    
+    if (mode === 'create') {
+        // Create new campaign
+        const newCampaign = {
+            id: 'campaign-' + Date.now(),
+            name: name,
+            createdDate: new Date().toISOString(),
+            isActive: false
+        };
+        campaigns.push(newCampaign);
+    } else if (mode === 'edit') {
+        // Edit existing campaign
+        const campaign = campaigns.find(c => c.id === campaignId);
+        if (campaign) {
+            campaign.name = name;
+        }
+    }
+    
+    saveCampaigns(campaigns);
+    renderCampaignsList();
+    closeCampaignModal();
+}
+
+// Open delete modal
+let campaignToDelete = null;
+
+function openDeleteModal(campaignId) {
+    const campaigns = getCampaigns();
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (!campaign) return;
+    
+    // Prevent deleting the last campaign
+    if (campaigns.length === 1) {
+        alert('Cannot delete the last campaign. You must have at least one campaign.');
+        return;
+    }
+    
+    // Prevent deleting active campaign
+    if (campaign.isActive) {
+        alert('Cannot delete the active campaign. Please switch to another campaign first.');
+        return;
+    }
+    
+    campaignToDelete = campaignId;
+    
+    const modal = document.getElementById('delete-modal');
+    const nameDisplay = document.getElementById('delete-campaign-name');
+    nameDisplay.textContent = `"${campaign.name}"`;
+    
+    modal.style.display = 'flex';
+}
+
+// Close delete modal
+function closeDeleteModal() {
+    const modal = document.getElementById('delete-modal');
+    modal.style.display = 'none';
+    campaignToDelete = null;
+}
+
+// Confirm delete campaign
+function confirmDeleteCampaign() {
+    if (!campaignToDelete) return;
+    
+    let campaigns = getCampaigns();
+    campaigns = campaigns.filter(c => c.id !== campaignToDelete);
+    
+    saveCampaigns(campaigns);
+    renderCampaignsList();
+    closeDeleteModal();
+}
+
+// Close modals when clicking outside
+window.addEventListener('click', (e) => {
+    const campaignModal = document.getElementById('campaign-modal');
+    const deleteModal = document.getElementById('delete-modal');
+    
+    if (e.target === campaignModal) {
+        closeCampaignModal();
+    }
+    if (e.target === deleteModal) {
+        closeDeleteModal();
+    }
+});
