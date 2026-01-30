@@ -1354,7 +1354,7 @@ body {
 .edit-btn {
     position: absolute;
     top: 1rem;
-    right: 1rem;
+    left: 1rem;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
