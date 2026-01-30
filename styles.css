@@ -2290,6 +2290,64 @@ body {
     transform: translateY(-2px);
 }
 
+/* Build Report Section */
+.build-report-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid rgba(59, 130, 246, 0.2);
+}
+
+.build-report-section h4 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+}
+
+.build-report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.build-report-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s ease;
+}
+
+.build-report-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+}
+
+.build-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.build-report-card h5 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.build-report-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
 /* Campaigns Section */
 .campaigns-section {
     background: var(--surface);
