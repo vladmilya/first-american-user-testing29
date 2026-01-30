@@ -2613,6 +2613,142 @@ body {
     height: 24px;
 }
 
+/* Campaign Files Display */
+.campaign-files-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.files-header {
+    font-size: 0.9375rem;
+    color: var(--primary);
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+}
+
+.campaign-files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.campaign-file-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.campaign-file-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.file-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.questions-icon {
+    color: #3b82f6;
+}
+
+.transcripts-icon {
+    color: #10b981;
+}
+
+.videos-icon {
+    color: #f59e0b;
+}
+
+.presentations-icon {
+    color: #8b5cf6;
+}
+
+.file-info {
+    width: 100%;
+}
+
+.file-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.25rem;
+}
+
+.file-type {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.no-files-msg {
+    color: var(--text-light);
+    font-size: 0.875rem;
+    font-style: italic;
+    margin: 1rem 0 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+/* File Preview Modal */
+.file-preview-modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.file-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.file-preview-header h3 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.file-preview-body {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: var(--bg);
+}
+
+.file-preview-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    background: white;
+}
+
+.file-preview-footer button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .build-report-single-card {
@@ -2631,6 +2767,15 @@ body {
     .master-analyze-button {
         padding: 1.25rem 2rem;
         font-size: 1.125rem;
+    }
+    
+    .campaign-files-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .file-preview-modal-content {
+        width: 95%;
+        max-height: 95vh;
     }
 }
 

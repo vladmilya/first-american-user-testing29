@@ -1658,11 +1658,30 @@ function initializeCampaigns() {
             id: 'campaign-' + Date.now(),
             name: 'ISS Iterative Testing 4.1',
             createdDate: new Date().toISOString(),
-            isActive: true
+            isActive: true,
+            files: {
+                questions: [],
+                transcripts: [],
+                videos: [],
+                presentations: []
+            }
         };
         campaigns.push(defaultCampaign);
         saveCampaigns(campaigns);
     }
+    
+    // Ensure all campaigns have files property
+    campaigns.forEach(campaign => {
+        if (!campaign.files) {
+            campaign.files = {
+                questions: [],
+                transcripts: [],
+                videos: [],
+                presentations: []
+            };
+        }
+    });
+    saveCampaigns(campaigns);
 }
 
 // Get campaigns from localStorage
@@ -1714,13 +1733,27 @@ function renderCampaignsList() {
         return;
     }
     
-    listContainer.innerHTML = campaigns.map(campaign => `
+    listContainer.innerHTML = campaigns.map(campaign => {
+        const files = campaign.files || { questions: [], transcripts: [], videos: [], presentations: [] };
+        const totalFiles = (files.questions?.length || 0) + (files.transcripts?.length || 0) + 
+                          (files.videos?.length || 0) + (files.presentations?.length || 0);
+        
+        return `
         <div class="campaign-card ${campaign.isActive ? 'active' : ''}" data-id="${campaign.id}">
             <div class="campaign-card-icon">${campaign.isActive ? '✓' : '📋'}</div>
             <div class="campaign-card-content">
                 <h4>${campaign.name}</h4>
                 <p>Created: ${new Date(campaign.createdDate).toLocaleDateString()}</p>
                 ${campaign.isActive ? '<span class="active-badge">Active</span>' : ''}
+                
+                ${totalFiles > 0 ? `
+                    <div class="campaign-files-section">
+                        <h5 class="files-header">📎 Uploaded Files (${totalFiles})</h5>
+                        <div class="campaign-files-grid">
+                            ${renderCampaignFiles(files)}
+                        </div>
+                    </div>
+                ` : '<p class="no-files-msg">No files uploaded yet</p>'}
             </div>
             <div class="campaign-actions">
                 ${!campaign.isActive ? `
@@ -1927,6 +1960,13 @@ document.getElementById('video-file-input')?.addEventListener('change', function
                 size: file.size,
                 type: file.type
             });
+            
+            // Save to campaign
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                addFileToCampaign('videos', file.name, event.target.result);
+            };
+            reader.readAsDataURL(file);
         }
     });
     
@@ -1978,6 +2018,13 @@ document.getElementById('presentation-files-input')?.addEventListener('change', 
             size: file.size,
             type: file.type
         });
+        
+        // Save to campaign
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            addFileToCampaign('presentations', file.name, event.target.result);
+        };
+        reader.readAsDataURL(file);
     });
     
     renderCompactPresentationList();
@@ -2011,3 +2058,279 @@ function removeCompactPresentation(index) {
     uploadedPresentationsCompact.splice(index, 1);
     renderCompactPresentationList();
 }
+
+// ========== CAMPAIGN FILE MANAGEMENT ==========
+
+// Add file to active campaign
+function addFileToCampaign(fileType, fileName, fileData) {
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    
+    if (!activeCampaign) return;
+    
+    if (!activeCampaign.files) {
+        activeCampaign.files = {
+            questions: [],
+            transcripts: [],
+            videos: [],
+            presentations: []
+        };
+    }
+    
+    const fileObject = {
+        name: fileName,
+        uploadedDate: new Date().toISOString(),
+        data: fileData, // Store base64 or file reference
+        id: 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+    };
+    
+    activeCampaign.files[fileType].push(fileObject);
+    saveCampaigns(campaigns);
+    renderCampaignsList();
+}
+
+// Render files for a campaign
+function renderCampaignFiles(files) {
+    let html = '';
+    
+    // Questions
+    if (files.questions && files.questions.length > 0) {
+        files.questions.forEach(file => {
+            html += `
+                <div class="campaign-file-item" onclick="previewFile('${file.id}', 'questions')">
+                    <div class="file-icon questions-icon">📋</div>
+                    <div class="file-info">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-type">Research Questions</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    // Transcripts
+    if (files.transcripts && files.transcripts.length > 0) {
+        files.transcripts.forEach(file => {
+            html += `
+                <div class="campaign-file-item" onclick="previewFile('${file.id}', 'transcripts')">
+                    <div class="file-icon transcripts-icon">📝</div>
+                    <div class="file-info">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-type">Transcript</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    // Videos
+    if (files.videos && files.videos.length > 0) {
+        files.videos.forEach(file => {
+            html += `
+                <div class="campaign-file-item" onclick="previewFile('${file.id}', 'videos')">
+                    <div class="file-icon videos-icon">🎥</div>
+                    <div class="file-info">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-type">Video</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    // Presentations
+    if (files.presentations && files.presentations.length > 0) {
+        files.presentations.forEach(file => {
+            html += `
+                <div class="campaign-file-item" onclick="previewFile('${file.id}', 'presentations')">
+                    <div class="file-icon presentations-icon">📊</div>
+                    <div class="file-info">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-type">AI Example</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    return html || '<p style="color: var(--text-light); font-size: 0.875rem;">No files uploaded</p>';
+}
+
+// Preview file
+function previewFile(fileId, fileType) {
+    const campaigns = getCampaigns();
+    let file = null;
+    let campaign = null;
+    
+    // Find the file across all campaigns
+    for (const c of campaigns) {
+        if (c.files && c.files[fileType]) {
+            const found = c.files[fileType].find(f => f.id === fileId);
+            if (found) {
+                file = found;
+                campaign = c;
+                break;
+            }
+        }
+    }
+    
+    if (!file) {
+        alert('File not found');
+        return;
+    }
+    
+    // Open preview modal
+    openFilePreviewModal(file, campaign, fileType);
+}
+
+// Open file preview modal
+function openFilePreviewModal(file, campaign, fileType) {
+    const modal = document.getElementById('file-preview-modal');
+    if (!modal) {
+        // Create modal if it doesn't exist
+        createFilePreviewModal();
+        openFilePreviewModal(file, campaign, fileType);
+        return;
+    }
+    
+    const modalTitle = document.getElementById('file-preview-title');
+    const modalCampaign = document.getElementById('file-preview-campaign');
+    const modalContent = document.getElementById('file-preview-content');
+    const downloadBtn = document.getElementById('file-preview-download');
+    
+    modalTitle.textContent = file.name;
+    modalCampaign.textContent = `Campaign: ${campaign.name}`;
+    
+    // Display file preview based on type
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    
+    if (file.data) {
+        if (fileExt === 'pdf') {
+            modalContent.innerHTML = `
+                <iframe src="${file.data}" style="width: 100%; height: 500px; border: none;"></iframe>
+            `;
+        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) {
+            modalContent.innerHTML = `
+                <img src="${file.data}" style="max-width: 100%; height: auto;" alt="${file.name}">
+            `;
+        } else if (file.data.startsWith('data:video')) {
+            modalContent.innerHTML = `
+                <video controls style="max-width: 100%; height: auto;">
+                    <source src="${file.data}" type="${file.data.split(';')[0].split(':')[1]}">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        } else {
+            modalContent.innerHTML = `
+                <div style="padding: 2rem; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                    <h3>${file.name}</h3>
+                    <p style="color: var(--text-light); margin-top: 1rem;">
+                        Uploaded: ${new Date(file.uploadedDate).toLocaleString()}
+                    </p>
+                    <p style="color: var(--text-light);">
+                        Preview not available for this file type
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Setup download button
+        downloadBtn.onclick = () => {
+            const a = document.createElement('a');
+            a.href = file.data;
+            a.download = file.name;
+            a.click();
+        };
+    } else {
+        modalContent.innerHTML = `
+            <div style="padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                <h3>${file.name}</h3>
+                <p style="color: var(--text-light); margin-top: 1rem;">
+                    Uploaded: ${new Date(file.uploadedDate).toLocaleString()}
+                </p>
+                <p style="color: var(--text-light);">
+                    File data not available
+                </p>
+            </div>
+        `;
+    }
+    
+    modal.style.display = 'flex';
+}
+
+// Close file preview modal
+function closeFilePreviewModal() {
+    const modal = document.getElementById('file-preview-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Create file preview modal
+function createFilePreviewModal() {
+    const modalHTML = `
+        <div id="file-preview-modal" class="campaign-modal">
+            <div class="file-preview-modal-content">
+                <div class="file-preview-header">
+                    <div>
+                        <h3 id="file-preview-title">File Preview</h3>
+                        <p id="file-preview-campaign" style="color: var(--text-light); font-size: 0.875rem; margin: 0.25rem 0 0 0;"></p>
+                    </div>
+                    <button class="close-modal-btn" onclick="closeFilePreviewModal()">&times;</button>
+                </div>
+                <div id="file-preview-content" class="file-preview-body">
+                    <!-- Content will be inserted here -->
+                </div>
+                <div class="file-preview-footer">
+                    <button id="file-preview-download" class="save-campaign-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download File
+                    </button>
+                    <button class="cancel-btn" onclick="closeFilePreviewModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Close on outside click
+    document.getElementById('file-preview-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'file-preview-modal') {
+            closeFilePreviewModal();
+        }
+    });
+}
+
+// Update file upload handlers to save files to campaign
+document.getElementById('questions-file')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            addFileToCampaign('questions', file.name, event.target.result);
+            document.getElementById('questions-status').innerHTML = `<span style="color: var(--success);">✓ ${file.name} uploaded</span>`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('transcript-files')?.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            addFileToCampaign('transcripts', file.name, event.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
+    if (files.length > 0) {
+        document.getElementById('transcript-status').innerHTML = `<span style="color: var(--success);">✓ ${files.length} file(s) uploaded</span>`;
+    }
+});
