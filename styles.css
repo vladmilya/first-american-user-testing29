@@ -2634,8 +2634,8 @@ body {
 
 .campaign-files-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+    gap: 0.5rem;
 }
 
 .campaign-file-item {
@@ -2643,23 +2643,23 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 1rem 0.75rem;
+    padding: 0.6rem 0.5rem;
     background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .campaign-file-item:hover {
     border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .file-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
 }
 
 .questions-icon {
@@ -2683,17 +2683,17 @@ body {
 }
 
 .file-name {
-    font-size: 0.8125rem;
+    font-size: 0.6875rem;
     font-weight: 500;
     color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
 }
 
 .file-type {
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     color: var(--text-light);
 }
 
