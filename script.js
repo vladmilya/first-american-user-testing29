@@ -1764,13 +1764,7 @@ function updateCurrentCampaignDisplay() {
                 </div>
             `;
         } else {
-            filesContainer.innerHTML = `
-                <div class="no-files-msg" style="text-align: center; padding: 2rem; background: var(--bg); border-radius: 8px; border: 2px dashed var(--border);">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📂</div>
-                    <p style="color: var(--text-light); margin: 0;">No files uploaded yet</p>
-                    <p style="color: var(--text-light); font-size: 0.875rem; margin: 0.5rem 0 0 0;">Go to Build Report to upload your research materials</p>
-                </div>
-            `;
+            filesContainer.innerHTML = '';
         }
     }
 }

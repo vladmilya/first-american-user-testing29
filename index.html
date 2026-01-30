@@ -452,24 +452,26 @@ Add your own custom instructions here..."></textarea>
                     <!-- Current Campaign -->
                     <div class="current-campaign-section">
                         <h3>📊 Current Campaign</h3>
-                        <div class="current-campaign-card">
-                            <div class="campaign-icon">📋</div>
-                            <div class="campaign-info">
-                                <h4 id="current-campaign-title">ISS Iterative Testing 4.1</h4>
-                                <p>Active Campaign</p>
+                        <div class="current-campaign-card-wrapper">
+                            <div class="current-campaign-card-header">
+                                <div class="campaign-icon">📋</div>
+                                <div class="campaign-info">
+                                    <h4 id="current-campaign-title">ISS Iterative Testing 4.1</h4>
+                                    <p>Active Campaign</p>
+                                </div>
+                                <a href="#executive-summary" class="nav-link view-dashboard-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                    </svg>
+                                    View Dashboard
+                                </a>
                             </div>
-                            <a href="#executive-summary" class="nav-link view-dashboard-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                                </svg>
-                                View Dashboard
-                            </a>
-                        </div>
-                        
-                        <!-- Current Campaign Files Display -->
-                        <div id="current-campaign-files" class="current-campaign-files-container">
-                            <!-- Files will be rendered here -->
+                            
+                            <!-- Current Campaign Files Display (inside card) -->
+                            <div id="current-campaign-files" class="current-campaign-files-inside">
+                                <!-- Files will be rendered here -->
+                            </div>
                         </div>
                         
                         <!-- Build Report Section -->

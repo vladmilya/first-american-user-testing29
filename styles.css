@@ -2240,6 +2240,30 @@ body {
     font-size: 1.25rem;
 }
 
+.current-campaign-card-wrapper {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.current-campaign-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.current-campaign-files-inside {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.current-campaign-files-inside .campaign-files-section {
+    margin-top: 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
 .current-campaign-card {
     display: flex;
     align-items: center;
