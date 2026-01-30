@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Testing Insights Report</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="report-header">
+            <h1>User Testing Insights Report</h1>
+            <div class="report-meta">
+                <span id="date"></span>
+                <span id="participant-count"></span>
+            </div>
+        </header>
+
+        <nav class="sidebar">
+            <h3>Navigation</h3>
+            <ul class="nav-menu">
+                <li><a href="#executive-summary" class="nav-link active">Executive Summary</a></li>
+                <li><a href="#key-findings" class="nav-link">Key Findings</a></li>
+                <li><a href="#themes" class="nav-link">Themes & Patterns</a></li>
+                <li><a href="#pain-points" class="nav-link">Pain Points</a></li>
+                <li><a href="#quotes" class="nav-link">Notable Quotes</a></li>
+                <li><a href="#recommendations" class="nav-link">Recommendations</a></li>
+                <li><a href="#research-questions" class="nav-link">📋 Discussion Guide (All Questions)</a></li>
+                <li><a href="#presentation" class="nav-link">📊 Presentation</a></li>
+                <li><a href="#transcripts" class="nav-link">Raw Data</a></li>
+            </ul>
+            
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Search insights...">
+            </div>
+        </nav>
+
+        <main class="content">
+            <section id="executive-summary" class="section active">
+                <h2>Executive Summary</h2>
+                <div class="summary-content">
+                    <p class="placeholder">Upload your transcript data to generate insights...</p>
+                </div>
+            </section>
+
+            <section id="key-findings" class="section">
+                <h2>Key Findings</h2>
+                <div class="findings-grid">
+                    <div class="placeholder">Findings will appear here after analysis...</div>
+                </div>
+            </section>
+
+            <section id="themes" class="section">
+                <h2>Themes & Patterns</h2>
+                <div class="themes-container">
+                    <div class="placeholder">Themes will be identified from your data...</div>
+                </div>
+            </section>
+
+            <section id="pain-points" class="section">
+                <h2>User Pain Points</h2>
+                <div class="pain-points-list">
+                    <div class="placeholder">Pain points will be extracted...</div>
+                </div>
+            </section>
+
+            <section id="quotes" class="section">
+                <h2>Notable Quotes</h2>
+                <div class="quotes-container">
+                    <div class="placeholder">Key quotes will be highlighted...</div>
+                </div>
+            </section>
+
+            <section id="recommendations" class="section">
+                <h2>Recommendations</h2>
+                <div class="recommendations-list">
+                    <div class="placeholder">Actionable recommendations will be generated...</div>
+                </div>
+            </section>
+
+            <section id="research-questions" class="section">
+                <h2>📋 Complete Research Discussion Guide</h2>
+                <p style="color: var(--text-light); margin-bottom: 2rem; font-size: 1.125rem;">
+                    All detailed questions from the ISS P4.1 Iterative Testing Discussion Guide, organized by feature area, 
+                    with synthesized findings from patterns observed across all 6 participants.
+                </p>
+                <div class="research-questions-list">
+                    <div class="placeholder">Loading complete discussion guide with all questions and synthesized answers...</div>
+                </div>
+            </section>
+
+            <section id="presentation" class="section">
+                <div class="presentation-container">
+                    <div class="presentation-header">
+                        <h2>Presentation Mode</h2>
+                        <div class="presentation-controls">
+                            <button id="download-pdf" class="download-button">📥 Download PDF</button>
+                            <button id="fullscreen-btn" class="download-button">⛶ Fullscreen</button>
+                        </div>
+                    </div>
+                    
+                    <div class="slideshow-container" id="slideshow">
+                        <!-- Slides will be generated here -->
+                    </div>
+                    
+                    <div class="slide-navigation">
+                        <button class="nav-button" id="prev-slide">‹ Previous</button>
+                        <span class="slide-counter" id="slide-counter">1 / 1</span>
+                        <button class="nav-button" id="next-slide">Next ›</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="transcripts" class="section">
+                <h2>Upload Your Own Data</h2>
+                
+                <div class="upload-section">
+                    <div class="upload-card">
+                        <h3>📋 Research Questions</h3>
+                        <p style="color: var(--text-light); margin-bottom: 1rem;">Upload a PDF or DOC file containing your research questions</p>
+                        <input type="file" id="questions-file" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                        <button class="upload-button" onclick="document.getElementById('questions-file').click()">
+                            📄 Upload Research Questions File
+                        </button>
+                        <div id="questions-status" class="upload-status"></div>
+                        <div class="divider">OR</div>
+                        <textarea id="questions-input" placeholder="Paste research questions here (one per line)...&#10;&#10;Example:&#10;What problems are users trying to solve?&#10;What features do they find most valuable?&#10;Where do they get stuck?"></textarea>
+                    </div>
+
+                    <div class="upload-card">
+                        <h3>📝 Transcript Data</h3>
+                        <p style="color: var(--text-light); margin-bottom: 1rem;">Upload PDF or DOC files containing interview transcripts</p>
+                        <input type="file" id="transcript-files" accept=".pdf,.doc,.docx,.txt" multiple style="display: none;">
+                        <button class="upload-button" onclick="document.getElementById('transcript-files').click()">
+                            📄 Upload Transcript Files (Multiple)
+                        </button>
+                        <div id="transcript-status" class="upload-status"></div>
+                        <div class="divider">OR</div>
+                        <textarea id="transcript-input" placeholder="Paste transcript data here..."></textarea>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 2rem 0;">
+                    <button id="analyze-btn" class="analyze-button" style="font-size: 1.125rem; padding: 1.25rem 3rem;">
+                        🔍 Analyze & Generate Report
+                    </button>
+                </div>
+
+                <div class="info-box">
+                    <h4>ℹ️ How it works:</h4>
+                    <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                        <li>Upload your research questions file (or paste text)</li>
+                        <li>Upload one or more transcript files (or paste text)</li>
+                        <li>Click "Analyze & Generate Report"</li>
+                        <li>The system will extract text, identify themes, pain points, and quotes</li>
+                        <li>Navigate to other sections to see the results!</li>
+                    </ol>
+                    <p style="margin-top: 1rem; color: var(--text-light);"><strong>Supported formats:</strong> PDF, DOC, DOCX, TXT</p>
+                </div>
+
+                <div class="transcripts-display"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- PDF.js Library for PDF parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- Chart.js for vector charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    
+    <!-- html2pdf for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script src="synthesis-data.js"></script>
+    <script src="script.js"></script>
+    <script src="file-upload.js"></script>
+    <script src="presentation.js"></script>
+    <script>
+        // Force load data after page is ready
+        window.addEventListener('load', function() {
+            console.log('Page fully loaded');
+            console.log('synthesisData exists?', typeof synthesisData !== 'undefined');
+            if (typeof synthesisData !== 'undefined' && synthesisData) {
+                console.log('Attempting to load data...');
+                setTimeout(function() {
+                    loadSampleData();
+                }, 100);
+            } else {
+                console.error('synthesisData not found!');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Backups
+*-backup.js
+*-old-backup.js
+
+# Scripts (not needed in production)
+*.sh
+
+# Documentation (can be included, but optional)
+# *.md
