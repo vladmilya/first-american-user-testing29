@@ -533,6 +533,9 @@ function renderFindingsCards(findings) {
             featureCategory = 'deposit';
         }
         
+        // Bold participant names in evidence (names before colons)
+        const formattedEvidence = finding.evidence.replace(/(\b[A-Z][a-z]+\b):/g, '<strong>$1</strong>:');
+        
         return `
             <div class="card finding-card" data-severity="${finding.severity}" data-category="${featureCategory}">
                 <span class="severity ${finding.severity}">${finding.severity.toUpperCase()}</span>
@@ -540,7 +543,7 @@ function renderFindingsCards(findings) {
                 <h3>${finding.title}</h3>
                 <p>${finding.description}</p>
                 <div class="evidence">
-                    <strong>Evidence:</strong> ${finding.evidence}
+                    <strong>Evidence:</strong> ${formattedEvidence}
                 </div>
             </div>
         `;
