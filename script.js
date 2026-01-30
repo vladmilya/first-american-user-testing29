@@ -769,35 +769,73 @@ function renderRecommendations(recommendations) {
         const storedEdit = getStoredEdit('recommendation', index);
         const description = storedEdit || rec.description;
         
+        // Get stored images for this recommendation
+        const images = getRecommendationImages(index);
+        const imagesHTML = images.length > 0 ? `
+            <div class="recommendation-images">
+                ${images.map((img, imgIndex) => `
+                    <div class="recommendation-image-wrapper">
+                        <img src="${img}" alt="Recommendation image ${imgIndex + 1}" class="recommendation-image">
+                        <button class="remove-image-btn" onclick="removeRecommendationImage(${index}, ${imgIndex})" title="Remove image">×</button>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '';
+        
         return `
-        <div class="card recommendation-card" data-index="${index}">
+        <div class="card recommendation-card recommendation-card-grid" data-index="${index}">
             <button class="edit-btn" onclick="toggleEdit('recommendation', ${index})" title="Edit description">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
             </button>
-            <div class="rec-header">
-                <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
-                <span class="related-theme">Theme: ${rec.relatedTheme}</span>
-            </div>
-            <h3>${rec.title}</h3>
-            <div class="editable-content">
-                <p class="rec-description description-text">${description}</p>
-                <textarea class="description-edit" style="display: none;">${description}</textarea>
-                <div class="edit-actions" style="display: none;">
-                    <button class="save-btn" onclick="saveEdit('recommendation', ${index})">Save</button>
-                    <button class="cancel-btn" onclick="cancelEdit('recommendation', ${index})">Cancel</button>
+            
+            <div class="rec-sidebar">
+                <div class="rec-meta">
+                    <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
+                    <div class="related-theme">
+                        <strong>Theme:</strong>
+                        <span>${rec.relatedTheme}</span>
+                    </div>
                 </div>
             </div>
-            <div class="rec-details">
-                <div class="detail-block">
-                    <h4>📊 Rationale:</h4>
-                    <p>${rec.rationale}</p>
+            
+            <div class="rec-main-content">
+                <h3>${rec.title}</h3>
+                <div class="editable-content">
+                    <p class="rec-description description-text">${description}</p>
+                    <textarea class="description-edit" style="display: none;">${description}</textarea>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" onclick="saveEdit('recommendation', ${index})">Save</button>
+                        <button class="cancel-btn" onclick="cancelEdit('recommendation', ${index})">Cancel</button>
+                    </div>
                 </div>
-                <div class="detail-block">
-                    <h4>💡 Expected Impact:</h4>
-                    <p>${rec.impact}</p>
+                
+                ${imagesHTML}
+                
+                <div class="image-upload-section">
+                    <input type="file" id="rec-image-${index}" accept=".jpg,.jpeg,.png" style="display: none;" onchange="handleRecommendationImageUpload(${index}, event)">
+                    <button class="upload-image-btn" onclick="document.getElementById('rec-image-${index}').click()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        Upload Image
+                    </button>
+                    <span class="upload-hint">JPG, JPEG, PNG</span>
+                </div>
+                
+                <div class="rec-details">
+                    <div class="detail-block">
+                        <h4>📊 Rationale:</h4>
+                        <p>${rec.rationale}</p>
+                    </div>
+                    <div class="detail-block">
+                        <h4>💡 Expected Impact:</h4>
+                        <p>${rec.impact}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1891,3 +1929,65 @@ window.addEventListener('click', (e) => {
         closeDeleteModal();
     }
 });
+
+// ========== RECOMMENDATION IMAGE FUNCTIONS ==========
+
+// Get images for a specific recommendation
+function getRecommendationImages(index) {
+    const key = `rec_images_${index}`;
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : [];
+}
+
+// Save images for a specific recommendation
+function saveRecommendationImages(index, images) {
+    const key = `rec_images_${index}`;
+    localStorage.setItem(key, JSON.stringify(images));
+}
+
+// Handle image upload for recommendation
+function handleRecommendationImageUpload(index, event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+        alert('Please upload a valid image file (JPG, JPEG, or PNG)');
+        return;
+    }
+    
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB');
+        return;
+    }
+    
+    // Read file as base64
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const images = getRecommendationImages(index);
+        images.push(e.target.result);
+        saveRecommendationImages(index, images);
+        
+        // Re-render recommendations to show new image
+        if (typeof synthesisData !== 'undefined' && synthesisData.recommendations) {
+            renderRecommendations(synthesisData.recommendations);
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+// Remove image from recommendation
+function removeRecommendationImage(recIndex, imgIndex) {
+    if (confirm('Are you sure you want to remove this image?')) {
+        const images = getRecommendationImages(recIndex);
+        images.splice(imgIndex, 1);
+        saveRecommendationImages(recIndex, images);
+        
+        // Re-render recommendations
+        if (typeof synthesisData !== 'undefined' && synthesisData.recommendations) {
+            renderRecommendations(synthesisData.recommendations);
+        }
+    }
+}
