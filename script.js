@@ -424,60 +424,80 @@ function renderExecutiveSummary(insights) {
         ` : ''}
         
         <h3 style="margin-bottom: 1rem; color: var(--primary);">👥 Research Participants</h3>
-        <p style="color: var(--text-light); margin-bottom: 1.5rem;">Click on any participant to view their detailed profile, experience, and key contributions to this research.</p>
+        <p style="color: var(--text-light); margin-bottom: 1.5rem;">Click on any participant icon to view their detailed profile, experience, and key contributions to this research.</p>
         
-        <div class="participants-grid">
+        <div class="participants-icons-grid">
             ${participants.map(p => `
-                <div class="participant-card" onclick="toggleParticipantDetails('${p.id}')">
-                    <div class="participant-header">
-                        <div>
-                            <h4>${p.name}</h4>
-                            <div class="participant-role">${p.role}</div>
-                            <div class="participant-location">📍 ${p.location}</div>
-                        </div>
-                        <div class="expand-icon" id="icon-${p.id}">›</div>
+                <div class="participant-icon-wrapper" onclick="toggleParticipantDetails('${p.id}')">
+                    <div class="participant-icon">
+                        <div class="icon-initials">${p.name.charAt(0)}</div>
                     </div>
-                    <div class="participant-details" id="details-${p.id}" style="display: none;">
-                        <div class="detail-section">
-                            <strong>Experience:</strong>
-                            <p>${p.experience}</p>
-                        </div>
-                        <div class="detail-section">
-                            <strong>Systems Used:</strong>
-                            <p>${p.systems}</p>
-                        </div>
-                        <div class="detail-section">
-                            <strong>Key Contributions:</strong>
-                            <ul>
-                                ${p.keyContributions.map(contrib => `<li>${contrib}</li>`).join('')}
-                            </ul>
-                        </div>
-                        <div class="detail-section highlight-quote">
-                            <strong>Notable Quote:</strong>
-                            <p style="font-style: italic; color: var(--text-light);">"${p.topQuote}"</p>
-                        </div>
-                    </div>
+                    <div class="icon-label">${p.name}</div>
+                    <div class="icon-sublabel">${p.location.split(',')[0]}</div>
                 </div>
             `).join('')}
+        </div>
+        
+        <div id="participant-detail-modal" class="participant-modal" style="display: none;">
+            <div class="modal-content">
+                <span class="modal-close" onclick="closeParticipantModal()">×</span>
+                <div id="modal-participant-content"></div>
+            </div>
         </div>
     `;
 }
 
 // Toggle participant detail visibility
 function toggleParticipantDetails(participantId) {
-    const detailsEl = document.getElementById(`details-${participantId}`);
-    const iconEl = document.getElementById(`icon-${participantId}`);
+    const participant = synthesisData.participantDetails.find(p => p.id === participantId);
+    if (!participant) return;
     
-    if (detailsEl.style.display === 'none') {
-        detailsEl.style.display = 'block';
-        iconEl.textContent = '∨';
-        iconEl.style.transform = 'rotate(0deg)';
-    } else {
-        detailsEl.style.display = 'none';
-        iconEl.textContent = '›';
-        iconEl.style.transform = 'rotate(0deg)';
-    }
+    const modal = document.getElementById('participant-detail-modal');
+    const content = document.getElementById('modal-participant-content');
+    
+    content.innerHTML = `
+        <div class="modal-header">
+            <div class="modal-icon">${participant.name.charAt(0)}</div>
+            <div>
+                <h2>${participant.name}</h2>
+                <div class="modal-role">${participant.role}</div>
+                <div class="modal-location">📍 ${participant.location}</div>
+            </div>
+        </div>
+        <div class="modal-section">
+            <h4>Experience</h4>
+            <p>${participant.experience}</p>
+        </div>
+        <div class="modal-section">
+            <h4>Systems Used</h4>
+            <p>${participant.systems}</p>
+        </div>
+        <div class="modal-section">
+            <h4>Key Contributions</h4>
+            <ul>
+                ${participant.keyContributions.map(contrib => `<li>${contrib}</li>`).join('')}
+            </ul>
+        </div>
+        <div class="modal-section highlight-quote">
+            <h4>Notable Quote</h4>
+            <p style="font-style: italic;">"${participant.topQuote}"</p>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
 }
+
+function closeParticipantModal() {
+    document.getElementById('participant-detail-modal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('participant-detail-modal');
+    if (e.target === modal) {
+        closeParticipantModal();
+    }
+});
 
 function renderKeyFindings(findings) {
     const container = document.querySelector('#key-findings');
