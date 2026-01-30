@@ -744,8 +744,16 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    width: 100%;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     margin-bottom: 1rem;
+}
+
+.upload-button svg {
+    color: white;
+    fill: white;
 }
 
 .upload-button:hover {

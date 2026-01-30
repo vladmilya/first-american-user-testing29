@@ -179,7 +179,11 @@
                         <p style="color: var(--text-light); margin-bottom: 1rem;">Upload user testing session videos (MP4, WebM, MOV)</p>
                         <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo" style="display: none;">
                         <button class="upload-button" onclick="document.getElementById('video-file-input').click()">
-                            🎥 Select Video File
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 7l-7 5 7 5V7z"></path>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            </svg>
+                            Select Video File
                         </button>
                         <div id="video-upload-status" class="upload-status"></div>
                     </div>
