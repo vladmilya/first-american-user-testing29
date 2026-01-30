@@ -2348,6 +2348,292 @@ body {
     line-height: 1.4;
 }
 
+/* Build Report Single Card (Unified) */
+.build-report-single-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s ease;
+    margin-top: 2rem;
+}
+
+.build-report-single-card:hover {
+    transform: translateX(8px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    border-color: #2563eb;
+}
+
+.build-single-icon {
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.build-single-content {
+    flex: 1;
+}
+
+.build-single-content h4 {
+    color: var(--primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.375rem;
+    font-weight: 700;
+}
+
+.build-single-content > p {
+    color: var(--text);
+    margin: 0 0 1rem 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.build-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.feature-tag {
+    padding: 0.375rem 0.75rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.build-arrow {
+    font-size: 2rem;
+    color: var(--primary);
+    font-weight: bold;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.build-report-single-card:hover .build-arrow {
+    transform: translateX(8px);
+}
+
+/* Unified Upload Section */
+.upload-section-unified {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.upload-card-unified {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.upload-card-unified:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.upload-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.upload-card-header h3 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.125rem;
+}
+
+.required-badge {
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.optional-badge {
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Collapsed Section */
+.collapsed-section {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+.expand-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.2s ease;
+}
+
+.expand-btn:hover {
+    background: #f0f9ff;
+    border-color: var(--primary);
+}
+
+.expand-icon {
+    transition: transform 0.3s ease;
+}
+
+.expand-btn.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+.expandable-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.expandable-content.expanded {
+    max-height: 300px;
+    padding-top: 1rem;
+}
+
+/* Compact Video/File Lists */
+.video-list-compact {
+    padding: 1rem;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.compact-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.compact-file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.compact-file-name {
+    flex: 1;
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compact-file-remove {
+    padding: 0.25rem 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.compact-file-remove:hover {
+    background: #fee2e2;
+    border-radius: 4px;
+}
+
+/* Master Analyze Button */
+.master-analyze-section {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 12px;
+    margin: 3rem 0 2rem 0;
+    border: 2px dashed var(--primary);
+}
+
+.master-analyze-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 4rem;
+    background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+}
+
+.master-analyze-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.master-analyze-button:active {
+    transform: translateY(-2px);
+}
+
+.master-analyze-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .build-report-single-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .build-arrow {
+        display: none;
+    }
+    
+    .build-features {
+        justify-content: center;
+    }
+    
+    .master-analyze-button {
+        padding: 1.25rem 2rem;
+        font-size: 1.125rem;
+    }
+}
+
 /* Campaigns Section */
 .campaigns-section {
     background: var(--surface);

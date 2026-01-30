@@ -1891,3 +1891,123 @@ window.addEventListener('click', (e) => {
         closeDeleteModal();
     }
 });
+
+// ========== UNIFIED BUILD REPORT FUNCTIONS ==========
+
+// Toggle video instructions expandable section
+function toggleVideoInstructions() {
+    const box = document.getElementById('video-instructions-box');
+    const btn = box.querySelector('.expand-btn');
+    const content = box.querySelector('.expandable-content');
+    
+    const isExpanded = content.classList.contains('expanded');
+    
+    if (isExpanded) {
+        content.classList.remove('expanded');
+        btn.classList.remove('expanded');
+        content.style.maxHeight = '0';
+    } else {
+        content.classList.add('expanded');
+        btn.classList.add('expanded');
+        content.style.maxHeight = content.scrollHeight + 'px';
+    }
+}
+
+// Handle multiple video file uploads
+const uploadedVideosCompact = [];
+
+document.getElementById('video-file-input')?.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    const statusDiv = document.getElementById('video-upload-status');
+    
+    files.forEach(file => {
+        if (file.type.startsWith('video/')) {
+            uploadedVideosCompact.push({
+                name: file.name,
+                size: file.size,
+                type: file.type
+            });
+        }
+    });
+    
+    renderCompactVideoList();
+    
+    if (files.length > 0) {
+        statusDiv.innerHTML = `<span style="color: var(--success);">✓ ${files.length} video(s) uploaded successfully</span>`;
+    }
+    
+    // Reset input
+    e.target.value = '';
+});
+
+function renderCompactVideoList() {
+    const listDiv = document.getElementById('video-list-compact');
+    const itemsDiv = document.getElementById('video-items-compact');
+    const countSpan = document.getElementById('video-count-compact');
+    
+    if (uploadedVideosCompact.length === 0) {
+        listDiv.style.display = 'none';
+        return;
+    }
+    
+    listDiv.style.display = 'block';
+    countSpan.textContent = uploadedVideosCompact.length;
+    
+    itemsDiv.innerHTML = uploadedVideosCompact.map((video, index) => `
+        <div class="compact-file-item">
+            <span class="compact-file-name">🎥 ${video.name}</span>
+            <button class="compact-file-remove" onclick="removeCompactVideo(${index})" title="Remove">×</button>
+        </div>
+    `).join('');
+}
+
+function removeCompactVideo(index) {
+    uploadedVideosCompact.splice(index, 1);
+    renderCompactVideoList();
+}
+
+// Handle multiple presentation file uploads
+const uploadedPresentationsCompact = [];
+
+document.getElementById('presentation-files-input')?.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    
+    files.forEach(file => {
+        uploadedPresentationsCompact.push({
+            name: file.name,
+            size: file.size,
+            type: file.type
+        });
+    });
+    
+    renderCompactPresentationList();
+    
+    // Reset input
+    e.target.value = '';
+});
+
+function renderCompactPresentationList() {
+    const listDiv = document.getElementById('presentations-list-compact');
+    const itemsDiv = document.getElementById('presentation-items-compact');
+    const countSpan = document.getElementById('presentation-count-compact');
+    
+    if (uploadedPresentationsCompact.length === 0) {
+        listDiv.style.display = 'none';
+        return;
+    }
+    
+    listDiv.style.display = 'block';
+    countSpan.textContent = uploadedPresentationsCompact.length;
+    
+    itemsDiv.innerHTML = uploadedPresentationsCompact.map((file, index) => `
+        <div class="compact-file-item">
+            <span class="compact-file-name">📄 ${file.name}</span>
+            <button class="compact-file-remove" onclick="removeCompactPresentation(${index})" title="Remove">×</button>
+        </div>
+    `).join('');
+}
+
+function removeCompactPresentation(index) {
+    uploadedPresentationsCompact.splice(index, 1);
+    renderCompactPresentationList();
+}
