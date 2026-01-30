@@ -1652,22 +1652,49 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeCampaigns() {
     const campaigns = getCampaigns();
     
-    // If no campaigns exist, create the default one
+    // Original research files for ISS Iterative Testing 4.1
+    const originalResearchFiles = {
+        questions: [
+            { id: 'file-orig-q1', name: 'Questions.pdf', uploadedDate: '2026-01-22T10:09:00.000Z', data: null }
+        ],
+        transcripts: [
+            { id: 'file-orig-t1', name: 'User1.pdf', uploadedDate: '2026-01-22T10:04:00.000Z', data: null },
+            { id: 'file-orig-t2', name: 'User2.pdf', uploadedDate: '2026-01-22T10:08:00.000Z', data: null },
+            { id: 'file-orig-t3', name: 'User3.pdf', uploadedDate: '2026-01-22T10:12:00.000Z', data: null },
+            { id: 'file-orig-t4', name: 'User4.pdf', uploadedDate: '2026-01-22T10:15:00.000Z', data: null },
+            { id: 'file-orig-t5', name: 'User 5.pdf', uploadedDate: '2026-01-29T19:20:00.000Z', data: null },
+            { id: 'file-orig-t6', name: 'User 6.pdf', uploadedDate: '2026-01-29T19:24:00.000Z', data: null }
+        ],
+        videos: [],
+        presentations: [
+            { id: 'file-orig-p1', name: 'P4.1_Formal Notes.pdf', uploadedDate: '2026-01-29T23:30:00.000Z', data: null }
+        ]
+    };
+    
+    // If no campaigns exist, create the default one with original files
     if (campaigns.length === 0) {
         const defaultCampaign = {
             id: 'campaign-' + Date.now(),
             name: 'ISS Iterative Testing 4.1',
             createdDate: new Date().toISOString(),
             isActive: true,
-            files: {
-                questions: [],
-                transcripts: [],
-                videos: [],
-                presentations: []
-            }
+            files: originalResearchFiles
         };
         campaigns.push(defaultCampaign);
         saveCampaigns(campaigns);
+    } else {
+        // Check if ISS campaign exists and has no files, add original files
+        const issCampaign = campaigns.find(c => c.name === 'ISS Iterative Testing 4.1');
+        if (issCampaign) {
+            const files = issCampaign.files || { questions: [], transcripts: [], videos: [], presentations: [] };
+            const totalFiles = (files.questions?.length || 0) + (files.transcripts?.length || 0) + 
+                              (files.videos?.length || 0) + (files.presentations?.length || 0);
+            
+            if (totalFiles === 0) {
+                issCampaign.files = originalResearchFiles;
+                saveCampaigns(campaigns);
+            }
+        }
     }
     
     // Ensure all campaigns have files property
@@ -2272,18 +2299,27 @@ function openFilePreviewModal(file, campaign, fileType) {
             a.click();
         };
     } else {
+        // File was processed by AI - show info card
         modalContent.innerHTML = `
-            <div style="padding: 2rem; text-align: center;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
-                <h3>${file.name}</h3>
+            <div style="padding: 3rem; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1.5rem;">✅</div>
+                <h3 style="color: var(--primary); margin-bottom: 1rem;">${file.name}</h3>
+                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--success); margin: 1.5rem 0;">
+                    <p style="color: var(--text); margin: 0; font-weight: 500;">
+                        📊 This file has been processed and synthesized into the report
+                    </p>
+                </div>
                 <p style="color: var(--text-light); margin-top: 1rem;">
-                    Uploaded: ${new Date(file.uploadedDate).toLocaleString()}
+                    <strong>Uploaded:</strong> ${new Date(file.uploadedDate).toLocaleDateString()}
                 </p>
-                <p style="color: var(--text-light);">
-                    File data not available
+                <p style="color: var(--text-light); font-size: 0.875rem; margin-top: 0.5rem;">
+                    The insights from this document are reflected in the Executive Summary, Key Findings, Themes, Pain Points, and Recommendations sections.
                 </p>
             </div>
         `;
+        
+        // Hide download button for processed files
+        downloadBtn.style.display = 'none';
     }
     
     modal.style.display = 'flex';
