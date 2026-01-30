@@ -1787,53 +1787,29 @@ function renderCampaignsList() {
         return;
     }
     
-    listContainer.innerHTML = campaigns.map(campaign => {
-        const files = campaign.files || { questions: [], transcripts: [], videos: [], presentations: [] };
-        const totalFiles = (files.questions?.length || 0) + (files.transcripts?.length || 0) + 
-                          (files.videos?.length || 0) + (files.presentations?.length || 0);
-        
-        return `
-        <div class="campaign-card ${campaign.isActive ? 'active' : ''}" data-id="${campaign.id}">
-            <div class="campaign-card-icon">${campaign.isActive ? '✓' : '📋'}</div>
-            <div class="campaign-card-content">
-                <h4>${campaign.name}</h4>
-                <p>Created: ${new Date(campaign.createdDate).toLocaleDateString()}</p>
-                ${campaign.isActive ? '<span class="active-badge">Active</span>' : ''}
-                
-                ${totalFiles > 0 ? `
-                    <div class="campaign-files-section">
-                        <h5 class="files-header">📎 Uploaded Files (${totalFiles})</h5>
-                        <div class="campaign-files-grid">
-                            ${renderCampaignFiles(files)}
-                        </div>
-                    </div>
-                ` : '<p class="no-files-msg">No files uploaded yet</p>'}
+    listContainer.innerHTML = campaigns.map(campaign => `
+        <div class="campaign-list-item ${campaign.isActive ? 'active' : ''}" onclick="${!campaign.isActive ? `setActiveCampaign('${campaign.id}')` : ''}">
+            <div class="campaign-list-info">
+                <span class="campaign-list-name">${campaign.name}</span>
+                <span class="campaign-list-date">Created: ${new Date(campaign.createdDate).toLocaleDateString()}</span>
             </div>
-            <div class="campaign-actions">
-                ${!campaign.isActive ? `
-                    <button class="action-btn switch-btn" onclick="setActiveCampaign('${campaign.id}')" title="Switch to this campaign">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                        </svg>
-                    </button>
-                ` : ''}
-                <button class="action-btn edit-btn" onclick="openEditCampaignModal('${campaign.id}')" title="Edit campaign">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="campaign-list-actions">
+                ${campaign.isActive ? '<span class="status-badge active">Active</span>' : '<span class="status-badge inactive">Click to activate</span>'}
+                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditCampaignModal('${campaign.id}')" title="Edit">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
                 </button>
-                <button class="action-btn delete-btn" onclick="openDeleteModal('${campaign.id}')" title="Delete campaign">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="action-btn delete-btn" onclick="event.stopPropagation(); openDeleteModal('${campaign.id}')" title="Delete">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
                 </button>
             </div>
         </div>
-    `;
-    }).join('');
+    `).join('');
     
     updateCurrentCampaignDisplay();
 }
