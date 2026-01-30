@@ -1090,3 +1090,316 @@ function showEditFeedback(card, message) {
         setTimeout(() => feedback.remove(), 300);
     }, 2000);
 }
+
+// ========== VIDEO UPLOAD FUNCTIONS ==========
+
+// Store uploaded videos in memory
+window.uploadedVideos = [];
+
+// Initialize video upload functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const videoInput = document.getElementById('video-file-input');
+    const analyzeBtn = document.getElementById('analyze-videos-btn');
+    
+    if (videoInput) {
+        videoInput.addEventListener('change', handleVideoUpload);
+    }
+    
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', analyzeVideos);
+    }
+    
+    // Load saved videos from localStorage
+    loadSavedVideos();
+});
+
+// Handle video file upload
+function handleVideoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Check if we've reached the limit
+    if (window.uploadedVideos.length >= 12) {
+        alert('Maximum of 12 videos reached. Please remove a video before adding more.');
+        return;
+    }
+    
+    // Validate file type
+    const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+    if (!validTypes.includes(file.type)) {
+        alert('Please upload a valid video file (MP4, WebM, MOV, or AVI)');
+        return;
+    }
+    
+    // Create video object
+    const videoData = {
+        id: Date.now(),
+        fileName: file.name,
+        fileSize: formatFileSize(file.size),
+        uploadDate: new Date().toISOString(),
+        videoName: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+        userName: '',
+        userNumber: '',
+        file: file
+    };
+    
+    // Add to array
+    window.uploadedVideos.push(videoData);
+    
+    // Save to localStorage (without the actual file)
+    saveVideosToStorage();
+    
+    // Update UI
+    renderVideoList();
+    updateVideoCount();
+    updateAnalyzeButton();
+    
+    // Show success message
+    const status = document.getElementById('video-upload-status');
+    status.innerHTML = `<span style="color: var(--success);">✓ ${file.name} uploaded successfully!</span>`;
+    setTimeout(() => status.innerHTML = '', 3000);
+    
+    // Reset input
+    event.target.value = '';
+}
+
+// Render video list
+function renderVideoList() {
+    const videoList = document.getElementById('video-list');
+    
+    if (window.uploadedVideos.length === 0) {
+        videoList.innerHTML = `
+            <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-light); margin-bottom: 1rem;">
+                    <path d="M23 7l-7 5 7 5V7z"></path>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+                <p style="color: var(--text-light);">No videos uploaded yet. Add your first video above.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    videoList.innerHTML = window.uploadedVideos.map((video, index) => `
+        <div class="video-item" data-id="${video.id}">
+            <div class="video-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 7l-7 5 7 5V7z"></path>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+            </div>
+            <div class="video-details">
+                <input type="text" class="video-name-input" value="${video.videoName}" 
+                       onchange="updateVideoName(${video.id}, this.value)" 
+                       placeholder="Video name...">
+                <div class="video-meta">
+                    <span>${video.fileName}</span>
+                    <span>${video.fileSize}</span>
+                </div>
+                <div class="user-fields">
+                    <input type="text" class="user-input" value="${video.userName}" 
+                           onchange="updateUserName(${video.id}, this.value)" 
+                           placeholder="Participant name (e.g., Sarah Johnson)">
+                    <input type="text" class="user-input" value="${video.userNumber}" 
+                           onchange="updateUserNumber(${video.id}, this.value)" 
+                           placeholder="User # (e.g., P1, User 3)">
+                </div>
+            </div>
+            <button class="remove-video-btn" onclick="removeVideo(${video.id})" title="Remove video">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Update video name
+function updateVideoName(id, name) {
+    const video = window.uploadedVideos.find(v => v.id === id);
+    if (video) {
+        video.videoName = name;
+        saveVideosToStorage();
+    }
+}
+
+// Update user name
+function updateUserName(id, name) {
+    const video = window.uploadedVideos.find(v => v.id === id);
+    if (video) {
+        video.userName = name;
+        saveVideosToStorage();
+    }
+}
+
+// Update user number
+function updateUserNumber(id, number) {
+    const video = window.uploadedVideos.find(v => v.id === id);
+    if (video) {
+        video.userNumber = number;
+        saveVideosToStorage();
+    }
+}
+
+// Remove video
+function removeVideo(id) {
+    if (confirm('Are you sure you want to remove this video?')) {
+        window.uploadedVideos = window.uploadedVideos.filter(v => v.id !== id);
+        saveVideosToStorage();
+        renderVideoList();
+        updateVideoCount();
+        updateAnalyzeButton();
+    }
+}
+
+// Update video count
+function updateVideoCount() {
+    const countEl = document.getElementById('video-count');
+    if (countEl) {
+        countEl.textContent = window.uploadedVideos.length;
+    }
+}
+
+// Update analyze button state
+function updateAnalyzeButton() {
+    const btn = document.getElementById('analyze-videos-btn');
+    if (btn) {
+        btn.disabled = window.uploadedVideos.length === 0;
+    }
+}
+
+// Save videos to localStorage (metadata only)
+function saveVideosToStorage() {
+    const videosData = window.uploadedVideos.map(v => ({
+        id: v.id,
+        fileName: v.fileName,
+        fileSize: v.fileSize,
+        uploadDate: v.uploadDate,
+        videoName: v.videoName,
+        userName: v.userName,
+        userNumber: v.userNumber
+    }));
+    localStorage.setItem('uploadedVideos', JSON.stringify(videosData));
+}
+
+// Load saved videos from localStorage
+function loadSavedVideos() {
+    const saved = localStorage.getItem('uploadedVideos');
+    if (saved) {
+        try {
+            const videosData = JSON.parse(saved);
+            window.uploadedVideos = videosData.map(v => ({
+                ...v,
+                file: null // File objects can't be saved in localStorage
+            }));
+            renderVideoList();
+            updateVideoCount();
+            updateAnalyzeButton();
+        } catch (e) {
+            console.error('Error loading saved videos:', e);
+        }
+    }
+}
+
+// Analyze videos
+function analyzeVideos() {
+    const instructions = document.getElementById('bot-instructions').value.trim();
+    const progressSection = document.getElementById('analysis-progress');
+    const progressText = document.getElementById('progress-text');
+    const analyzeBtn = document.getElementById('analyze-videos-btn');
+    
+    // Show progress
+    progressSection.style.display = 'block';
+    analyzeBtn.disabled = true;
+    
+    // Generate analysis summary
+    const videoSummary = window.uploadedVideos.map(v => {
+        const userLabel = v.userName || v.userNumber || 'Unnamed User';
+        return `• ${v.videoName} (${userLabel})`;
+    }).join('\n');
+    
+    const analysisRequest = `
+=== VIDEO ANALYSIS REQUEST ===
+
+Total Videos: ${window.uploadedVideos.length}
+
+Videos to Analyze:
+${videoSummary}
+
+Custom Instructions:
+${instructions || 'No specific instructions provided. Please perform standard user testing analysis.'}
+
+=== ACTION REQUIRED ===
+Please analyze these ${window.uploadedVideos.length} user testing session videos and synthesize findings into:
+1. Key behavioral insights
+2. Usability issues and pain points
+3. Notable quotes and reactions
+4. Task completion patterns
+5. Recommendations for improvement
+
+Update the synthesis-data.js file with the new findings.
+`;
+    
+    // Show the request in a modal for user to share with AI
+    showAnalysisModal(analysisRequest);
+    
+    // Reset progress
+    progressSection.style.display = 'none';
+    analyzeBtn.disabled = false;
+}
+
+// Show analysis modal
+function showAnalysisModal(request) {
+    const modal = document.createElement('div');
+    modal.className = 'analysis-modal';
+    modal.innerHTML = `
+        <div class="analysis-modal-content">
+            <h3>📋 Video Analysis Request Generated</h3>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                Copy the information below and share it with the AI assistant to begin video analysis:
+            </p>
+            <textarea readonly class="analysis-request-text">${request}</textarea>
+            <div class="modal-actions">
+                <button class="copy-btn" onclick="copyAnalysisRequest()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy to Clipboard
+                </button>
+                <button class="close-modal-btn" onclick="closeAnalysisModal()">Close</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Copy analysis request to clipboard
+function copyAnalysisRequest() {
+    const textarea = document.querySelector('.analysis-request-text');
+    textarea.select();
+    document.execCommand('copy');
+    
+    const btn = document.querySelector('.copy-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    setTimeout(() => btn.innerHTML = originalText, 2000);
+}
+
+// Close analysis modal
+function closeAnalysisModal() {
+    const modal = document.querySelector('.analysis-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
