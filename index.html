@@ -210,37 +210,103 @@
                         </div>
                     </div>
 
-                    <!-- Bot Instructions -->
-                    <div class="bot-instructions-section">
-                        <h3>🤖 Analysis Instructions for AI</h3>
-                        <p style="color: var(--text-light); margin-bottom: 1rem;">
-                            Provide specific instructions on how you'd like the AI to analyze and synthesize these videos.
+                    <!-- Presentation Upload Section -->
+                    <div class="presentation-upload-section">
+                        <h3>📊 Upload Presentation Examples</h3>
+                        <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                            Submit presentation examples to help the AI learn effective presentation styles and formatting.
                         </p>
-                        <textarea id="bot-instructions" class="bot-instructions-textarea" placeholder="Example instructions:
 
-• Focus on usability issues and confusion points
-• Track task completion rates and time on task
-• Note verbal feedback and emotional reactions
-• Identify common navigation patterns across users
-• Extract direct quotes from participant commentary
-• Highlight moments of delight or frustration
-• Compare behavior between different user segments
-• Synthesize findings into key themes and recommendations
+                        <!-- Guidelines -->
+                        <div class="guidelines-section">
+                            <h4>📋 Upload Guidelines</h4>
+                            <p style="color: var(--text-light); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">
+                                Good presentation examples should demonstrate:
+                            </p>
+                            <ul class="guidelines-list">
+                                <li>Clear data visualization and charts</li>
+                                <li>Well-organized information hierarchy</li>
+                                <li>Consistent formatting and styling</li>
+                                <li>Effective use of whitespace</li>
+                                <li>Professional color schemes</li>
+                                <li>Actionable insights and recommendations</li>
+                            </ul>
+                        </div>
 
-Add your own custom instructions here..."></textarea>
-                        
-                        <button class="analyze-button" id="analyze-videos-btn" disabled>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
-                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                            </svg>
-                            Analyze Videos & Generate Insights
-                        </button>
-                        
-                        <div id="analysis-progress" class="analysis-progress" style="display: none;">
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progress-fill"></div>
+                        <!-- Upload Interface -->
+                        <div class="upload-presentations-card">
+                            <input type="file" id="presentation-files-input" accept=".xls,.xlsx,.doc,.docx,.pdf" multiple style="display: none;">
+                            <button class="upload-button" onclick="document.getElementById('presentation-files-input').click()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                Upload Presentation Example
+                            </button>
+                            <p style="color: var(--text-light); font-size: 0.875rem; margin-top: 0.5rem;">
+                                Supported formats: Excel (.xls, .xlsx), Word (.doc, .docx), PDF (.pdf)
+                            </p>
+                        </div>
+
+                        <!-- Uploaded Presentations List -->
+                        <div id="presentations-list" class="presentations-list" style="display: none;">
+                            <h4>📁 Uploaded Examples (<span id="presentation-count">0</span>)</h4>
+                            <div id="presentation-items"></div>
+                        </div>
+
+                        <!-- Submit Section -->
+                        <div class="submit-section" style="display: none;" id="submit-section">
+                            <button class="submit-button" id="submit-presentations-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                Submit All Presentations
+                            </button>
+                            <div id="submission-feedback" class="submission-feedback"></div>
+                        </div>
+
+                        <!-- FAQ Section -->
+                        <div class="faq-section">
+                            <div class="faq-header" onclick="toggleFAQ()">
+                                <h4>❓ Frequently Asked Questions</h4>
+                                <span class="faq-toggle-icon">›</span>
                             </div>
-                            <p id="progress-text">Processing videos...</p>
+                            <div class="faq-content">
+                                <div class="faq-item">
+                                    <strong>Q: What file formats are supported?</strong>
+                                    <p>A: We support Excel (.xls, .xlsx), Word (.doc, .docx), and PDF (.pdf) files.</p>
+                                </div>
+                                <div class="faq-item">
+                                    <strong>Q: How many files can I upload at once?</strong>
+                                    <p>A: You can upload multiple files simultaneously. There's no strict limit, but we recommend uploading 3-5 high-quality examples.</p>
+                                </div>
+                                <div class="faq-item">
+                                    <strong>Q: What makes a good presentation example?</strong>
+                                    <p>A: Good examples have clear data visualization, consistent formatting, professional styling, and actionable insights.</p>
+                                </div>
+                                <div class="faq-item">
+                                    <strong>Q: Can I edit the title or description after uploading?</strong>
+                                    <p>A: Yes, you can edit the title and description at any time before submitting.</p>
+                                </div>
+                                <div class="faq-item">
+                                    <strong>Q: What happens after I submit?</strong>
+                                    <p>A: The AI will analyze your examples to learn effective presentation patterns, styles, and formatting techniques.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Original Analysis Button -->
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                            <h4 style="margin-bottom: 1rem;">🎥 Video Analysis</h4>
+                            <textarea id="bot-instructions" class="bot-instructions-textarea" placeholder="Add custom analysis instructions for videos here..."></textarea>
+                            <button class="analyze-button" id="analyze-videos-btn" disabled>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                                Analyze Videos & Generate Insights
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -1421,3 +1421,221 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
+
+// ========== PRESENTATION UPLOAD FUNCTIONS ==========
+
+// Store uploaded presentations
+window.uploadedPresentations = [];
+
+// Initialize presentation upload functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const presentationInput = document.getElementById('presentation-files-input');
+    const submitBtn = document.getElementById('submit-presentations-btn');
+    
+    if (presentationInput) {
+        presentationInput.addEventListener('change', handlePresentationUpload);
+    }
+    
+    if (submitBtn) {
+        submitBtn.addEventListener('click', submitPresentations);
+    }
+});
+
+// Handle presentation file upload
+function handlePresentationUpload(event) {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+    
+    // Validate file types
+    const validExtensions = ['.xls', '.xlsx', '.doc', '.docx', '.pdf'];
+    const invalidFiles = files.filter(file => {
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        return !validExtensions.includes(ext);
+    });
+    
+    if (invalidFiles.length > 0) {
+        alert(`Invalid file types detected. Only Excel, Word, and PDF files are supported.\n\nInvalid files: ${invalidFiles.map(f => f.name).join(', ')}`);
+        return;
+    }
+    
+    // Add files to presentations array
+    files.forEach(file => {
+        const presentationData = {
+            id: Date.now() + Math.random(),
+            fileName: file.name,
+            fileSize: formatFileSize(file.size),
+            fileType: getFileType(file.name),
+            uploadDate: new Date().toISOString(),
+            title: '',
+            description: '',
+            file: file
+        };
+        
+        window.uploadedPresentations.push(presentationData);
+    });
+    
+    // Update UI
+    renderPresentationsList();
+    showSubmitSection();
+    
+    // Reset input
+    event.target.value = '';
+}
+
+// Get file type icon
+function getFileType(fileName) {
+    const ext = fileName.split('.').pop().toLowerCase();
+    const types = {
+        'xls': 'Excel',
+        'xlsx': 'Excel',
+        'doc': 'Word',
+        'docx': 'Word',
+        'pdf': 'PDF'
+    };
+    return types[ext] || 'Document';
+}
+
+// Get file type color
+function getFileTypeColor(type) {
+    const colors = {
+        'Excel': '#217346',
+        'Word': '#2b579a',
+        'PDF': '#dc2626'
+    };
+    return colors[type] || '#6b7280';
+}
+
+// Render presentations list
+function renderPresentationsList() {
+    const listContainer = document.getElementById('presentations-list');
+    const itemsContainer = document.getElementById('presentation-items');
+    const countEl = document.getElementById('presentation-count');
+    
+    if (window.uploadedPresentations.length === 0) {
+        listContainer.style.display = 'none';
+        return;
+    }
+    
+    listContainer.style.display = 'block';
+    countEl.textContent = window.uploadedPresentations.length;
+    
+    itemsContainer.innerHTML = window.uploadedPresentations.map((pres, index) => `
+        <div class="presentation-item" data-id="${pres.id}">
+            <div class="presentation-icon" style="background: ${getFileTypeColor(pres.fileType)};">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span class="file-type-badge">${pres.fileType}</span>
+            </div>
+            <div class="presentation-details">
+                <input type="text" 
+                       class="presentation-title-input" 
+                       value="${pres.title}" 
+                       onchange="updatePresentationTitle(${pres.id}, this.value)" 
+                       placeholder="Enter presentation title *">
+                <textarea 
+                    class="presentation-description-input" 
+                    onchange="updatePresentationDescription(${pres.id}, this.value)" 
+                    placeholder="Describe what makes this a good presentation example (key strengths, effective techniques, etc.) *"
+                    rows="3">${pres.description}</textarea>
+                <div class="presentation-meta">
+                    <span>📄 ${pres.fileName}</span>
+                    <span>💾 ${pres.fileSize}</span>
+                </div>
+            </div>
+            <button class="remove-presentation-btn" onclick="removePresentation(${pres.id})" title="Remove presentation">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Update presentation title
+function updatePresentationTitle(id, title) {
+    const pres = window.uploadedPresentations.find(p => p.id === id);
+    if (pres) {
+        pres.title = title;
+    }
+}
+
+// Update presentation description
+function updatePresentationDescription(id, description) {
+    const pres = window.uploadedPresentations.find(p => p.id === id);
+    if (pres) {
+        pres.description = description;
+    }
+}
+
+// Remove presentation
+function removePresentation(id) {
+    if (confirm('Are you sure you want to remove this presentation?')) {
+        window.uploadedPresentations = window.uploadedPresentations.filter(p => p.id !== id);
+        renderPresentationsList();
+        
+        if (window.uploadedPresentations.length === 0) {
+            hideSubmitSection();
+        }
+    }
+}
+
+// Show submit section
+function showSubmitSection() {
+    const submitSection = document.getElementById('submit-section');
+    if (submitSection) {
+        submitSection.style.display = 'block';
+    }
+}
+
+// Hide submit section
+function hideSubmitSection() {
+    const submitSection = document.getElementById('submit-section');
+    if (submitSection) {
+        submitSection.style.display = 'none';
+    }
+}
+
+// Submit presentations
+function submitPresentations() {
+    const feedbackEl = document.getElementById('submission-feedback');
+    
+    // Validate that all presentations have title and description
+    const incomplete = window.uploadedPresentations.filter(p => !p.title.trim() || !p.description.trim());
+    
+    if (incomplete.length > 0) {
+        feedbackEl.innerHTML = `<span style="color: var(--danger);">⚠️ Please provide a title and description for all presentations before submitting.</span>`;
+        return;
+    }
+    
+    // Show success message
+    feedbackEl.innerHTML = `<span style="color: var(--success);">✓ Successfully submitted ${window.uploadedPresentations.length} presentation(s)! The AI will analyze these examples to learn effective presentation styles.</span>`;
+    
+    // Log submission (in real app, would send to server)
+    console.log('Presentations submitted:', window.uploadedPresentations.map(p => ({
+        title: p.title,
+        description: p.description,
+        fileName: p.fileName
+    })));
+    
+    // Optional: Clear after submission
+    setTimeout(() => {
+        if (confirm('Presentations submitted successfully! Would you like to clear the list and upload more examples?')) {
+            window.uploadedPresentations = [];
+            renderPresentationsList();
+            hideSubmitSection();
+            feedbackEl.innerHTML = '';
+        }
+    }, 2000);
+}
+
+// Toggle FAQ
+function toggleFAQ() {
+    const content = document.querySelector('.faq-content');
+    const icon = document.querySelector('.faq-toggle-icon');
+    
+    content.classList.toggle('expanded');
+    icon.classList.toggle('rotated');
+}
