@@ -536,12 +536,29 @@ function renderFindingsCards(findings) {
         // Bold participant names in evidence (names before colons)
         const formattedEvidence = finding.evidence.replace(/(\b[A-Z][a-z]+\b):/g, '<strong>$1</strong>:');
         
+        // Get stored edits from localStorage
+        const storedEdit = getStoredEdit('finding', findings.indexOf(finding));
+        const description = storedEdit || finding.description;
+        
         return `
-            <div class="card finding-card" data-severity="${finding.severity}" data-category="${featureCategory}">
+            <div class="card finding-card" data-severity="${finding.severity}" data-category="${featureCategory}" data-index="${findings.indexOf(finding)}">
+                <button class="edit-btn" onclick="toggleEdit('finding', ${findings.indexOf(finding)})" title="Edit description">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </button>
                 <span class="severity ${finding.severity}">${finding.severity.toUpperCase()}</span>
                 <span class="category-badge">${finding.category}</span>
                 <h3>${finding.title}</h3>
-                <p>${finding.description}</p>
+                <div class="editable-content">
+                    <p class="description-text">${description}</p>
+                    <textarea class="description-edit" style="display: none;">${description}</textarea>
+                    <div class="edit-actions" style="display: none;">
+                        <button class="save-btn" onclick="saveEdit('finding', ${findings.indexOf(finding)})">Save</button>
+                        <button class="cancel-btn" onclick="cancelEdit('finding', ${findings.indexOf(finding)})">Cancel</button>
+                    </div>
+                </div>
                 <div class="evidence">
                     <strong>Evidence:</strong> ${formattedEvidence}
                 </div>
@@ -729,14 +746,32 @@ function renderQuotes(quotes) {
 function renderRecommendations(recommendations) {
     const section = document.querySelector('#recommendations .recommendations-list');
     
-    section.innerHTML = recommendations.map(rec => `
-        <div class="card recommendation-card">
+    section.innerHTML = recommendations.map((rec, index) => {
+        // Get stored edits from localStorage
+        const storedEdit = getStoredEdit('recommendation', index);
+        const description = storedEdit || rec.description;
+        
+        return `
+        <div class="card recommendation-card" data-index="${index}">
+            <button class="edit-btn" onclick="toggleEdit('recommendation', ${index})" title="Edit description">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </button>
             <div class="rec-header">
                 <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
                 <span class="related-theme">Theme: ${rec.relatedTheme}</span>
             </div>
             <h3>${rec.title}</h3>
-            <p class="rec-description">${rec.description}</p>
+            <div class="editable-content">
+                <p class="rec-description description-text">${description}</p>
+                <textarea class="description-edit" style="display: none;">${description}</textarea>
+                <div class="edit-actions" style="display: none;">
+                    <button class="save-btn" onclick="saveEdit('recommendation', ${index})">Save</button>
+                    <button class="cancel-btn" onclick="cancelEdit('recommendation', ${index})">Cancel</button>
+                </div>
+            </div>
             <div class="rec-details">
                 <div class="detail-block">
                     <h4>📊 Rationale:</h4>
@@ -748,7 +783,7 @@ function renderRecommendations(recommendations) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function renderResearchQuestions(questionSections) {
@@ -954,4 +989,104 @@ function loadSampleData() {
 function exportReport() {
     // Could generate PDF, CSV, or JSON export
     console.log('Export functionality - coming soon!');
+}
+
+// ========== INLINE EDITING FUNCTIONS ==========
+
+// Get stored edit from localStorage
+function getStoredEdit(type, index) {
+    const key = `edit_${type}_${index}`;
+    return localStorage.getItem(key);
+}
+
+// Save edit to localStorage
+function saveStoredEdit(type, index, value) {
+    const key = `edit_${type}_${index}`;
+    localStorage.setItem(key, value);
+}
+
+// Toggle edit mode
+function toggleEdit(type, index) {
+    const card = document.querySelector(`.${type}-card[data-index="${index}"]`);
+    if (!card) return;
+    
+    const textEl = card.querySelector('.description-text');
+    const editEl = card.querySelector('.description-edit');
+    const actionsEl = card.querySelector('.edit-actions');
+    const editBtn = card.querySelector('.edit-btn');
+    
+    // Enter edit mode
+    textEl.style.display = 'none';
+    editEl.style.display = 'block';
+    actionsEl.style.display = 'flex';
+    editBtn.style.display = 'none';
+    
+    // Focus the textarea
+    editEl.focus();
+    
+    // Store original value for cancel
+    editEl.dataset.original = textEl.textContent;
+}
+
+// Save edit
+function saveEdit(type, index) {
+    const card = document.querySelector(`.${type}-card[data-index="${index}"]`);
+    if (!card) return;
+    
+    const textEl = card.querySelector('.description-text');
+    const editEl = card.querySelector('.description-edit');
+    const actionsEl = card.querySelector('.edit-actions');
+    const editBtn = card.querySelector('.edit-btn');
+    
+    const newValue = editEl.value.trim();
+    
+    if (newValue) {
+        // Save to localStorage
+        saveStoredEdit(type, index, newValue);
+        
+        // Update display
+        textEl.textContent = newValue;
+        
+        // Exit edit mode
+        textEl.style.display = 'block';
+        editEl.style.display = 'none';
+        actionsEl.style.display = 'none';
+        editBtn.style.display = 'flex';
+        
+        // Show success feedback
+        showEditFeedback(card, 'Saved!');
+    }
+}
+
+// Cancel edit
+function cancelEdit(type, index) {
+    const card = document.querySelector(`.${type}-card[data-index="${index}"]`);
+    if (!card) return;
+    
+    const textEl = card.querySelector('.description-text');
+    const editEl = card.querySelector('.description-edit');
+    const actionsEl = card.querySelector('.edit-actions');
+    const editBtn = card.querySelector('.edit-btn');
+    
+    // Restore original value
+    editEl.value = editEl.dataset.original || textEl.textContent;
+    
+    // Exit edit mode
+    textEl.style.display = 'block';
+    editEl.style.display = 'none';
+    actionsEl.style.display = 'none';
+    editBtn.style.display = 'flex';
+}
+
+// Show feedback message
+function showEditFeedback(card, message) {
+    const feedback = document.createElement('div');
+    feedback.className = 'edit-feedback';
+    feedback.textContent = message;
+    card.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.classList.add('fade-out');
+        setTimeout(() => feedback.remove(), 300);
+    }, 2000);
 }
