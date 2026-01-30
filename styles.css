@@ -216,6 +216,72 @@ body {
     margin-top: 1rem;
 }
 
+.finding-card .category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+/* Findings Filters */
+.findings-filters {
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.875rem;
+    min-width: 70px;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary);
+    background: var(--bg);
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.filter-btn.active:hover {
+    background: var(--primary-dark);
+}
+
 /* Theme Card */
 .theme-card {
     composes: card;

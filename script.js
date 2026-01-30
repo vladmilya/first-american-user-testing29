@@ -480,18 +480,114 @@ function toggleParticipantDetails(participantId) {
 }
 
 function renderKeyFindings(findings) {
+    const container = document.querySelector('#key-findings');
+    const existingGrid = container.querySelector('.findings-grid');
+    
+    // Create filter controls if they don't exist
+    if (!container.querySelector('.findings-filters')) {
+        const filtersHTML = `
+            <div class="findings-filters">
+                <div class="filter-group">
+                    <label>Severity:</label>
+                    <button class="filter-btn active" data-filter="severity" data-value="all">All</button>
+                    <button class="filter-btn" data-filter="severity" data-value="high">High</button>
+                    <button class="filter-btn" data-filter="severity" data-value="medium">Medium</button>
+                    <button class="filter-btn" data-filter="severity" data-value="low">Low</button>
+                </div>
+                <div class="filter-group">
+                    <label>Feature:</label>
+                    <button class="filter-btn active" data-filter="category" data-value="all">All</button>
+                    <button class="filter-btn" data-filter="category" data-value="inline">Inline Editing</button>
+                    <button class="filter-btn" data-filter="category" data-value="cd">CD Comparison</button>
+                    <button class="filter-btn" data-filter="category" data-value="deposit">Auto Deposit</button>
+                    <button class="filter-btn" data-filter="category" data-value="general">General</button>
+                </div>
+            </div>
+        `;
+        existingGrid.insertAdjacentHTML('beforebegin', filtersHTML);
+        
+        // Add event listeners to filter buttons
+        initializeFindingsFilters();
+    }
+    
+    // Store findings data globally for filtering
+    window.allFindings = findings;
+    
+    // Render findings
+    renderFindingsCards(findings);
+}
+
+function renderFindingsCards(findings) {
     const section = document.querySelector('#key-findings .findings-grid');
     
-    section.innerHTML = findings.map(finding => `
-        <div class="card finding-card">
-            <span class="severity ${finding.severity}">${finding.severity.toUpperCase()}</span>
-            <h3>${finding.title}</h3>
-            <p>${finding.description}</p>
-            <div class="evidence">
-                <strong>Evidence:</strong> ${finding.evidence}
+    section.innerHTML = findings.map(finding => {
+        // Determine feature category from title or description
+        let featureCategory = 'general';
+        const text = (finding.title + ' ' + finding.description + ' ' + finding.category).toLowerCase();
+        
+        if (text.includes('inline') || text.includes('edit') || text.includes('settlement statement')) {
+            featureCategory = 'inline';
+        } else if (text.includes('cd') || text.includes('comparison') || text.includes('closing disclosure')) {
+            featureCategory = 'cd';
+        } else if (text.includes('deposit') || text.includes('wire') || text.includes('notification')) {
+            featureCategory = 'deposit';
+        }
+        
+        return `
+            <div class="card finding-card" data-severity="${finding.severity}" data-category="${featureCategory}">
+                <span class="severity ${finding.severity}">${finding.severity.toUpperCase()}</span>
+                <span class="category-badge">${finding.category}</span>
+                <h3>${finding.title}</h3>
+                <p>${finding.description}</p>
+                <div class="evidence">
+                    <strong>Evidence:</strong> ${finding.evidence}
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+function initializeFindingsFilters() {
+    const filterButtons = document.querySelectorAll('.findings-filters .filter-btn');
+    const activeFilters = {
+        severity: 'all',
+        category: 'all'
+    };
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const filterType = btn.getAttribute('data-filter');
+            const filterValue = btn.getAttribute('data-value');
+            
+            // Update active state
+            document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Update active filters
+            activeFilters[filterType] = filterValue;
+            
+            // Filter findings
+            filterFindings(activeFilters);
+        });
+    });
+}
+
+function filterFindings(filters) {
+    const cards = document.querySelectorAll('.finding-card');
+    
+    cards.forEach(card => {
+        const cardSeverity = card.getAttribute('data-severity');
+        const cardCategory = card.getAttribute('data-category');
+        
+        const severityMatch = filters.severity === 'all' || cardSeverity === filters.severity;
+        const categoryMatch = filters.category === 'all' || cardCategory === filters.category;
+        
+        if (severityMatch && categoryMatch) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 }
 
 function renderThemes(themes) {
