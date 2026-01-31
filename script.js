@@ -2760,8 +2760,19 @@ function populateTopicFilter() {
         return;
     }
     
-    // Add Discussion Guide topics
-    customTopics.forEach(topic => {
+    // Deduplicate topics by name (keep only unique topics)
+    const seenNames = new Set();
+    const uniqueTopics = customTopics.filter(topic => {
+        const lowerName = topic.name.toLowerCase().trim();
+        if (seenNames.has(lowerName)) {
+            return false;
+        }
+        seenNames.add(lowerName);
+        return true;
+    });
+    
+    // Add unique Discussion Guide topics
+    uniqueTopics.forEach(topic => {
         const option = document.createElement('option');
         option.value = topic.name;
         option.textContent = topic.name;
