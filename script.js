@@ -1769,6 +1769,80 @@ function updateCurrentCampaignDisplay() {
     }
 }
 
+// Edit campaign title inline
+function editCampaignTitle() {
+    const campaign = getActiveCampaign();
+    if (!campaign) return;
+    
+    const titleEl = document.getElementById('current-campaign-title');
+    if (!titleEl) return;
+    
+    const currentName = campaign.name;
+    
+    // Create inline input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentName;
+    input.className = 'campaign-title-input';
+    input.style.cssText = `
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text);
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        padding: 0.25rem 0.5rem;
+        outline: none;
+        width: 100%;
+        max-width: 300px;
+        background: white;
+    `;
+    
+    // Replace title with input
+    titleEl.style.display = 'none';
+    titleEl.parentNode.insertBefore(input, titleEl);
+    input.focus();
+    input.select();
+    
+    // Hide the edit button while editing
+    const editBtn = titleEl.parentNode.querySelector('.edit-title-btn');
+    if (editBtn) editBtn.style.display = 'none';
+    
+    // Save on blur or Enter
+    const saveTitle = () => {
+        const newName = input.value.trim();
+        if (newName && newName !== currentName) {
+            // Update campaign name
+            const campaigns = getCampaigns();
+            const activeCampaign = campaigns.find(c => c.isActive);
+            if (activeCampaign) {
+                activeCampaign.name = newName;
+                saveCampaigns(campaigns);
+            }
+        }
+        
+        // Restore title display
+        titleEl.textContent = newName || currentName;
+        titleEl.style.display = '';
+        if (editBtn) editBtn.style.display = '';
+        input.remove();
+        
+        // Update other displays
+        renderCampaignsList();
+    };
+    
+    input.addEventListener('blur', saveTitle);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur();
+        }
+        if (e.key === 'Escape') {
+            input.value = currentName;
+            input.blur();
+        }
+    });
+}
+
 // Render campaigns list
 function renderCampaignsList() {
     const listContainer = document.getElementById('campaigns-list');
