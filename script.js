@@ -2690,7 +2690,21 @@ function initBoards() {
     
     updateBoardSelector();
     updateUserCountDisplay();
+    updateNoteTakerCampaignName();
     loadCurrentBoard();
+}
+
+// Update campaign name display in Note Taker
+function updateNoteTakerCampaignName() {
+    const campaignNameEl = document.getElementById('note-taker-campaign-name');
+    if (!campaignNameEl) return;
+    
+    const activeCampaign = getActiveCampaign();
+    if (activeCampaign) {
+        campaignNameEl.textContent = activeCampaign.name;
+    } else {
+        campaignNameEl.textContent = 'No Campaign';
+    }
 }
 
 // Update user count display
