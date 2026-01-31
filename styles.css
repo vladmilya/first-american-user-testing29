@@ -4373,6 +4373,23 @@ body.note-taker-active .sticky-board-wrapper {
     border: 1px solid var(--border);
 }
 
+/* Zoom Controls - Bottom Position */
+.zoom-controls-bottom {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0.5rem 1rem;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
 .zoom-btn {
     background: transparent;
     border: none;

@@ -182,12 +182,6 @@
                                     </svg>
                                 </button>
                             </div>
-                            <div class="zoom-controls">
-                                <button class="zoom-btn" onclick="zoomBoard(-0.1)" title="Zoom Out">−</button>
-                                <span id="zoom-level">100%</span>
-                                <button class="zoom-btn" onclick="zoomBoard(0.1)" title="Zoom In">+</button>
-                                <button class="zoom-btn" onclick="resetZoom()" title="Reset">↺</button>
-                            </div>
                         </div>
                         <div class="controls-right">
                             <button class="add-to-report-btn" onclick="addSelectedToReport()">📄 Add to Report</button>
@@ -197,6 +191,14 @@
                     <!-- The Board -->
                     <div class="sticky-board-wrapper" id="board-wrapper">
                         <div id="sticky-board" class="sticky-board"></div>
+                    </div>
+                    
+                    <!-- Zoom Controls - Bottom -->
+                    <div class="zoom-controls-bottom">
+                        <button class="zoom-btn" onclick="zoomBoard(-0.1)" title="Zoom Out">−</button>
+                        <span id="zoom-level">100%</span>
+                        <button class="zoom-btn" onclick="zoomBoard(0.1)" title="Zoom In">+</button>
+                        <button class="zoom-btn" onclick="resetZoom()" title="Reset Zoom">↺</button>
                     </div>
                 </div>
                 
