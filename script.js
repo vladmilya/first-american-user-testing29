@@ -2704,82 +2704,52 @@ function getCampaignThemes() {
     return [];
 }
 
-// Get topic options HTML for sticky note dropdown
+// Get topic options HTML for sticky note dropdown - ONLY Discussion Guide topics
 function getTopicOptionsHtml(selectedTopic = '') {
-    const allTopics = getAllTopics();
-    return allTopics.map(t => {
-        const selected = t.theme === selectedTopic ? 'selected' : '';
-        // Truncate long theme names
-        const displayName = t.theme.length > 30 ? t.theme.substring(0, 30) + '...' : t.theme;
-        const customBadge = t.isCustom ? '★ ' : '';
-        return `<option value="${escapeHtml(t.theme)}" ${selected}>${customBadge}${escapeHtml(displayName)}</option>`;
+    const customTopics = getCustomTopics();
+    return customTopics.map(t => {
+        const selected = t.name === selectedTopic ? 'selected' : '';
+        // Truncate long topic names
+        const displayName = t.name.length > 30 ? t.name.substring(0, 30) + '...' : t.name;
+        return `<option value="${escapeHtml(t.name)}" ${selected}>${escapeHtml(displayName)}</option>`;
     }).join('');
 }
 
 // Get topic category for coloring
 function getTopicCategory(topicName) {
-    const allTopics = getAllTopics();
-    const topic = allTopics.find(t => t.theme === topicName);
+    const customTopics = getCustomTopics();
+    const topic = customTopics.find(t => t.name === topicName);
     return topic ? topic.category : null;
 }
 
-// Populate topic filter dropdown
+// Populate topic filter dropdown - ONLY shows Discussion Guide topics
 function populateTopicFilter() {
     const select = document.getElementById('topic-filter-select');
     if (!select) return;
     
-    const allTopics = getAllTopics();
-    
-    // Clear existing options except "All Topics"
+    // Clear existing options
     select.innerHTML = '<option value="all">All Topics</option>';
     
-    // Separate custom topics (from Discussion Guide) from data themes
-    const customTopics = allTopics.filter(t => t.isCustom);
-    const dataThemes = allTopics.filter(t => !t.isCustom);
+    // Only get custom topics from Discussion Guide
+    const customTopics = getCustomTopics();
     
-    // Add Discussion Guide topics first (these are the primary topics)
-    if (customTopics.length > 0) {
-        const customGroup = document.createElement('optgroup');
-        customGroup.label = '📋 Discussion Guide Topics';
-        
-        customTopics.forEach(topic => {
-            const option = document.createElement('option');
-            option.value = topic.theme;
-            const displayName = topic.theme.length > 40 ? topic.theme.substring(0, 40) + '...' : topic.theme;
-            option.textContent = displayName;
-            customGroup.appendChild(option);
-        });
-        
-        select.appendChild(customGroup);
+    if (customTopics.length === 0) {
+        // Add placeholder if no topics
+        const option = document.createElement('option');
+        option.value = '';
+        option.disabled = true;
+        option.textContent = 'No topics added - Add in Build Report';
+        select.appendChild(option);
+        return;
     }
     
-    // Group data themes by category (secondary - from report data)
-    if (dataThemes.length > 0) {
-        const categories = {};
-        dataThemes.forEach(t => {
-            if (!categories[t.category]) {
-                categories[t.category] = [];
-            }
-            categories[t.category].push(t);
-        });
-        
-        // Add category groups
-        Object.keys(categories).forEach(category => {
-            const optgroup = document.createElement('optgroup');
-            const categoryLabel = 'Report: ' + category.charAt(0).toUpperCase() + category.slice(1);
-            optgroup.label = categoryLabel;
-            
-            categories[category].forEach(theme => {
-                const option = document.createElement('option');
-                option.value = theme.theme;
-                const displayName = theme.theme.length > 40 ? theme.theme.substring(0, 40) + '...' : theme.theme;
-                option.textContent = displayName;
-                optgroup.appendChild(option);
-            });
-            
-            select.appendChild(optgroup);
-        });
-    }
+    // Add Discussion Guide topics
+    customTopics.forEach(topic => {
+        const option = document.createElement('option');
+        option.value = topic.name;
+        option.textContent = topic.name;
+        select.appendChild(option);
+    });
 }
 
 // Change topic of a sticky note
