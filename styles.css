@@ -3537,20 +3537,114 @@ body {
 .note-taker-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 1rem;
     flex-wrap: wrap;
     gap: 1rem;
+}
+
+.board-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .note-taker-header h2 {
     margin: 0;
 }
 
+.current-board-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#current-board-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.edit-board-name-btn {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--text-light);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.edit-board-name-btn:hover {
+    color: var(--primary);
+    background: rgba(59, 130, 246, 0.1);
+}
+
 .note-taker-controls {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.board-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.board-selector select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: white;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.board-action-btn {
+    padding: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.board-action-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.board-action-btn.delete-board-btn:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
+.add-to-report-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-to-report-btn:hover {
+    background: #7c3aed;
+    transform: translateY(-2px);
 }
 
 .zoom-controls {
@@ -3610,7 +3704,7 @@ body {
 
 .sticky-board-wrapper {
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
     border: 2px solid var(--border);
     border-radius: 12px;
     background: #f5f5f5;
@@ -3618,14 +3712,21 @@ body {
         radial-gradient(circle, #ddd 1px, transparent 1px);
     background-size: 20px 20px;
     position: relative;
+    cursor: grab;
+}
+
+.sticky-board-wrapper:active {
+    cursor: grabbing;
 }
 
 .sticky-board {
-    width: 100%;
-    height: 100%;
+    width: 3000px;
+    height: 2000px;
     position: relative;
     transform-origin: 0 0;
     transition: transform 0.2s ease;
+    min-width: 100%;
+    min-height: 100%;
 }
 
 .note-taker-footer {

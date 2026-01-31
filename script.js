@@ -2599,10 +2599,11 @@ let selectedNote = null;
 let isDragging = false;
 let isResizing = false;
 let dragOffset = { x: 0, y: 0 };
+let currentBoardId = null;
 
 // Initialize Note Taker
 function initNoteTaker() {
-    loadStickyNotes();
+    initBoards();
     
     // Deselect note when clicking outside
     document.addEventListener('click', (e) => {
@@ -2612,33 +2613,187 @@ function initNoteTaker() {
     });
 }
 
-// Add a new sticky note
-function addStickyNote(x = null, y = null) {
+// ========== BOARD MANAGEMENT ==========
+
+// Get all boards from localStorage
+function getBoards() {
+    const stored = localStorage.getItem('note_boards');
+    if (!stored) {
+        // Create default board
+        const defaultBoard = {
+            id: 'board-' + Date.now(),
+            name: 'Interview Notes',
+            notes: [],
+            createdAt: new Date().toISOString()
+        };
+        localStorage.setItem('note_boards', JSON.stringify([defaultBoard]));
+        return [defaultBoard];
+    }
+    return JSON.parse(stored);
+}
+
+// Save boards to localStorage
+function saveBoards(boards) {
+    localStorage.setItem('note_boards', JSON.stringify(boards));
+}
+
+// Initialize boards
+function initBoards() {
+    const boards = getBoards();
+    currentBoardId = localStorage.getItem('current_board_id') || boards[0]?.id;
+    
+    // Make sure current board exists
+    if (!boards.find(b => b.id === currentBoardId)) {
+        currentBoardId = boards[0]?.id;
+    }
+    
+    localStorage.setItem('current_board_id', currentBoardId);
+    
+    updateBoardSelector();
+    loadCurrentBoard();
+}
+
+// Update board selector dropdown
+function updateBoardSelector() {
+    const select = document.getElementById('board-select');
+    if (!select) return;
+    
+    const boards = getBoards();
+    
+    select.innerHTML = boards.map(board => `
+        <option value="${board.id}" ${board.id === currentBoardId ? 'selected' : ''}>
+            ${board.name}
+        </option>
+    `).join('');
+    
+    // Update current board name display
+    const currentBoard = boards.find(b => b.id === currentBoardId);
+    const nameEl = document.getElementById('current-board-name');
+    if (nameEl && currentBoard) {
+        nameEl.textContent = currentBoard.name;
+    }
+}
+
+// Switch to a different board
+function switchBoard(boardId) {
+    // Save current board first
+    saveStickyNotes();
+    
+    currentBoardId = boardId;
+    localStorage.setItem('current_board_id', boardId);
+    
+    // Clear and load new board
+    const board = document.getElementById('sticky-board');
+    if (board) {
+        board.innerHTML = '';
+    }
+    
+    loadCurrentBoard();
+    updateBoardSelector();
+}
+
+// Create a new board
+function createNewBoard() {
+    const name = prompt('Enter board name:', 'New Board');
+    if (!name) return;
+    
+    const boards = getBoards();
+    const newBoard = {
+        id: 'board-' + Date.now(),
+        name: name.trim(),
+        notes: [],
+        createdAt: new Date().toISOString()
+    };
+    
+    boards.push(newBoard);
+    saveBoards(boards);
+    
+    // Switch to new board
+    switchBoard(newBoard.id);
+}
+
+// Delete current board
+function deleteCurrentBoard() {
+    const boards = getBoards();
+    
+    if (boards.length <= 1) {
+        alert('Cannot delete the last board. You must have at least one board.');
+        return;
+    }
+    
+    const currentBoard = boards.find(b => b.id === currentBoardId);
+    if (!confirm(`Are you sure you want to delete "${currentBoard?.name}"? All notes will be lost.`)) {
+        return;
+    }
+    
+    const newBoards = boards.filter(b => b.id !== currentBoardId);
+    saveBoards(newBoards);
+    
+    // Switch to first available board
+    switchBoard(newBoards[0].id);
+}
+
+// Edit board name
+function editBoardName() {
+    const boards = getBoards();
+    const currentBoard = boards.find(b => b.id === currentBoardId);
+    if (!currentBoard) return;
+    
+    const newName = prompt('Enter new board name:', currentBoard.name);
+    if (!newName || newName.trim() === currentBoard.name) return;
+    
+    currentBoard.name = newName.trim();
+    saveBoards(boards);
+    updateBoardSelector();
+}
+
+// Load current board notes
+function loadCurrentBoard() {
     const board = document.getElementById('sticky-board');
     if (!board) return;
     
-    const noteId = 'note-' + Date.now() + '-' + (++noteIdCounter);
+    const boards = getBoards();
+    const currentBoard = boards.find(b => b.id === currentBoardId);
     
-    // Random position if not specified
-    const posX = x !== null ? x : Math.random() * (board.offsetWidth - 250) + 25;
-    const posY = y !== null ? y : Math.random() * (board.offsetHeight - 200) + 25;
+    if (!currentBoard) return;
+    
+    // Update name display
+    const nameEl = document.getElementById('current-board-name');
+    if (nameEl) {
+        nameEl.textContent = currentBoard.name;
+    }
+    
+    // Load notes
+    board.innerHTML = '';
+    
+    if (currentBoard.notes && currentBoard.notes.length > 0) {
+        currentBoard.notes.forEach(noteData => {
+            createNoteElement(noteData);
+        });
+    }
+}
+
+// Create note element from data
+function createNoteElement(noteData) {
+    const board = document.getElementById('sticky-board');
+    if (!board) return;
     
     const note = document.createElement('div');
-    note.className = 'sticky-note yellow';
-    note.id = noteId;
-    note.style.left = posX + 'px';
-    note.style.top = posY + 'px';
-    note.style.width = '200px';
-    note.style.minHeight = '150px';
+    note.className = `sticky-note ${noteData.color}`;
+    note.id = noteData.id;
+    note.style.left = noteData.x + 'px';
+    note.style.top = noteData.y + 'px';
+    note.style.width = noteData.width;
+    note.style.minHeight = noteData.height;
     
     note.innerHTML = `
         <div class="sticky-note-header">
             <div class="color-picker">
-                <button class="color-btn yellow" onclick="changeNoteColor('${noteId}', 'yellow')" title="Yellow"></button>
-                <button class="color-btn green" onclick="changeNoteColor('${noteId}', 'green')" title="Green"></button>
-                <button class="color-btn red" onclick="changeNoteColor('${noteId}', 'red')" title="Red"></button>
+                <button class="color-btn yellow" onclick="changeNoteColor('${noteData.id}', 'yellow')" title="Yellow"></button>
+                <button class="color-btn green" onclick="changeNoteColor('${noteData.id}', 'green')" title="Green"></button>
+                <button class="color-btn red" onclick="changeNoteColor('${noteData.id}', 'red')" title="Red"></button>
             </div>
-            <button class="delete-note-btn" onclick="deleteNote('${noteId}')" title="Delete Note">
+            <button class="delete-note-btn" onclick="deleteNote('${noteData.id}')" title="Delete Note">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -2650,20 +2805,53 @@ function addStickyNote(x = null, y = null) {
             <button class="format-btn text-red" onclick="formatSelectedText('red')" title="Red Text">A</button>
         </div>
         <div class="sticky-note-content" contenteditable="true" 
-             onfocus="onNoteEdit('${noteId}')" 
-             onblur="onNoteBlur('${noteId}')"
-             oninput="autoResizeFont(this)"></div>
-        <div class="resize-handle" onmousedown="startResize(event, '${noteId}')"></div>
+             onfocus="onNoteEdit('${noteData.id}')" 
+             onblur="onNoteBlur('${noteData.id}')"
+             oninput="autoResizeFont(this)">${noteData.content || ''}</div>
+        <div class="resize-handle" onmousedown="startResize(event, '${noteData.id}')"></div>
     `;
     
     board.appendChild(note);
+    note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
     
-    // Add drag functionality
-    note.addEventListener('mousedown', (e) => startDrag(e, noteId));
+    // Apply auto-resize font
+    const content = note.querySelector('.sticky-note-content');
+    if (content) autoResizeFont(content);
+}
+
+// Add a new sticky note
+function addStickyNote(x = null, y = null) {
+    const board = document.getElementById('sticky-board');
+    const wrapper = document.getElementById('board-wrapper');
+    if (!board) return;
+    
+    const noteId = 'note-' + Date.now() + '-' + (++noteIdCounter);
+    
+    // Position in visible area, accounting for scroll
+    const scrollLeft = wrapper ? wrapper.scrollLeft : 0;
+    const scrollTop = wrapper ? wrapper.scrollTop : 0;
+    const visibleWidth = wrapper ? wrapper.offsetWidth : 600;
+    const visibleHeight = wrapper ? wrapper.offsetHeight : 400;
+    
+    const posX = x !== null ? x : scrollLeft + Math.random() * (visibleWidth - 250) + 25;
+    const posY = y !== null ? y : scrollTop + Math.random() * (visibleHeight - 200) + 25;
+    
+    const noteData = {
+        id: noteId,
+        x: posX,
+        y: posY,
+        width: '200px',
+        height: '150px',
+        color: 'yellow',
+        content: ''
+    };
+    
+    createNoteElement(noteData);
     
     // Focus on the content
     setTimeout(() => {
-        const content = note.querySelector('.sticky-note-content');
+        const note = document.getElementById(noteId);
+        const content = note?.querySelector('.sticky-note-content');
         if (content) content.focus();
     }, 100);
     
@@ -2875,10 +3063,10 @@ function applyZoom() {
     }
 }
 
-// Save sticky notes to localStorage
+// Save sticky notes to current board
 function saveStickyNotes() {
     const board = document.getElementById('sticky-board');
-    if (!board) return;
+    if (!board || !currentBoardId) return;
     
     const notes = [];
     board.querySelectorAll('.sticky-note').forEach(note => {
@@ -2897,63 +3085,65 @@ function saveStickyNotes() {
         });
     });
     
-    localStorage.setItem('sticky_notes', JSON.stringify(notes));
+    // Update current board
+    const boards = getBoards();
+    const currentBoard = boards.find(b => b.id === currentBoardId);
+    if (currentBoard) {
+        currentBoard.notes = notes;
+        saveBoards(boards);
+    }
 }
 
-// Load sticky notes from localStorage
-function loadStickyNotes() {
-    const board = document.getElementById('sticky-board');
-    if (!board) return;
-    
-    const stored = localStorage.getItem('sticky_notes');
-    if (!stored) return;
-    
-    try {
-        const notes = JSON.parse(stored);
-        notes.forEach(noteData => {
-            const note = document.createElement('div');
-            note.className = `sticky-note ${noteData.color}`;
-            note.id = noteData.id;
-            note.style.left = noteData.x + 'px';
-            note.style.top = noteData.y + 'px';
-            note.style.width = noteData.width;
-            note.style.minHeight = noteData.height;
-            
-            note.innerHTML = `
-                <div class="sticky-note-header">
-                    <div class="color-picker">
-                        <button class="color-btn yellow" onclick="changeNoteColor('${noteData.id}', 'yellow')" title="Yellow"></button>
-                        <button class="color-btn green" onclick="changeNoteColor('${noteData.id}', 'green')" title="Green"></button>
-                        <button class="color-btn red" onclick="changeNoteColor('${noteData.id}', 'red')" title="Red"></button>
-                    </div>
-                    <button class="delete-note-btn" onclick="deleteNote('${noteData.id}')" title="Delete Note">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-                <div class="text-format-toolbar">
-                    <button class="format-btn text-black" onclick="formatSelectedText('black')" title="Black Text">A</button>
-                    <button class="format-btn text-red" onclick="formatSelectedText('red')" title="Red Text">A</button>
-                </div>
-                <div class="sticky-note-content" contenteditable="true" 
-                     onfocus="onNoteEdit('${noteData.id}')" 
-                     onblur="onNoteBlur('${noteData.id}')"
-                     oninput="autoResizeFont(this)">${noteData.content}</div>
-                <div class="resize-handle" onmousedown="startResize(event, '${noteData.id}')"></div>
-            `;
-            
-            board.appendChild(note);
-            note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
-            
-            // Apply auto-resize font
-            const content = note.querySelector('.sticky-note-content');
-            if (content) autoResizeFont(content);
-        });
-    } catch (e) {
-        console.error('Error loading sticky notes:', e);
+// Add selected note to report
+function addSelectedToReport() {
+    if (!selectedNote) {
+        alert('Please select a note first by clicking on it.');
+        return;
     }
+    
+    const content = selectedNote.querySelector('.sticky-note-content');
+    if (!content || !content.textContent.trim()) {
+        alert('The selected note is empty.');
+        return;
+    }
+    
+    const noteText = content.textContent.trim();
+    const noteColor = selectedNote.classList.contains('green') ? 'positive' : 
+                      selectedNote.classList.contains('red') ? 'negative' : 'neutral';
+    
+    // Add to report notes (stored in campaign)
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    
+    if (!activeCampaign) {
+        alert('No active campaign found.');
+        return;
+    }
+    
+    if (!activeCampaign.reportNotes) {
+        activeCampaign.reportNotes = [];
+    }
+    
+    activeCampaign.reportNotes.push({
+        id: 'report-note-' + Date.now(),
+        content: noteText,
+        type: noteColor,
+        addedAt: new Date().toISOString(),
+        fromBoard: currentBoardId
+    });
+    
+    saveCampaigns(campaigns);
+    
+    // Visual feedback
+    selectedNote.style.outline = '3px solid var(--success)';
+    setTimeout(() => {
+        if (selectedNote) {
+            selectedNote.style.outline = '';
+            selectedNote.classList.remove('selected');
+        }
+    }, 1500);
+    
+    alert('Note added to report! You can view it in the Key Findings section.');
 }
 
 // Initialize Note Taker when page loads
