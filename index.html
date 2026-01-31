@@ -182,6 +182,12 @@
                                 <select id="topic-filter-select" class="topic-filter-select" onchange="filterByTopic(this.value)">
                                     <option value="all">All Topics</option>
                                 </select>
+                                <button class="manage-topics-btn" onclick="showManageTopicsModal()" title="Manage Topics">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="zoom-controls">
                                 <button class="zoom-btn" onclick="zoomBoard(-0.1)" title="Zoom Out">−</button>
@@ -256,6 +262,45 @@
                         <div class="modal-actions">
                             <button class="modal-cancel-btn" onclick="closeUserSetupModal()">Cancel</button>
                             <button class="modal-confirm-btn" onclick="createUserBoards()">Create Boards</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Manage Topics Modal -->
+                <div id="manage-topics-modal" class="modal" style="display: none;">
+                    <div class="manage-topics-modal-content">
+                        <h3>🏷️ Manage Campaign Topics</h3>
+                        <p style="color: var(--text-light); margin-bottom: 1rem;">
+                            Add custom topics from your scenario file. These will appear in the topic dropdown for sticky notes.
+                        </p>
+                        
+                        <div class="add-topic-section">
+                            <input type="text" id="new-topic-input" class="new-topic-input" placeholder="Enter topic name (e.g., 'Wire Transfer Process')">
+                            <select id="topic-category-select" class="topic-category-select">
+                                <option value="positive">Positive</option>
+                                <option value="pain">Pain Point</option>
+                                <option value="behavioral">Behavioral</option>
+                                <option value="gap">Gap</option>
+                            </select>
+                            <button class="add-topic-btn" onclick="addCustomTopic()">+ Add</button>
+                        </div>
+                        
+                        <div class="topics-list-section">
+                            <h4>Custom Topics</h4>
+                            <div id="custom-topics-list" class="custom-topics-list">
+                                <!-- Topics will be listed here -->
+                            </div>
+                        </div>
+                        
+                        <div class="topics-list-section">
+                            <h4>Report Themes (from data)</h4>
+                            <div id="report-themes-list" class="report-themes-list">
+                                <!-- Themes from synthesisData will be listed here -->
+                            </div>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button class="modal-confirm-btn" onclick="closeManageTopicsModal()">Done</button>
                         </div>
                     </div>
                 </div>

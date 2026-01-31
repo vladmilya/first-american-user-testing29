@@ -2656,6 +2656,40 @@ function goToExecutiveSummary() {
 
 // ========== TOPIC MANAGEMENT ==========
 
+// Get custom topics from campaign
+function getCustomTopics() {
+    const campaign = getActiveCampaign();
+    if (campaign && campaign.customTopics) {
+        return campaign.customTopics;
+    }
+    return [];
+}
+
+// Save custom topics to campaign
+function saveCustomTopics(topics) {
+    const campaigns = getCampaigns();
+    const campaign = campaigns.find(c => c.isActive);
+    if (campaign) {
+        campaign.customTopics = topics;
+        saveCampaigns(campaigns);
+    }
+}
+
+// Get all topics (custom + themes from data)
+function getAllTopics() {
+    const customTopics = getCustomTopics();
+    const dataThemes = getCampaignThemes();
+    
+    // Convert custom topics to theme format
+    const customAsThemes = customTopics.map(t => ({
+        theme: t.name,
+        category: t.category,
+        isCustom: true
+    }));
+    
+    return [...customAsThemes, ...dataThemes];
+}
+
 // Get themes from synthesisData
 function getCampaignThemes() {
     if (typeof synthesisData !== 'undefined' && synthesisData.themes) {
@@ -2666,20 +2700,21 @@ function getCampaignThemes() {
 
 // Get topic options HTML for sticky note dropdown
 function getTopicOptionsHtml(selectedTopic = '') {
-    const themes = getCampaignThemes();
-    return themes.map(t => {
+    const allTopics = getAllTopics();
+    return allTopics.map(t => {
         const selected = t.theme === selectedTopic ? 'selected' : '';
         // Truncate long theme names
         const displayName = t.theme.length > 30 ? t.theme.substring(0, 30) + '...' : t.theme;
-        return `<option value="${escapeHtml(t.theme)}" ${selected}>${escapeHtml(displayName)}</option>`;
+        const customBadge = t.isCustom ? '★ ' : '';
+        return `<option value="${escapeHtml(t.theme)}" ${selected}>${customBadge}${escapeHtml(displayName)}</option>`;
     }).join('');
 }
 
 // Get topic category for coloring
 function getTopicCategory(topicName) {
-    const themes = getCampaignThemes();
-    const theme = themes.find(t => t.theme === topicName);
-    return theme ? theme.category : null;
+    const allTopics = getAllTopics();
+    const topic = allTopics.find(t => t.theme === topicName);
+    return topic ? topic.category : null;
 }
 
 // Populate topic filter dropdown
@@ -2687,14 +2722,34 @@ function populateTopicFilter() {
     const select = document.getElementById('topic-filter-select');
     if (!select) return;
     
-    const themes = getCampaignThemes();
+    const allTopics = getAllTopics();
     
     // Clear existing options except "All Topics"
     select.innerHTML = '<option value="all">All Topics</option>';
     
-    // Group by category
+    // Separate custom topics from data themes
+    const customTopics = allTopics.filter(t => t.isCustom);
+    const dataThemes = allTopics.filter(t => !t.isCustom);
+    
+    // Add custom topics first if any
+    if (customTopics.length > 0) {
+        const customGroup = document.createElement('optgroup');
+        customGroup.label = '★ Custom Topics';
+        
+        customTopics.forEach(topic => {
+            const option = document.createElement('option');
+            option.value = topic.theme;
+            const displayName = topic.theme.length > 35 ? topic.theme.substring(0, 35) + '...' : topic.theme;
+            option.textContent = displayName;
+            customGroup.appendChild(option);
+        });
+        
+        select.appendChild(customGroup);
+    }
+    
+    // Group data themes by category
     const categories = {};
-    themes.forEach(t => {
+    dataThemes.forEach(t => {
         if (!categories[t.category]) {
             categories[t.category] = [];
         }
@@ -2757,6 +2812,135 @@ function filterByTopic(topic) {
             } else {
                 note.classList.add('filtered-out');
             }
+        }
+    });
+}
+
+// ========== MANAGE TOPICS MODAL ==========
+
+// Show manage topics modal
+function showManageTopicsModal() {
+    const modal = document.getElementById('manage-topics-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        renderCustomTopicsList();
+        renderReportThemesList();
+    }
+}
+
+// Close manage topics modal
+function closeManageTopicsModal() {
+    const modal = document.getElementById('manage-topics-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    // Refresh topic dropdowns
+    populateTopicFilter();
+    refreshAllNoteTopicSelects();
+}
+
+// Add custom topic
+function addCustomTopic() {
+    const input = document.getElementById('new-topic-input');
+    const categorySelect = document.getElementById('topic-category-select');
+    
+    const topicName = input.value.trim();
+    const category = categorySelect.value;
+    
+    if (!topicName) {
+        alert('Please enter a topic name');
+        return;
+    }
+    
+    const customTopics = getCustomTopics();
+    
+    // Check for duplicates
+    if (customTopics.some(t => t.name.toLowerCase() === topicName.toLowerCase())) {
+        alert('This topic already exists');
+        return;
+    }
+    
+    customTopics.push({
+        id: 'topic-' + Date.now(),
+        name: topicName,
+        category: category
+    });
+    
+    saveCustomTopics(customTopics);
+    
+    // Clear input
+    input.value = '';
+    
+    // Refresh list
+    renderCustomTopicsList();
+}
+
+// Delete custom topic
+function deleteCustomTopic(topicId) {
+    let customTopics = getCustomTopics();
+    customTopics = customTopics.filter(t => t.id !== topicId);
+    saveCustomTopics(customTopics);
+    renderCustomTopicsList();
+}
+
+// Render custom topics list
+function renderCustomTopicsList() {
+    const container = document.getElementById('custom-topics-list');
+    if (!container) return;
+    
+    const customTopics = getCustomTopics();
+    
+    if (customTopics.length === 0) {
+        container.innerHTML = '<div class="empty-topics-message">No custom topics yet. Add topics from your scenario file above.</div>';
+        return;
+    }
+    
+    container.innerHTML = customTopics.map(topic => `
+        <div class="topic-item">
+            <div class="topic-item-info">
+                <span class="topic-category-badge ${topic.category}"></span>
+                <span class="topic-item-name">${escapeHtml(topic.name)}</span>
+            </div>
+            <button class="delete-topic-btn" onclick="deleteCustomTopic('${topic.id}')" title="Delete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Render report themes list (read-only)
+function renderReportThemesList() {
+    const container = document.getElementById('report-themes-list');
+    if (!container) return;
+    
+    const themes = getCampaignThemes();
+    
+    if (themes.length === 0) {
+        container.innerHTML = '<div class="empty-topics-message">No themes found in report data.</div>';
+        return;
+    }
+    
+    container.innerHTML = themes.map(theme => `
+        <div class="topic-item">
+            <div class="topic-item-info">
+                <span class="topic-category-badge ${theme.category}"></span>
+                <span class="topic-item-name">${escapeHtml(theme.theme)}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Refresh all note topic select dropdowns
+function refreshAllNoteTopicSelects() {
+    document.querySelectorAll('.sticky-note').forEach(note => {
+        const topicSelect = note.querySelector('.topic-select');
+        if (topicSelect) {
+            const currentValue = topicSelect.value;
+            const options = getTopicOptionsHtml(currentValue);
+            topicSelect.innerHTML = `<option value="">No Topic</option>${options}`;
         }
     });
 }
