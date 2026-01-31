@@ -314,7 +314,7 @@
                 
                 <!-- Discussion Guide -->
                 <div class="upload-section-unified">
-                    <div class="upload-card-unified">
+                    <div class="upload-card-unified discussion-guide-card">
                         <div class="upload-card-header">
                             <h3>📋 1. Discussion Guide</h3>
                             <span class="required-badge">Required</span>
@@ -325,6 +325,27 @@
                             📄 Upload Discussion Guide
                         </button>
                         <div id="questions-status" class="upload-status"></div>
+                        
+                        <!-- Topics Section -->
+                        <div class="discussion-guide-topics">
+                            <div class="topics-header">
+                                <h4>🏷️ Discussion Topics</h4>
+                                <span class="topics-sync-note">These topics sync to Note Taker</span>
+                            </div>
+                            <div class="add-topic-inline">
+                                <input type="text" id="build-report-topic-input" class="topic-input-inline" placeholder="Enter a topic from your discussion guide...">
+                                <select id="build-report-topic-category" class="topic-category-inline">
+                                    <option value="positive">Positive</option>
+                                    <option value="pain">Pain Point</option>
+                                    <option value="behavioral">Behavioral</option>
+                                    <option value="gap">Gap</option>
+                                </select>
+                                <button class="add-topic-inline-btn" onclick="addTopicFromBuildReport()">+ Add</button>
+                            </div>
+                            <div id="build-report-topics-list" class="topics-list-inline">
+                                <!-- Topics will be listed here -->
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Transcript Data -->

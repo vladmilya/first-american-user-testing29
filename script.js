@@ -2945,6 +2945,78 @@ function refreshAllNoteTopicSelects() {
     });
 }
 
+// ========== BUILD REPORT TOPICS ==========
+
+// Add topic from Build Report page
+function addTopicFromBuildReport() {
+    const input = document.getElementById('build-report-topic-input');
+    const categorySelect = document.getElementById('build-report-topic-category');
+    
+    const topicName = input.value.trim();
+    const category = categorySelect.value;
+    
+    if (!topicName) {
+        alert('Please enter a topic name');
+        return;
+    }
+    
+    const customTopics = getCustomTopics();
+    
+    // Check for duplicates
+    if (customTopics.some(t => t.name.toLowerCase() === topicName.toLowerCase())) {
+        alert('This topic already exists');
+        return;
+    }
+    
+    customTopics.push({
+        id: 'topic-' + Date.now(),
+        name: topicName,
+        category: category
+    });
+    
+    saveCustomTopics(customTopics);
+    
+    // Clear input
+    input.value = '';
+    
+    // Refresh list
+    renderBuildReportTopics();
+}
+
+// Delete topic from Build Report
+function deleteTopicFromBuildReport(topicId) {
+    let customTopics = getCustomTopics();
+    customTopics = customTopics.filter(t => t.id !== topicId);
+    saveCustomTopics(customTopics);
+    renderBuildReportTopics();
+}
+
+// Render topics in Build Report page
+function renderBuildReportTopics() {
+    const container = document.getElementById('build-report-topics-list');
+    if (!container) return;
+    
+    const customTopics = getCustomTopics();
+    
+    if (customTopics.length === 0) {
+        container.innerHTML = '<span class="topics-empty-message">No topics added yet. Add topics from your discussion guide above.</span>';
+        return;
+    }
+    
+    container.innerHTML = customTopics.map(topic => `
+        <div class="topic-tag">
+            <span class="topic-tag-dot ${topic.category}"></span>
+            <span class="topic-tag-name">${escapeHtml(topic.name)}</span>
+            <button class="topic-tag-remove" onclick="deleteTopicFromBuildReport('${topic.id}')" title="Remove">×</button>
+        </div>
+    `).join('');
+}
+
+// Initialize Build Report topics on page load
+document.addEventListener('DOMContentLoaded', function() {
+    renderBuildReportTopics();
+});
+
 // ========== SPLIT SCREEN FUNCTIONALITY ==========
 
 let isSplitScreenActive = false;

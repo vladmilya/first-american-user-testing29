@@ -2522,6 +2522,136 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* Discussion Guide Topics Section */
+.discussion-guide-topics {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.topics-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.topics-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.topics-sync-note {
+    font-size: 0.75rem;
+    color: var(--primary);
+    background: rgba(59, 130, 246, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+}
+
+.add-topic-inline {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.topic-input-inline {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.topic-input-inline:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.topic-category-inline {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.add-topic-inline-btn {
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.add-topic-inline-btn:hover {
+    background: var(--primary-dark);
+}
+
+.topics-list-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 40px;
+}
+
+.topic-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.8125rem;
+}
+
+.topic-tag-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.topic-tag-dot.positive { background: #10b981; }
+.topic-tag-dot.pain { background: #ef4444; }
+.topic-tag-dot.behavioral { background: #f59e0b; }
+.topic-tag-dot.gap { background: #8b5cf6; }
+
+.topic-tag-name {
+    color: var(--text);
+}
+
+.topic-tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--text-light);
+    font-size: 1rem;
+    line-height: 1;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.topic-tag-remove:hover {
+    opacity: 1;
+    color: var(--danger);
+}
+
+.topics-empty-message {
+    color: var(--text-light);
+    font-size: 0.8125rem;
+    font-style: italic;
+}
+
 .upload-card-header {
     display: flex;
     align-items: center;
