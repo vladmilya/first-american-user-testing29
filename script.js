@@ -3139,7 +3139,7 @@ function getBoards() {
         // Get first participant name from report if available
         const participantNames = getParticipantNames();
         const firstParticipant = participantNames.find(p => p.userId === 1);
-        const boardName = firstParticipant ? `${firstParticipant.name} (User 1)` : 'User 1';
+        const boardName = firstParticipant ? `${firstParticipant.name} (User Interview 1)` : 'User Interview 1';
         
         // Create default board
         const defaultBoard = {
@@ -3194,7 +3194,7 @@ function updateNoteTakerCampaignName() {
 // Update user count display
 function updateUserCountDisplay() {
     const boards = getBoards();
-    const userBoards = boards.filter(b => b.name.startsWith('User '));
+    const userBoards = boards.filter(b => b.name.startsWith('User Interview '));
     const countDisplay = document.getElementById('user-count-display');
     if (countDisplay) {
         const count = userBoards.length || boards.length;
@@ -3293,9 +3293,9 @@ function createUserBoards() {
     const timestamp = Date.now();
     
     for (let i = 1; i <= count; i++) {
-        // Use participant name from report if available, otherwise use "User X"
+        // Use participant name from report if available, otherwise use "User Interview X"
         const participant = participantNames.find(p => p.userId === i);
-        const boardName = participant ? `${participant.name} (User ${i})` : `User ${i}`;
+        const boardName = participant ? `${participant.name} (User Interview ${i})` : `User Interview ${i}`;
         
         newBoards.push({
             id: 'board-' + timestamp + '-' + i,
