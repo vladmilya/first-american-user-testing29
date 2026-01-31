@@ -1671,6 +1671,16 @@ function initializeCampaigns() {
         ]
     };
     
+    // Default Discussion Guide topics for ISS campaign
+    const defaultDiscussionGuideTopics = [
+        { id: 'topic-default-1', name: 'Auto Deposit - Ways of Working', category: 'behavioral' },
+        { id: 'topic-default-2', name: 'CD Comparison - Ways of Working', category: 'behavioral' },
+        { id: 'topic-default-3', name: 'Wire Transfer - Ways of Working', category: 'behavioral' },
+        { id: 'topic-default-4', name: 'Auto Deposit - Feature Review', category: 'positive' },
+        { id: 'topic-default-5', name: 'CD Comparison - Feature Review', category: 'positive' },
+        { id: 'topic-default-6', name: 'Wire Transfer - Feature Review', category: 'positive' }
+    ];
+    
     // If no campaigns exist, create the default one with original files
     if (campaigns.length === 0) {
         const defaultCampaign = {
@@ -1678,7 +1688,8 @@ function initializeCampaigns() {
             name: 'ISS Iterative Testing 4.1',
             createdDate: new Date().toISOString(),
             isActive: true,
-            files: originalResearchFiles
+            files: originalResearchFiles,
+            customTopics: defaultDiscussionGuideTopics
         };
         campaigns.push(defaultCampaign);
         saveCampaigns(campaigns);
@@ -1692,8 +1703,14 @@ function initializeCampaigns() {
             
             if (totalFiles === 0) {
                 issCampaign.files = originalResearchFiles;
-                saveCampaigns(campaigns);
             }
+            
+            // Add default topics if none exist
+            if (!issCampaign.customTopics || issCampaign.customTopics.length === 0) {
+                issCampaign.customTopics = defaultDiscussionGuideTopics;
+            }
+            
+            saveCampaigns(campaigns);
         }
     }
     
