@@ -2611,6 +2611,30 @@ function initNoteTaker() {
             deselectNote();
         }
     });
+    
+    // Check if Note Taker is active on load
+    if (window.location.hash === '#note-taker') {
+        enterNoteTaker();
+    }
+    
+    // Listen for hash changes to enter/exit Note Taker mode
+    window.addEventListener('hashchange', () => {
+        if (window.location.hash === '#note-taker') {
+            enterNoteTaker();
+        } else {
+            exitNoteTaker();
+        }
+    });
+}
+
+// Enter full-screen Note Taker mode
+function enterNoteTaker() {
+    document.body.classList.add('note-taker-active');
+}
+
+// Exit full-screen Note Taker mode
+function exitNoteTaker() {
+    document.body.classList.remove('note-taker-active');
 }
 
 // ========== BOARD MANAGEMENT ==========

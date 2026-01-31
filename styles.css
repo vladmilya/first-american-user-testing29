@@ -3527,11 +3527,61 @@ body {
 
 /* ========== NOTE TAKER STYLES ========== */
 
+/* Full-screen Note Taker Mode */
+body.note-taker-active .report-header,
+body.note-taker-active .sidebar {
+    display: none !important;
+}
+
+body.note-taker-active .content {
+    grid-column: 1 / -1;
+    padding: 0;
+}
+
+body.note-taker-active #note-taker {
+    padding: 1rem;
+}
+
+body.note-taker-active .container {
+    display: block;
+}
+
 .note-taker-container {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 200px);
     min-height: 500px;
+}
+
+body.note-taker-active .note-taker-container {
+    height: calc(100vh - 2rem);
+}
+
+.note-taker-nav {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.note-taker-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+
+.note-taker-back-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
 .note-taker-header {
