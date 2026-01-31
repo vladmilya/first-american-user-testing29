@@ -2604,6 +2604,7 @@ let currentBoardId = null;
 // Initialize Note Taker
 function initNoteTaker() {
     initBoards();
+    restoreSplitScreenState();
     
     // Deselect note when clicking outside
     document.addEventListener('click', (e) => {
@@ -2651,6 +2652,124 @@ function exitNoteTaker() {
 function goToExecutiveSummary() {
     exitNoteTaker();
     navigateToSection('executive-summary');
+}
+
+// ========== SPLIT SCREEN FUNCTIONALITY ==========
+
+let isSplitScreenActive = false;
+let splitResizeStartX = 0;
+let splitLeftWidth = 0;
+
+// Toggle split screen view
+function toggleSplitScreen() {
+    const container = document.getElementById('split-container');
+    const splitRight = document.getElementById('split-right');
+    const splitBtn = document.querySelector('.split-screen-btn');
+    const iframe = document.getElementById('usertesting-iframe');
+    
+    isSplitScreenActive = !isSplitScreenActive;
+    
+    if (isSplitScreenActive) {
+        container.classList.add('split-active');
+        splitRight.style.display = 'flex';
+        splitBtn.classList.add('active');
+        
+        // Load the URL if iframe is empty
+        if (iframe.src === 'about:blank') {
+            loadUserTestingUrl();
+        }
+        
+        // Initialize resizer
+        initSplitResizer();
+    } else {
+        container.classList.remove('split-active');
+        splitRight.style.display = 'none';
+        splitBtn.classList.remove('active');
+    }
+    
+    // Save state
+    localStorage.setItem('split_screen_active', isSplitScreenActive);
+}
+
+// Load UserTesting URL into iframe
+function loadUserTestingUrl() {
+    const urlInput = document.getElementById('usertesting-url');
+    const iframe = document.getElementById('usertesting-iframe');
+    const url = urlInput.value.trim();
+    
+    if (url) {
+        iframe.src = url;
+        localStorage.setItem('usertesting_url', url);
+    }
+}
+
+// Open UserTesting in new tab
+function openUserTestingExternal() {
+    const urlInput = document.getElementById('usertesting-url');
+    const url = urlInput.value.trim();
+    
+    if (url) {
+        window.open(url, '_blank');
+    }
+}
+
+// Initialize split resizer drag functionality
+function initSplitResizer() {
+    const resizer = document.getElementById('split-resizer');
+    const container = document.getElementById('split-container');
+    const splitLeft = container.querySelector('.split-left');
+    
+    resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        splitResizeStartX = e.clientX;
+        splitLeftWidth = splitLeft.getBoundingClientRect().width;
+        
+        resizer.classList.add('resizing');
+        document.addEventListener('mousemove', onSplitResize);
+        document.addEventListener('mouseup', stopSplitResize);
+    });
+}
+
+function onSplitResize(e) {
+    const container = document.getElementById('split-container');
+    const splitLeft = container.querySelector('.split-left');
+    const containerWidth = container.getBoundingClientRect().width;
+    
+    const delta = e.clientX - splitResizeStartX;
+    let newLeftWidth = splitLeftWidth + delta;
+    
+    // Constrain to min/max
+    const minWidth = 300;
+    const maxWidth = containerWidth - 300 - 6; // 6px for resizer
+    
+    newLeftWidth = Math.max(minWidth, Math.min(maxWidth, newLeftWidth));
+    
+    const percentage = (newLeftWidth / containerWidth) * 100;
+    splitLeft.style.flex = `0 0 ${percentage}%`;
+}
+
+function stopSplitResize() {
+    const resizer = document.getElementById('split-resizer');
+    resizer.classList.remove('resizing');
+    document.removeEventListener('mousemove', onSplitResize);
+    document.removeEventListener('mouseup', stopSplitResize);
+}
+
+// Restore split screen state on page load
+function restoreSplitScreenState() {
+    const savedUrl = localStorage.getItem('usertesting_url');
+    if (savedUrl) {
+        const urlInput = document.getElementById('usertesting-url');
+        if (urlInput) urlInput.value = savedUrl;
+    }
+    
+    const wasSplitActive = localStorage.getItem('split_screen_active') === 'true';
+    if (wasSplitActive) {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            toggleSplitScreen();
+        }, 100);
+    }
 }
 
 // ========== BOARD MANAGEMENT ==========
