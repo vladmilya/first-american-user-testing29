@@ -167,13 +167,6 @@
                                 <button class="board-action-btn" onclick="createNewBoard()" title="Add New Board">+</button>
                                 <button class="board-action-btn delete-board-btn" onclick="deleteCurrentBoard()" title="Delete Current Board">🗑</button>
                                 <button class="board-action-btn add-note-btn" onclick="addStickyNote()" title="Add Sticky Note">📝 Add Note</button>
-                                <button class="board-action-btn split-screen-btn" onclick="toggleSplitScreen()" title="Split Screen View">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <line x1="12" y1="3" x2="12" y2="21"></line>
-                                    </svg>
-                                    Split
-                                </button>
                             </div>
                         </div>
                         <div class="controls-center">
@@ -201,40 +194,9 @@
                         </div>
                     </div>
                     
-                    <!-- Split Screen Container -->
-                    <div class="split-screen-container" id="split-container">
-                        <!-- Left: The Board -->
-                        <div class="split-left">
-                            <div class="sticky-board-wrapper" id="board-wrapper">
-                                <div id="sticky-board" class="sticky-board"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Resize Handle -->
-                        <div class="split-resizer" id="split-resizer"></div>
-                        
-                        <!-- Right: UserTesting iframe -->
-                        <div class="split-right" id="split-right" style="display: none;">
-                            <div class="split-right-header">
-                                <span class="split-right-title">UserTesting Session</span>
-                                <div class="split-right-controls">
-                                    <input type="text" id="usertesting-url" class="usertesting-url-input" 
-                                           value="https://app.usertesting.com/workspaces/2452754/study/5889736/sessions" 
-                                           placeholder="Enter UserTesting URL...">
-                                    <button class="load-url-btn" onclick="loadUserTestingUrl()">Load</button>
-                                    <button class="open-external-btn" onclick="openUserTestingExternal()" title="Open in New Tab">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                            <polyline points="15 3 21 3 21 9"></polyline>
-                                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <iframe id="usertesting-iframe" class="usertesting-iframe" 
-                                    src="about:blank"
-                                    allow="fullscreen"></iframe>
-                        </div>
+                    <!-- The Board -->
+                    <div class="sticky-board-wrapper" id="board-wrapper">
+                        <div id="sticky-board" class="sticky-board"></div>
                     </div>
                 </div>
                 
