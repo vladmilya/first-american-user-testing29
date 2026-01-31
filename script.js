@@ -3734,6 +3734,26 @@ function deselectNote() {
     deselectAllNotes();
 }
 
+// Reset topics to default
+function resetTopicsToDefault() {
+    if (!confirm('This will reset all topics to the default list:\n\n• Auto Deposits\n• SS In-Line Editing\n• CD Comparison\n\nContinue?')) {
+        return;
+    }
+    
+    const defaultTopics = [
+        { id: 'topic-default-1', name: 'Auto Deposits', category: 'behavioral' },
+        { id: 'topic-default-2', name: 'SS In-Line Editing', category: 'behavioral' },
+        { id: 'topic-default-3', name: 'CD Comparison', category: 'behavioral' }
+    ];
+    
+    saveCustomTopics(defaultTopics);
+    populateTopicFilter();
+    refreshAllNoteTopicSelects();
+    renderBuildReportTopics();
+    
+    alert('Topics have been reset to defaults!');
+}
+
 // Change note color
 function changeNoteColor(noteId, color) {
     const note = document.getElementById(noteId);

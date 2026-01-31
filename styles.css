@@ -3892,14 +3892,28 @@ body.note-taker-active .sticky-board-wrapper {
     transition: all 0.2s;
 }
 
-.manage-topics-btn:hover {
+.manage-topics-btn:hover,
+.reset-topics-btn:hover {
     background: var(--primary);
     color: white;
     border-color: var(--primary);
 }
 
-.manage-topics-btn:hover svg {
+.manage-topics-btn:hover svg,
+.reset-topics-btn:hover svg {
     stroke: white;
+}
+
+.reset-topics-btn {
+    padding: 0.375rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
 /* Manage Topics Modal */
