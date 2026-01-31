@@ -4416,25 +4416,51 @@ body.note-taker-active .sticky-board-wrapper {
     text-align: center;
 }
 
-.add-note-btn {
-    padding: 0.5rem 0.75rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+/* Add Note - Yellow Sticky Thumbnail */
+.add-note-thumb {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%);
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    color: var(--text);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    justify-content: center;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s;
+    position: relative;
 }
 
-.add-note-btn:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+.add-note-thumb::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px 4px 0 0;
+}
+
+.add-note-thumb .plus-icon {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: rgba(0, 0, 0, 0.4);
+    line-height: 1;
+}
+
+.add-note-thumb:hover {
+    transform: translateY(-2px) rotate(-2deg);
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.add-note-thumb:hover .plus-icon {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.add-note-thumb:active {
+    transform: translateY(0) rotate(0);
 }
 
 .sticky-board-wrapper {
