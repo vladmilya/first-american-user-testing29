@@ -1673,12 +1673,9 @@ function initializeCampaigns() {
     
     // Default Discussion Guide topics for ISS campaign
     const defaultDiscussionGuideTopics = [
-        { id: 'topic-default-1', name: 'Auto Deposit - Ways of Working', category: 'behavioral' },
-        { id: 'topic-default-2', name: 'CD Comparison - Ways of Working', category: 'behavioral' },
-        { id: 'topic-default-3', name: 'Wire Transfer - Ways of Working', category: 'behavioral' },
-        { id: 'topic-default-4', name: 'Auto Deposit - Feature Review', category: 'positive' },
-        { id: 'topic-default-5', name: 'CD Comparison - Feature Review', category: 'positive' },
-        { id: 'topic-default-6', name: 'Wire Transfer - Feature Review', category: 'positive' }
+        { id: 'topic-default-1', name: 'Auto Deposits', category: 'behavioral' },
+        { id: 'topic-default-2', name: 'SS In-Line Editing', category: 'behavioral' },
+        { id: 'topic-default-3', name: 'CD Comparison', category: 'behavioral' }
     ];
     
     // If no campaigns exist, create the default one with original files
