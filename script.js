@@ -2654,6 +2654,113 @@ function goToExecutiveSummary() {
     navigateToSection('executive-summary');
 }
 
+// ========== TOPIC MANAGEMENT ==========
+
+// Get themes from synthesisData
+function getCampaignThemes() {
+    if (typeof synthesisData !== 'undefined' && synthesisData.themes) {
+        return synthesisData.themes;
+    }
+    return [];
+}
+
+// Get topic options HTML for sticky note dropdown
+function getTopicOptionsHtml(selectedTopic = '') {
+    const themes = getCampaignThemes();
+    return themes.map(t => {
+        const selected = t.theme === selectedTopic ? 'selected' : '';
+        // Truncate long theme names
+        const displayName = t.theme.length > 30 ? t.theme.substring(0, 30) + '...' : t.theme;
+        return `<option value="${escapeHtml(t.theme)}" ${selected}>${escapeHtml(displayName)}</option>`;
+    }).join('');
+}
+
+// Get topic category for coloring
+function getTopicCategory(topicName) {
+    const themes = getCampaignThemes();
+    const theme = themes.find(t => t.theme === topicName);
+    return theme ? theme.category : null;
+}
+
+// Populate topic filter dropdown
+function populateTopicFilter() {
+    const select = document.getElementById('topic-filter-select');
+    if (!select) return;
+    
+    const themes = getCampaignThemes();
+    
+    // Clear existing options except "All Topics"
+    select.innerHTML = '<option value="all">All Topics</option>';
+    
+    // Group by category
+    const categories = {};
+    themes.forEach(t => {
+        if (!categories[t.category]) {
+            categories[t.category] = [];
+        }
+        categories[t.category].push(t);
+    });
+    
+    // Add category groups
+    Object.keys(categories).forEach(category => {
+        const optgroup = document.createElement('optgroup');
+        const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
+        optgroup.label = categoryLabel;
+        
+        categories[category].forEach(theme => {
+            const option = document.createElement('option');
+            option.value = theme.theme;
+            const displayName = theme.theme.length > 35 ? theme.theme.substring(0, 35) + '...' : theme.theme;
+            option.textContent = displayName;
+            optgroup.appendChild(option);
+        });
+        
+        select.appendChild(optgroup);
+    });
+}
+
+// Change topic of a sticky note
+function changeNoteTopic(noteId, topic) {
+    const note = document.getElementById(noteId);
+    if (!note) return;
+    
+    // Update data attributes
+    note.dataset.topic = topic;
+    const category = getTopicCategory(topic);
+    if (category) {
+        note.dataset.topicCategory = category;
+    } else {
+        delete note.dataset.topicCategory;
+    }
+    
+    // Save to storage
+    saveStickyNotes();
+    
+    // Re-apply filter if active
+    const currentFilter = document.getElementById('topic-filter-select')?.value || 'all';
+    if (currentFilter !== 'all') {
+        filterByTopic(currentFilter);
+    }
+}
+
+// Filter notes by topic
+function filterByTopic(topic) {
+    const notes = document.querySelectorAll('.sticky-note');
+    
+    notes.forEach(note => {
+        if (topic === 'all') {
+            note.classList.remove('filtered-out');
+        } else {
+            const noteTopic = note.dataset.topic || '';
+            if (noteTopic === topic) {
+                note.classList.remove('filtered-out');
+            } else {
+                note.classList.add('filtered-out');
+            }
+        }
+    });
+}
+
 // ========== SPLIT SCREEN FUNCTIONALITY ==========
 
 let isSplitScreenActive = false;
@@ -2816,6 +2923,7 @@ function initBoards() {
     updateBoardSelector();
     updateUserCountDisplay();
     updateNoteTakerCampaignName();
+    populateTopicFilter();
     loadCurrentBoard();
 }
 
@@ -3018,6 +3126,10 @@ function switchBoard(boardId) {
         board.innerHTML = '';
     }
     
+    // Reset topic filter
+    const topicFilter = document.getElementById('topic-filter-select');
+    if (topicFilter) topicFilter.value = 'all';
+    
     loadCurrentBoard();
     updateBoardSelector();
 }
@@ -3116,6 +3228,16 @@ function createNoteElement(noteData) {
     note.style.width = noteData.width;
     note.style.minHeight = noteData.height;
     
+    // Set topic data attributes
+    if (noteData.topic) {
+        note.dataset.topic = noteData.topic;
+        const topicCategory = getTopicCategory(noteData.topic);
+        if (topicCategory) note.dataset.topicCategory = topicCategory;
+    }
+    
+    // Get topic options HTML
+    const topicOptionsHtml = getTopicOptionsHtml(noteData.topic || '');
+    
     note.innerHTML = `
         <div class="sticky-note-header">
             <div class="color-picker">
@@ -3129,6 +3251,12 @@ function createNoteElement(noteData) {
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </button>
+        </div>
+        <div class="sticky-note-topic">
+            <select class="topic-select" onchange="changeNoteTopic('${noteData.id}', this.value)">
+                <option value="">No Topic</option>
+                ${topicOptionsHtml}
+            </select>
         </div>
         <div class="text-format-toolbar">
             <button class="format-btn text-black" onclick="formatSelectedText('black')" title="Black Text">A</button>
@@ -3403,6 +3531,7 @@ function saveStickyNotes() {
         const content = note.querySelector('.sticky-note-content');
         const color = note.classList.contains('green') ? 'green' : 
                       note.classList.contains('red') ? 'red' : 'yellow';
+        const topic = note.dataset.topic || '';
         
         notes.push({
             id: note.id,
@@ -3411,7 +3540,8 @@ function saveStickyNotes() {
             width: note.style.width,
             height: note.style.minHeight,
             color: color,
-            content: content ? content.innerHTML : ''
+            content: content ? content.innerHTML : '',
+            topic: topic
         });
     });
     

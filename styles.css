@@ -3692,6 +3692,43 @@ body.note-taker-active .sticky-board-wrapper {
     gap: 0.5rem;
 }
 
+.controls-center {
+    gap: 1.5rem;
+}
+
+/* Topic Filter */
+.topic-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.topic-filter-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.topic-filter-select {
+    padding: 0.375rem 1.75rem 0.375rem 0.625rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    background: white;
+    cursor: pointer;
+    min-width: 180px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+}
+
+.topic-filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
 .controls-left {
     flex: 1;
     gap: 1rem;
@@ -4168,6 +4205,72 @@ body.note-taker-active .sticky-board-wrapper {
     align-items: center;
     padding: 0.5rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Topic Badge on Sticky Note */
+.sticky-note-topic {
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.topic-select {
+    flex: 1;
+    padding: 0.25rem 0.375rem;
+    border: none;
+    background: transparent;
+    font-size: 0.6875rem;
+    color: var(--text);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.25rem center;
+    padding-right: 1rem;
+}
+
+.topic-select:focus {
+    outline: none;
+}
+
+.topic-select option {
+    font-size: 0.75rem;
+}
+
+/* Topic Badge Colors */
+.sticky-note[data-topic]:not([data-topic=""]):not([data-topic="none"])::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 4px 4px 0 0;
+}
+
+.sticky-note[data-topic-category="positive"]::before {
+    background: #10b981;
+}
+
+.sticky-note[data-topic-category="pain"]::before {
+    background: #ef4444;
+}
+
+.sticky-note[data-topic-category="behavioral"]::before {
+    background: #f59e0b;
+}
+
+.sticky-note[data-topic-category="gap"]::before {
+    background: #8b5cf6;
+}
+
+/* Filtered out notes */
+.sticky-note.filtered-out {
+    opacity: 0.15;
+    pointer-events: none;
 }
 
 .color-picker {

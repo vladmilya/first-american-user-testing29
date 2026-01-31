@@ -177,6 +177,12 @@
                             </div>
                         </div>
                         <div class="controls-center">
+                            <div class="topic-filter">
+                                <label class="topic-filter-label">Filter by Topic:</label>
+                                <select id="topic-filter-select" class="topic-filter-select" onchange="filterByTopic(this.value)">
+                                    <option value="all">All Topics</option>
+                                </select>
+                            </div>
                             <div class="zoom-controls">
                                 <button class="zoom-btn" onclick="zoomBoard(-0.1)" title="Zoom Out">−</button>
                                 <span id="zoom-level">100%</span>
