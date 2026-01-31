@@ -155,8 +155,8 @@
                         <textarea id="transcript-input" placeholder="Paste transcript data here..."></textarea>
                     </div>
 
-                    <!-- AI Training Examples with Chatbot -->
-                    <div class="upload-card-unified ai-training-card">
+                    <!-- AI Training Examples -->
+                    <div class="upload-card-unified">
                         <div class="upload-card-header">
                             <h3>🤖 3. AI Training Examples</h3>
                             <span class="optional-badge">Optional</span>
@@ -177,44 +177,6 @@
                         <div id="presentations-list-compact" class="video-list-compact" style="display: none; margin-top: 1rem;">
                             <h4 style="font-size: 0.95rem; margin: 0 0 0.5rem 0; color: var(--text);">Uploaded Examples (<span id="presentation-count-compact">0</span>)</h4>
                             <div id="presentation-items-compact" class="compact-items-list"></div>
-                        </div>
-                        
-                        <!-- AI Assistant Chatbot -->
-                        <div class="ai-chatbot-section">
-                            <div class="ai-chatbot-header">
-                                <span class="chatbot-icon">💬</span>
-                                <h4>AI Presentation Assistant</h4>
-                            </div>
-                            <p class="chatbot-description">Ask questions about your uploaded examples. Get suggestions on what's working well and what could be improved.</p>
-                            
-                            <div class="chatbot-container">
-                                <div id="chat-messages" class="chat-messages">
-                                    <div class="chat-message ai-message">
-                                        <div class="message-avatar">🤖</div>
-                                        <div class="message-content">
-                                            <p>Hello! I'm your AI Presentation Assistant. Upload your presentation examples above, then ask me questions like:</p>
-                                            <ul class="suggestion-list">
-                                                <li>"What makes this presentation effective?"</li>
-                                                <li>"How can I improve the structure?"</li>
-                                                <li>"What are the best practices shown here?"</li>
-                                                <li>"Suggest improvements for my report format"</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="chat-input-container">
-                                    <input type="text" id="chat-input" class="chat-input" placeholder="Ask about your presentation examples..." onkeypress="if(event.key==='Enter')sendChatMessage()">
-                                    <button class="chat-send-btn" onclick="sendChatMessage()">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <p class="chatbot-note">💡 <strong>Note:</strong> Connect an OpenAI API key in settings to enable AI responses.</p>
                         </div>
                     </div>
                 </div>
