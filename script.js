@@ -2619,10 +2619,10 @@ function initNoteTaker() {
 function getBoards() {
     const stored = localStorage.getItem('note_boards');
     if (!stored) {
-        // Create default board
+        // Create default board for User 1
         const defaultBoard = {
             id: 'board-' + Date.now(),
-            name: 'Interview Notes',
+            name: 'User 1',
             notes: [],
             createdAt: new Date().toISOString()
         };
@@ -2650,8 +2650,132 @@ function initBoards() {
     localStorage.setItem('current_board_id', currentBoardId);
     
     updateBoardSelector();
+    updateUserCountDisplay();
     loadCurrentBoard();
 }
+
+// Update user count display
+function updateUserCountDisplay() {
+    const boards = getBoards();
+    const userBoards = boards.filter(b => b.name.startsWith('User '));
+    const countDisplay = document.getElementById('user-count-display');
+    if (countDisplay) {
+        const count = userBoards.length || boards.length;
+        countDisplay.textContent = count + (count === 1 ? ' User' : ' Users');
+    }
+}
+
+// Show user setup modal
+function showUserSetupModal() {
+    const modal = document.getElementById('user-setup-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        updateUserPreview();
+    }
+}
+
+// Close user setup modal
+function closeUserSetupModal() {
+    const modal = document.getElementById('user-setup-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Adjust user count
+function adjustUserCount(delta) {
+    const input = document.getElementById('user-count-input');
+    if (input) {
+        let value = parseInt(input.value) || 1;
+        value = Math.max(1, Math.min(50, value + delta));
+        input.value = value;
+        updateUserPreview();
+    }
+}
+
+// Update user preview
+function updateUserPreview() {
+    const input = document.getElementById('user-count-input');
+    const preview = document.getElementById('user-preview');
+    if (!input || !preview) return;
+    
+    const count = parseInt(input.value) || 1;
+    
+    let html = '<div class="user-preview-title">Boards to be created:</div><div class="user-preview-list">';
+    for (let i = 1; i <= count; i++) {
+        html += `<span class="user-preview-item">User ${i}</span>`;
+    }
+    html += '</div>';
+    
+    preview.innerHTML = html;
+}
+
+// Create user boards
+function createUserBoards() {
+    const input = document.getElementById('user-count-input');
+    if (!input) return;
+    
+    const count = parseInt(input.value) || 1;
+    
+    // Confirm if there are existing boards
+    const existingBoards = getBoards();
+    const hasNotes = existingBoards.some(b => b.notes && b.notes.length > 0);
+    
+    if (hasNotes) {
+        if (!confirm('This will replace all existing boards. Notes in current boards will be lost. Continue?')) {
+            return;
+        }
+    }
+    
+    // Create new boards for each user
+    const newBoards = [];
+    const timestamp = Date.now();
+    
+    for (let i = 1; i <= count; i++) {
+        newBoards.push({
+            id: 'board-' + timestamp + '-' + i,
+            name: 'User ' + i,
+            notes: [],
+            createdAt: new Date().toISOString()
+        });
+    }
+    
+    // Save new boards
+    saveBoards(newBoards);
+    
+    // Switch to first board
+    currentBoardId = newBoards[0].id;
+    localStorage.setItem('current_board_id', currentBoardId);
+    
+    // Reload
+    const board = document.getElementById('sticky-board');
+    if (board) {
+        board.innerHTML = '';
+    }
+    
+    updateBoardSelector();
+    updateUserCountDisplay();
+    loadCurrentBoard();
+    closeUserSetupModal();
+}
+
+// Add listener to update preview when input changes
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('user-count-input');
+    if (input) {
+        input.addEventListener('input', updateUserPreview);
+    }
+    
+    // Close modal when clicking outside
+    const modal = document.getElementById('user-setup-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeUserSetupModal();
+            }
+        });
+    }
+});
 
 // Update board selector dropdown
 function updateBoardSelector() {

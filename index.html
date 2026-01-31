@@ -125,7 +125,7 @@
                         <div class="board-title-section">
                             <h2>📝 Note Taker</h2>
                             <div class="current-board-title">
-                                <span id="current-board-name">Untitled Board</span>
+                                <span id="current-board-name">User 1</span>
                                 <button class="edit-board-name-btn" onclick="editBoardName()" title="Rename Board">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
@@ -134,6 +134,15 @@
                             </div>
                         </div>
                         <div class="note-taker-controls">
+                            <button class="setup-users-btn" onclick="showUserSetupModal()" title="Set Number of Users">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span id="user-count-display">1 User</span>
+                            </button>
                             <div class="board-selector">
                                 <select id="board-select" onchange="switchBoard(this.value)">
                                     <!-- Boards will be populated here -->
@@ -202,6 +211,34 @@
                     
                     <div class="note-taker-footer">
                         <p>💡 <strong>Tips:</strong> Scroll to pan • Drag notes to move • Drag corners to resize • Select note + click "Add to Report" to include in findings</p>
+                    </div>
+                </div>
+                
+                <!-- User Setup Modal -->
+                <div id="user-setup-modal" class="modal" style="display: none;">
+                    <div class="user-setup-modal-content">
+                        <h3>👥 Set Up User Boards</h3>
+                        <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                            Specify the number of users in this campaign. A separate note board will be created for each user.
+                        </p>
+                        
+                        <div class="user-count-input-section">
+                            <label for="user-count-input">Number of Users:</label>
+                            <div class="user-count-controls">
+                                <button class="count-btn" onclick="adjustUserCount(-1)">−</button>
+                                <input type="number" id="user-count-input" value="6" min="1" max="50">
+                                <button class="count-btn" onclick="adjustUserCount(1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="user-preview" id="user-preview">
+                            <!-- Preview will be populated here -->
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button class="modal-cancel-btn" onclick="closeUserSetupModal()">Cancel</button>
+                            <button class="modal-confirm-btn" onclick="createUserBoards()">Create Boards</button>
+                        </div>
                     </div>
                 </div>
             </section>
