@@ -137,8 +137,6 @@
                             📄 Upload Research Questions File
                         </button>
                         <div id="questions-status" class="upload-status"></div>
-                        <div class="divider">OR</div>
-                        <textarea id="questions-input" placeholder="Paste research questions here (one per line)...&#10;&#10;Example:&#10;What problems are users trying to solve?&#10;What features do they find most valuable?&#10;Where do they get stuck?"></textarea>
                     </div>
 
                     <!-- Transcript Data -->
@@ -157,53 +155,10 @@
                         <textarea id="transcript-input" placeholder="Paste transcript data here..."></textarea>
                     </div>
 
-                    <!-- Video Files -->
-                    <div class="upload-card-unified">
+                    <!-- AI Training Examples with Chatbot -->
+                    <div class="upload-card-unified ai-training-card">
                         <div class="upload-card-header">
-                            <h3>🎥 3. Video Recordings</h3>
-                            <span class="optional-badge">Optional</span>
-                        </div>
-                        <p style="color: var(--text-light); margin-bottom: 1rem;">Upload user testing session videos (MP4, WebM, MOV)</p>
-                        <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo" multiple style="display: none;">
-                        <button class="upload-button" onclick="document.getElementById('video-file-input').click()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M23 7l-7 5 7 5V7z"></path>
-                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                            </svg>
-                            Select Video Files
-                        </button>
-                        <div id="video-upload-status" class="upload-status"></div>
-                        
-                        <!-- Video List -->
-                        <div id="video-list-compact" class="video-list-compact" style="display: none; margin-top: 1rem;">
-                            <h4 style="font-size: 0.95rem; margin: 0 0 0.5rem 0; color: var(--text);">Uploaded Videos (<span id="video-count-compact">0</span>)</h4>
-                            <div id="video-items-compact" class="compact-items-list"></div>
-                        </div>
-                        
-                        <!-- Video Analysis Instructions -->
-                        <div style="margin-top: 1rem;" id="video-instructions-box" class="collapsed-section">
-                            <button class="expand-btn" onclick="toggleVideoInstructions()">
-                                <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                                Add Analysis Instructions for Videos (Optional)
-                            </button>
-                            <div class="expandable-content">
-                                <textarea id="bot-instructions" class="bot-instructions-textarea" placeholder="Example instructions:
-
-• Focus on usability issues and confusion points
-• Track task completion rates and time on task
-• Note verbal feedback and emotional reactions
-• Identify common navigation patterns across users
-• Extract direct quotes from participant commentary"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Training Examples -->
-                    <div class="upload-card-unified">
-                        <div class="upload-card-header">
-                            <h3>🤖 4. AI Training Examples</h3>
+                            <h3>🤖 3. AI Training Examples</h3>
                             <span class="optional-badge">Optional</span>
                         </div>
                         <p style="color: var(--text-light); margin-bottom: 1rem;">Upload presentation examples to train AI on your preferred style</p>
@@ -222,6 +177,44 @@
                         <div id="presentations-list-compact" class="video-list-compact" style="display: none; margin-top: 1rem;">
                             <h4 style="font-size: 0.95rem; margin: 0 0 0.5rem 0; color: var(--text);">Uploaded Examples (<span id="presentation-count-compact">0</span>)</h4>
                             <div id="presentation-items-compact" class="compact-items-list"></div>
+                        </div>
+                        
+                        <!-- AI Assistant Chatbot -->
+                        <div class="ai-chatbot-section">
+                            <div class="ai-chatbot-header">
+                                <span class="chatbot-icon">💬</span>
+                                <h4>AI Presentation Assistant</h4>
+                            </div>
+                            <p class="chatbot-description">Ask questions about your uploaded examples. Get suggestions on what's working well and what could be improved.</p>
+                            
+                            <div class="chatbot-container">
+                                <div id="chat-messages" class="chat-messages">
+                                    <div class="chat-message ai-message">
+                                        <div class="message-avatar">🤖</div>
+                                        <div class="message-content">
+                                            <p>Hello! I'm your AI Presentation Assistant. Upload your presentation examples above, then ask me questions like:</p>
+                                            <ul class="suggestion-list">
+                                                <li>"What makes this presentation effective?"</li>
+                                                <li>"How can I improve the structure?"</li>
+                                                <li>"What are the best practices shown here?"</li>
+                                                <li>"Suggest improvements for my report format"</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="chat-input-container">
+                                    <input type="text" id="chat-input" class="chat-input" placeholder="Ask about your presentation examples..." onkeypress="if(event.key==='Enter')sendChatMessage()">
+                                    <button class="chat-send-btn" onclick="sendChatMessage()">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <p class="chatbot-note">💡 <strong>Note:</strong> Connect an OpenAI API key in settings to enable AI responses.</p>
                         </div>
                     </div>
                 </div>
@@ -245,12 +238,11 @@
                     <ol style="margin-left: 1.5rem; margin-top: 0.5rem; line-height: 1.8;">
                         <li><strong>Upload research questions</strong> (required) - Defines what you're investigating</li>
                         <li><strong>Upload interview transcripts</strong> (required) - Raw data from participants</li>
-                        <li><strong>Add videos</strong> (optional) - Visual behavioral analysis</li>
-                        <li><strong>Add AI examples</strong> (optional) - Train presentation style</li>
+                        <li><strong>Add AI examples</strong> (optional) - Train presentation style, ask for feedback</li>
                         <li><strong>Click "Analyze & Generate Report"</strong> - System processes everything together</li>
                         <li><strong>View results</strong> - Navigate to any section to see synthesized insights</li>
                     </ol>
-                    <p style="margin-top: 1rem; color: var(--text-light);"><strong>Supported formats:</strong> PDF, DOC, DOCX, TXT, MP4, WebM, MOV, Excel, Word</p>
+                    <p style="margin-top: 1rem; color: var(--text-light);"><strong>Supported formats:</strong> PDF, DOC, DOCX, TXT, Excel, Word</p>
                 </div>
 
                 <div class="transcripts-display"></div>

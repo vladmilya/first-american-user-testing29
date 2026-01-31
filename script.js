@@ -2310,6 +2310,213 @@ function showFileOverwriteNotification(fileName) {
     }, 3000);
 }
 
+// ========== AI CHATBOT FUNCTIONS ==========
+
+// Store chat history
+let chatHistory = [];
+
+// Get OpenAI API key from localStorage
+function getApiKey() {
+    return localStorage.getItem('openai_api_key') || '';
+}
+
+// Save OpenAI API key to localStorage
+function saveApiKey(key) {
+    localStorage.setItem('openai_api_key', key);
+}
+
+// Send chat message
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat
+    addChatMessage(message, 'user');
+    input.value = '';
+    
+    // Check for API key
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        // Show prompt to add API key
+        setTimeout(() => {
+            addChatMessage(
+                `To get AI-powered responses, please add your OpenAI API key. <br><br>
+                <button onclick="promptForApiKey()" class="chat-action-btn">🔑 Add API Key</button><br><br>
+                <small>Your key is stored locally and never sent to our servers.</small>`,
+                'ai',
+                true
+            );
+        }, 500);
+        return;
+    }
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Get uploaded presentation files for context
+    const presentations = getUploadedPresentations();
+    
+    // Send to AI
+    sendToAI(message, presentations, apiKey);
+}
+
+// Add message to chat UI
+function addChatMessage(content, sender, isHtml = false) {
+    const chatMessages = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">${sender === 'user' ? '👤' : '🤖'}</div>
+        <div class="message-content">
+            ${isHtml ? content : `<p>${escapeHtml(content)}</p>`}
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Add to history
+    chatHistory.push({ role: sender === 'user' ? 'user' : 'assistant', content: content });
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+    const chatMessages = document.getElementById('chat-messages');
+    const indicator = document.createElement('div');
+    indicator.className = 'chat-message ai-message';
+    indicator.id = 'typing-indicator';
+    indicator.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-content">
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    chatMessages.appendChild(indicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Remove typing indicator
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) indicator.remove();
+}
+
+// Get uploaded presentations info
+function getUploadedPresentations() {
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    
+    if (!activeCampaign || !activeCampaign.files || !activeCampaign.files.presentations) {
+        return [];
+    }
+    
+    return activeCampaign.files.presentations.map(f => ({
+        name: f.name,
+        uploadedDate: f.uploadedDate
+    }));
+}
+
+// Send message to OpenAI API
+async function sendToAI(userMessage, presentations, apiKey) {
+    const systemPrompt = `You are an AI Presentation Assistant helping UX researchers improve their presentation examples and report formats.
+
+${presentations.length > 0 ? `The user has uploaded the following presentation examples: ${presentations.map(p => p.name).join(', ')}` : 'No presentation examples have been uploaded yet.'}
+
+Your role is to:
+1. Analyze presentation structure and provide feedback
+2. Suggest improvements for clarity and impact
+3. Recommend best practices for UX research presentations
+4. Help users understand what makes an effective presentation
+5. Provide specific, actionable suggestions
+
+Be helpful, specific, and encouraging. If no files are uploaded, guide the user to upload examples first for more personalized feedback.`;
+
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    ...chatHistory.slice(-10).map(m => ({
+                        role: m.role,
+                        content: m.content
+                    })),
+                    { role: 'user', content: userMessage }
+                ],
+                max_tokens: 1000,
+                temperature: 0.7
+            })
+        });
+        
+        removeTypingIndicator();
+        
+        if (!response.ok) {
+            const error = await response.json();
+            if (response.status === 401) {
+                addChatMessage(
+                    `API key is invalid. Please update your key. <br><br>
+                    <button onclick="promptForApiKey()" class="chat-action-btn">🔑 Update API Key</button>`,
+                    'ai',
+                    true
+                );
+            } else {
+                addChatMessage(`Error: ${error.error?.message || 'Failed to get response'}`, 'ai');
+            }
+            return;
+        }
+        
+        const data = await response.json();
+        const aiResponse = data.choices[0].message.content;
+        
+        addChatMessage(aiResponse, 'ai');
+        
+    } catch (error) {
+        removeTypingIndicator();
+        addChatMessage(`Error connecting to AI: ${error.message}`, 'ai');
+    }
+}
+
+// Prompt user for API key
+function promptForApiKey() {
+    const currentKey = getApiKey();
+    const key = prompt('Enter your OpenAI API key:', currentKey ? '••••••••' + currentKey.slice(-4) : '');
+    
+    if (key && key !== '••••••••' + (currentKey ? currentKey.slice(-4) : '')) {
+        saveApiKey(key);
+        addChatMessage('✅ API key saved! You can now ask questions about your presentations.', 'ai');
+    }
+}
+
+// Make suggestion items clickable
+document.addEventListener('click', function(e) {
+    if (e.target.matches('.suggestion-list li')) {
+        const input = document.getElementById('chat-input');
+        if (input) {
+            input.value = e.target.textContent.replace(/^["']|["']$/g, '');
+            input.focus();
+        }
+    }
+});
+
 // Render files for a campaign
 function renderCampaignFiles(files) {
     let html = '';
