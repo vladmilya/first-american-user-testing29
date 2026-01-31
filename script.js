@@ -2636,6 +2636,12 @@ function enterNoteTaker() {
     const header = document.querySelector('.report-header');
     if (sidebar) sidebar.style.display = 'none';
     if (header) header.style.display = 'none';
+    
+    // Refresh topic filter to sync with Discussion Guide topics
+    populateTopicFilter();
+    
+    // Also refresh the topic selects in existing notes
+    refreshAllNoteTopicSelects();
 }
 
 // Exit full-screen Note Taker mode
@@ -2727,19 +2733,19 @@ function populateTopicFilter() {
     // Clear existing options except "All Topics"
     select.innerHTML = '<option value="all">All Topics</option>';
     
-    // Separate custom topics from data themes
+    // Separate custom topics (from Discussion Guide) from data themes
     const customTopics = allTopics.filter(t => t.isCustom);
     const dataThemes = allTopics.filter(t => !t.isCustom);
     
-    // Add custom topics first if any
+    // Add Discussion Guide topics first (these are the primary topics)
     if (customTopics.length > 0) {
         const customGroup = document.createElement('optgroup');
-        customGroup.label = '★ Custom Topics';
+        customGroup.label = '📋 Discussion Guide Topics';
         
         customTopics.forEach(topic => {
             const option = document.createElement('option');
             option.value = topic.theme;
-            const displayName = topic.theme.length > 35 ? topic.theme.substring(0, 35) + '...' : topic.theme;
+            const displayName = topic.theme.length > 40 ? topic.theme.substring(0, 40) + '...' : topic.theme;
             option.textContent = displayName;
             customGroup.appendChild(option);
         });
@@ -2747,31 +2753,33 @@ function populateTopicFilter() {
         select.appendChild(customGroup);
     }
     
-    // Group data themes by category
-    const categories = {};
-    dataThemes.forEach(t => {
-        if (!categories[t.category]) {
-            categories[t.category] = [];
-        }
-        categories[t.category].push(t);
-    });
-    
-    // Add category groups
-    Object.keys(categories).forEach(category => {
-        const optgroup = document.createElement('optgroup');
-        const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
-        optgroup.label = categoryLabel;
-        
-        categories[category].forEach(theme => {
-            const option = document.createElement('option');
-            option.value = theme.theme;
-            const displayName = theme.theme.length > 35 ? theme.theme.substring(0, 35) + '...' : theme.theme;
-            option.textContent = displayName;
-            optgroup.appendChild(option);
+    // Group data themes by category (secondary - from report data)
+    if (dataThemes.length > 0) {
+        const categories = {};
+        dataThemes.forEach(t => {
+            if (!categories[t.category]) {
+                categories[t.category] = [];
+            }
+            categories[t.category].push(t);
         });
         
-        select.appendChild(optgroup);
-    });
+        // Add category groups
+        Object.keys(categories).forEach(category => {
+            const optgroup = document.createElement('optgroup');
+            const categoryLabel = 'Report: ' + category.charAt(0).toUpperCase() + category.slice(1);
+            optgroup.label = categoryLabel;
+            
+            categories[category].forEach(theme => {
+                const option = document.createElement('option');
+                option.value = theme.theme;
+                const displayName = theme.theme.length > 40 ? theme.theme.substring(0, 40) + '...' : theme.theme;
+                option.textContent = displayName;
+                optgroup.appendChild(option);
+            });
+            
+            select.appendChild(optgroup);
+        });
+    }
 }
 
 // Change topic of a sticky note
