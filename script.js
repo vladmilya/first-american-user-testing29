@@ -2591,6 +2591,374 @@ document.addEventListener('click', function(e) {
     }
 });
 
+// ========== NOTE TAKER FUNCTIONS ==========
+
+let currentZoom = 1;
+let noteIdCounter = 0;
+let selectedNote = null;
+let isDragging = false;
+let isResizing = false;
+let dragOffset = { x: 0, y: 0 };
+
+// Initialize Note Taker
+function initNoteTaker() {
+    loadStickyNotes();
+    
+    // Deselect note when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.sticky-note') && selectedNote) {
+            deselectNote();
+        }
+    });
+}
+
+// Add a new sticky note
+function addStickyNote(x = null, y = null) {
+    const board = document.getElementById('sticky-board');
+    if (!board) return;
+    
+    const noteId = 'note-' + Date.now() + '-' + (++noteIdCounter);
+    
+    // Random position if not specified
+    const posX = x !== null ? x : Math.random() * (board.offsetWidth - 250) + 25;
+    const posY = y !== null ? y : Math.random() * (board.offsetHeight - 200) + 25;
+    
+    const note = document.createElement('div');
+    note.className = 'sticky-note yellow';
+    note.id = noteId;
+    note.style.left = posX + 'px';
+    note.style.top = posY + 'px';
+    note.style.width = '200px';
+    note.style.minHeight = '150px';
+    
+    note.innerHTML = `
+        <div class="sticky-note-header">
+            <div class="color-picker">
+                <button class="color-btn yellow" onclick="changeNoteColor('${noteId}', 'yellow')" title="Yellow"></button>
+                <button class="color-btn green" onclick="changeNoteColor('${noteId}', 'green')" title="Green"></button>
+                <button class="color-btn red" onclick="changeNoteColor('${noteId}', 'red')" title="Red"></button>
+            </div>
+            <button class="delete-note-btn" onclick="deleteNote('${noteId}')" title="Delete Note">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="text-format-toolbar">
+            <button class="format-btn text-black" onclick="formatSelectedText('black')" title="Black Text">A</button>
+            <button class="format-btn text-red" onclick="formatSelectedText('red')" title="Red Text">A</button>
+        </div>
+        <div class="sticky-note-content" contenteditable="true" 
+             onfocus="onNoteEdit('${noteId}')" 
+             onblur="onNoteBlur('${noteId}')"
+             oninput="autoResizeFont(this)"></div>
+        <div class="resize-handle" onmousedown="startResize(event, '${noteId}')"></div>
+    `;
+    
+    board.appendChild(note);
+    
+    // Add drag functionality
+    note.addEventListener('mousedown', (e) => startDrag(e, noteId));
+    
+    // Focus on the content
+    setTimeout(() => {
+        const content = note.querySelector('.sticky-note-content');
+        if (content) content.focus();
+    }, 100);
+    
+    saveStickyNotes();
+    return noteId;
+}
+
+// Start dragging a note
+function startDrag(e, noteId) {
+    // Don't drag if clicking on buttons, content, or resize handle
+    if (e.target.closest('.color-btn') || 
+        e.target.closest('.delete-note-btn') || 
+        e.target.closest('.format-btn') ||
+        e.target.closest('.resize-handle') ||
+        e.target.classList.contains('sticky-note-content')) {
+        return;
+    }
+    
+    const note = document.getElementById(noteId);
+    if (!note) return;
+    
+    selectNote(noteId);
+    
+    isDragging = true;
+    note.classList.add('dragging');
+    
+    const rect = note.getBoundingClientRect();
+    const board = document.getElementById('sticky-board');
+    const boardRect = board.getBoundingClientRect();
+    
+    dragOffset.x = e.clientX - rect.left;
+    dragOffset.y = e.clientY - rect.top;
+    
+    const onMouseMove = (e) => {
+        if (!isDragging) return;
+        
+        const newX = (e.clientX - boardRect.left - dragOffset.x) / currentZoom;
+        const newY = (e.clientY - boardRect.top - dragOffset.y) / currentZoom;
+        
+        note.style.left = Math.max(0, newX) + 'px';
+        note.style.top = Math.max(0, newY) + 'px';
+    };
+    
+    const onMouseUp = () => {
+        isDragging = false;
+        note.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        saveStickyNotes();
+    };
+    
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+}
+
+// Start resizing a note
+function startResize(e, noteId) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const note = document.getElementById(noteId);
+    if (!note) return;
+    
+    isResizing = true;
+    
+    const startWidth = note.offsetWidth;
+    const startHeight = note.offsetHeight;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    
+    const onMouseMove = (e) => {
+        if (!isResizing) return;
+        
+        const newWidth = startWidth + (e.clientX - startX) / currentZoom;
+        const newHeight = startHeight + (e.clientY - startY) / currentZoom;
+        
+        note.style.width = Math.max(120, newWidth) + 'px';
+        note.style.minHeight = Math.max(100, newHeight) + 'px';
+        
+        // Auto-resize font after resize
+        const content = note.querySelector('.sticky-note-content');
+        if (content) autoResizeFont(content);
+    };
+    
+    const onMouseUp = () => {
+        isResizing = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        saveStickyNotes();
+    };
+    
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+}
+
+// Select a note
+function selectNote(noteId) {
+    deselectNote();
+    selectedNote = document.getElementById(noteId);
+    if (selectedNote) {
+        selectedNote.classList.add('selected');
+    }
+}
+
+// Deselect note
+function deselectNote() {
+    if (selectedNote) {
+        selectedNote.classList.remove('selected');
+        selectedNote.classList.remove('editing');
+        selectedNote = null;
+    }
+}
+
+// Change note color
+function changeNoteColor(noteId, color) {
+    const note = document.getElementById(noteId);
+    if (!note) return;
+    
+    note.classList.remove('yellow', 'green', 'red');
+    note.classList.add(color);
+    saveStickyNotes();
+}
+
+// Delete a note
+function deleteNote(noteId) {
+    const note = document.getElementById(noteId);
+    if (note) {
+        note.remove();
+        saveStickyNotes();
+    }
+}
+
+// On note edit (focus)
+function onNoteEdit(noteId) {
+    const note = document.getElementById(noteId);
+    if (note) {
+        note.classList.add('editing');
+        selectNote(noteId);
+    }
+}
+
+// On note blur
+function onNoteBlur(noteId) {
+    const note = document.getElementById(noteId);
+    if (note) {
+        note.classList.remove('editing');
+        saveStickyNotes();
+    }
+}
+
+// Auto-resize font based on content length
+function autoResizeFont(element) {
+    const textLength = element.textContent.length;
+    const noteWidth = element.parentElement.offsetWidth;
+    
+    let fontSize = 14;
+    
+    if (textLength > 200) fontSize = 11;
+    else if (textLength > 150) fontSize = 12;
+    else if (textLength > 100) fontSize = 13;
+    
+    // Also consider note width
+    if (noteWidth < 150) fontSize = Math.min(fontSize, 11);
+    
+    element.style.fontSize = fontSize + 'px';
+}
+
+// Format selected text
+function formatSelectedText(color) {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    
+    const range = selection.getRangeAt(0);
+    if (range.collapsed) return;
+    
+    const span = document.createElement('span');
+    span.style.color = color === 'red' ? '#dc2626' : 'black';
+    
+    try {
+        range.surroundContents(span);
+        saveStickyNotes();
+    } catch (e) {
+        // Handle partial selection across elements
+        document.execCommand('foreColor', false, color === 'red' ? '#dc2626' : 'black');
+        saveStickyNotes();
+    }
+}
+
+// Zoom controls
+function zoomBoard(delta) {
+    currentZoom = Math.max(0.5, Math.min(2, currentZoom + delta));
+    applyZoom();
+}
+
+function resetZoom() {
+    currentZoom = 1;
+    applyZoom();
+}
+
+function applyZoom() {
+    const board = document.getElementById('sticky-board');
+    if (board) {
+        board.style.transform = `scale(${currentZoom})`;
+    }
+    
+    const zoomLevel = document.getElementById('zoom-level');
+    if (zoomLevel) {
+        zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+    }
+}
+
+// Save sticky notes to localStorage
+function saveStickyNotes() {
+    const board = document.getElementById('sticky-board');
+    if (!board) return;
+    
+    const notes = [];
+    board.querySelectorAll('.sticky-note').forEach(note => {
+        const content = note.querySelector('.sticky-note-content');
+        const color = note.classList.contains('green') ? 'green' : 
+                      note.classList.contains('red') ? 'red' : 'yellow';
+        
+        notes.push({
+            id: note.id,
+            x: parseFloat(note.style.left),
+            y: parseFloat(note.style.top),
+            width: note.style.width,
+            height: note.style.minHeight,
+            color: color,
+            content: content ? content.innerHTML : ''
+        });
+    });
+    
+    localStorage.setItem('sticky_notes', JSON.stringify(notes));
+}
+
+// Load sticky notes from localStorage
+function loadStickyNotes() {
+    const board = document.getElementById('sticky-board');
+    if (!board) return;
+    
+    const stored = localStorage.getItem('sticky_notes');
+    if (!stored) return;
+    
+    try {
+        const notes = JSON.parse(stored);
+        notes.forEach(noteData => {
+            const note = document.createElement('div');
+            note.className = `sticky-note ${noteData.color}`;
+            note.id = noteData.id;
+            note.style.left = noteData.x + 'px';
+            note.style.top = noteData.y + 'px';
+            note.style.width = noteData.width;
+            note.style.minHeight = noteData.height;
+            
+            note.innerHTML = `
+                <div class="sticky-note-header">
+                    <div class="color-picker">
+                        <button class="color-btn yellow" onclick="changeNoteColor('${noteData.id}', 'yellow')" title="Yellow"></button>
+                        <button class="color-btn green" onclick="changeNoteColor('${noteData.id}', 'green')" title="Green"></button>
+                        <button class="color-btn red" onclick="changeNoteColor('${noteData.id}', 'red')" title="Red"></button>
+                    </div>
+                    <button class="delete-note-btn" onclick="deleteNote('${noteData.id}')" title="Delete Note">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="text-format-toolbar">
+                    <button class="format-btn text-black" onclick="formatSelectedText('black')" title="Black Text">A</button>
+                    <button class="format-btn text-red" onclick="formatSelectedText('red')" title="Red Text">A</button>
+                </div>
+                <div class="sticky-note-content" contenteditable="true" 
+                     onfocus="onNoteEdit('${noteData.id}')" 
+                     onblur="onNoteBlur('${noteData.id}')"
+                     oninput="autoResizeFont(this)">${noteData.content}</div>
+                <div class="resize-handle" onmousedown="startResize(event, '${noteData.id}')"></div>
+            `;
+            
+            board.appendChild(note);
+            note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
+            
+            // Apply auto-resize font
+            const content = note.querySelector('.sticky-note-content');
+            if (content) autoResizeFont(content);
+        });
+    } catch (e) {
+        console.error('Error loading sticky notes:', e);
+    }
+}
+
+// Initialize Note Taker when page loads
+document.addEventListener('DOMContentLoaded', initNoteTaker);
+
 // Render files for a campaign
 function renderCampaignFiles(files) {
     let html = '';
