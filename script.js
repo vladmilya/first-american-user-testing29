@@ -2103,7 +2103,7 @@ async function compressVideo(file, videoElement) {
     }
 }
 
-// Add video to campaign with thumbnail
+// Add video to campaign with thumbnail (overwrites if same name exists)
 function addVideoToCampaign(fileName, thumbnail, compressedData) {
     const campaigns = getCampaigns();
     const activeCampaign = campaigns.find(c => c.isActive);
@@ -2119,15 +2119,28 @@ function addVideoToCampaign(fileName, thumbnail, compressedData) {
         };
     }
     
+    // Check if video with same name already exists
+    const existingIndex = activeCampaign.files.videos.findIndex(f => f.name === fileName);
+    
     const fileObject = {
         name: fileName,
         uploadedDate: new Date().toISOString(),
         thumbnail: thumbnail,
         data: compressedData, // Compressed preview or null for large files
-        id: 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+        id: existingIndex >= 0 
+            ? activeCampaign.files.videos[existingIndex].id  // Keep same ID if overwriting
+            : 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
     };
     
-    activeCampaign.files.videos.push(fileObject);
+    if (existingIndex >= 0) {
+        // Overwrite existing video
+        activeCampaign.files.videos[existingIndex] = fileObject;
+        showFileOverwriteNotification(fileName);
+    } else {
+        // Add new video
+        activeCampaign.files.videos.push(fileObject);
+    }
+    
     saveCampaigns(campaigns);
     updateCurrentCampaignDisplay();
     renderCampaignsList();
@@ -2232,7 +2245,7 @@ function removeCompactPresentation(index) {
 
 // ========== CAMPAIGN FILE MANAGEMENT ==========
 
-// Add file to active campaign
+// Add file to active campaign (overwrites if same name exists)
 function addFileToCampaign(fileType, fileName, fileData) {
     const campaigns = getCampaigns();
     const activeCampaign = campaigns.find(c => c.isActive);
@@ -2248,17 +2261,53 @@ function addFileToCampaign(fileType, fileName, fileData) {
         };
     }
     
+    // Check if file with same name already exists
+    const existingIndex = activeCampaign.files[fileType].findIndex(f => f.name === fileName);
+    
     const fileObject = {
         name: fileName,
         uploadedDate: new Date().toISOString(),
         data: fileData, // Store base64 or file reference
-        id: 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+        id: existingIndex >= 0 
+            ? activeCampaign.files[fileType][existingIndex].id  // Keep same ID if overwriting
+            : 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
     };
     
-    activeCampaign.files[fileType].push(fileObject);
+    if (existingIndex >= 0) {
+        // Overwrite existing file
+        activeCampaign.files[fileType][existingIndex] = fileObject;
+        showFileOverwriteNotification(fileName);
+    } else {
+        // Add new file
+        activeCampaign.files[fileType].push(fileObject);
+    }
+    
     saveCampaigns(campaigns);
     updateCurrentCampaignDisplay();
     renderCampaignsList();
+}
+
+// Show notification when file is overwritten
+function showFileOverwriteNotification(fileName) {
+    // Create notification element
+    let notification = document.getElementById('file-overwrite-notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'file-overwrite-notification';
+        notification.className = 'file-overwrite-notification';
+        document.body.appendChild(notification);
+    }
+    
+    notification.innerHTML = `
+        <span class="notification-icon">🔄</span>
+        <span class="notification-text">File updated: <strong>${fileName}</strong></span>
+    `;
+    notification.classList.add('show');
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
 }
 
 // Render files for a campaign
