@@ -2307,7 +2307,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    background: white;
+    background: transparent;
     color: var(--primary);
     text-decoration: none;
     border-radius: 8px;
@@ -2317,9 +2317,14 @@ body {
 }
 
 .edit-campaign-btn:hover {
-    background: var(--primary);
-    color: white;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary-dark);
+    border-color: var(--primary-dark);
     transform: translateY(-2px);
+}
+
+.edit-campaign-btn svg {
+    stroke: currentColor;
 }
 
 .view-dashboard-btn {
