@@ -147,19 +147,22 @@
                     <!-- Board Controls - Right above the board -->
                     <div class="note-taker-controls-bar">
                         <div class="controls-left">
-                            <button class="setup-users-btn" onclick="showUserSetupModal()" title="Set Number of Users">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                                <span id="user-count-display">1 User</span>
-                            </button>
-                            <div class="board-selector">
-                                <select id="board-select" onchange="switchBoard(this.value)"></select>
-                                <button class="board-action-btn" onclick="createNewBoard()" title="New Board">+</button>
-                                <button class="board-action-btn delete-board-btn" onclick="deleteCurrentBoard()" title="Delete Board">🗑</button>
+                            <div class="user-navigation">
+                                <label class="user-nav-label">Interview:</label>
+                                <select id="board-select" class="user-nav-select" onchange="switchBoard(this.value)"></select>
+                            </div>
+                            <div class="board-actions">
+                                <button class="setup-users-btn" onclick="showUserSetupModal()" title="Set Number of Users">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                    Setup
+                                </button>
+                                <button class="board-action-btn" onclick="createNewBoard()" title="Add New Board">+</button>
+                                <button class="board-action-btn delete-board-btn" onclick="deleteCurrentBoard()" title="Delete Current Board">🗑</button>
                             </div>
                         </div>
                         <div class="controls-center">
