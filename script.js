@@ -2679,11 +2679,21 @@ function goToExecutiveSummary() {
 
 // ========== TOPIC MANAGEMENT ==========
 
-// Get custom topics from campaign
+// Get custom topics from campaign (deduplicated)
 function getCustomTopics() {
     const campaign = getActiveCampaign();
     if (campaign && campaign.customTopics) {
-        return campaign.customTopics;
+        // Deduplicate topics by name
+        const seenNames = new Set();
+        const uniqueTopics = campaign.customTopics.filter(topic => {
+            const lowerName = topic.name.toLowerCase().trim();
+            if (seenNames.has(lowerName)) {
+                return false;
+            }
+            seenNames.add(lowerName);
+            return true;
+        });
+        return uniqueTopics;
     }
     return [];
 }
