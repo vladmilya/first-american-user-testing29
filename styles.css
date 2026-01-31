@@ -2202,7 +2202,7 @@ body {
 
 /* ========== UXD ADMIN STYLES ========== */
 
-/* UXD Admin Button in Header */
+/* UXD Admin Button in Header - Outlined Style */
 .uxd-admin-btn {
     position: absolute;
     top: 1.5rem;
@@ -2211,8 +2211,9 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.625rem 1.25rem;
-    background: var(--primary);
-    color: white;
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
     text-decoration: none;
     border-radius: 8px;
     font-weight: 600;
@@ -2221,13 +2222,19 @@ body {
 }
 
 .uxd-admin-btn:hover {
-    background: var(--primary-dark);
+    background: var(--primary);
+    color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+.uxd-admin-btn:hover svg {
+    stroke: white;
+}
+
 .uxd-admin-btn svg {
     flex-shrink: 0;
+    stroke: var(--primary);
 }
 
 .report-header {
