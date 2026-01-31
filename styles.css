@@ -91,13 +91,13 @@ body {
 }
 
 .nav-link:hover {
-    background: #f0f9ff;
-    color: #2563eb;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
 }
 
 .nav-link.active {
-    background: #dbeafe;
-    color: #2563eb;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
     font-weight: 600;
 }
 
