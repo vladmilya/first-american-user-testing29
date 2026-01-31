@@ -3805,7 +3805,7 @@ function renderCampaignFiles(files) {
                     <div class="file-icon questions-icon">📋</div>
                     <div class="file-info">
                         <div class="file-name" title="${file.name}">${file.name}</div>
-                        <div class="file-type">Research Questions</div>
+                        <div class="file-type">Discussion Guide</div>
                     </div>
                 </div>
             `;
