@@ -2671,7 +2671,7 @@ function exitNoteTaker() {
     if (header) header.style.display = '';
 }
 
-// Go to Executive Summary from Note Taker
+// Go to Study Report Summary from Note Taker
 function goToExecutiveSummary() {
     exitNoteTaker();
     navigateToSection('executive-summary');
