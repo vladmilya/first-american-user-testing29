@@ -2612,7 +2612,7 @@ document.addEventListener('click', function(e) {
 
 let currentZoom = 1;
 let noteIdCounter = 0;
-let selectedNote = null;
+let selectedNotes = []; // Array for multiple selection
 let isDragging = false;
 let isResizing = false;
 let dragOffset = { x: 0, y: 0 };
@@ -2623,10 +2623,10 @@ function initNoteTaker() {
     initBoards();
     restoreSplitScreenState();
     
-    // Deselect note when clicking outside
+    // Deselect notes when clicking outside (unless holding Ctrl/Cmd)
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.sticky-note') && selectedNote) {
-            deselectNote();
+        if (!e.target.closest('.sticky-note') && !e.ctrlKey && !e.metaKey && selectedNotes.length > 0) {
+            deselectAllNotes();
         }
     });
     
@@ -3575,6 +3575,7 @@ function startDrag(e, noteId) {
         e.target.closest('.delete-note-btn') || 
         e.target.closest('.format-btn') ||
         e.target.closest('.resize-handle') ||
+        e.target.closest('.topic-select') ||
         e.target.classList.contains('sticky-note-content')) {
         return;
     }
@@ -3582,7 +3583,8 @@ function startDrag(e, noteId) {
     const note = document.getElementById(noteId);
     if (!note) return;
     
-    selectNote(noteId);
+    // Pass event for multi-select detection
+    selectNote(noteId, e);
     
     isDragging = true;
     note.classList.add('dragging');
@@ -3656,22 +3658,62 @@ function startResize(e, noteId) {
     document.addEventListener('mouseup', onMouseUp);
 }
 
-// Select a note
-function selectNote(noteId) {
-    deselectNote();
-    selectedNote = document.getElementById(noteId);
-    if (selectedNote) {
-        selectedNote.classList.add('selected');
+// Select a note (supports multi-select with Ctrl/Cmd)
+function selectNote(noteId, event) {
+    const note = document.getElementById(noteId);
+    if (!note) return;
+    
+    const isMultiSelect = event && (event.ctrlKey || event.metaKey);
+    
+    if (isMultiSelect) {
+        // Toggle selection
+        if (selectedNotes.includes(note)) {
+            // Remove from selection
+            note.classList.remove('selected');
+            selectedNotes = selectedNotes.filter(n => n !== note);
+        } else {
+            // Add to selection
+            note.classList.add('selected');
+            selectedNotes.push(note);
+        }
+    } else {
+        // Single select - clear others first
+        deselectAllNotes();
+        note.classList.add('selected');
+        selectedNotes = [note];
+    }
+    
+    // Update selection count display
+    updateSelectionCount();
+}
+
+// Deselect all notes
+function deselectAllNotes() {
+    selectedNotes.forEach(note => {
+        note.classList.remove('selected');
+        note.classList.remove('editing');
+    });
+    selectedNotes = [];
+    updateSelectionCount();
+}
+
+// Update selection count display
+function updateSelectionCount() {
+    const addToReportBtn = document.querySelector('.add-to-report-btn');
+    if (addToReportBtn) {
+        if (selectedNotes.length > 1) {
+            addToReportBtn.innerHTML = `📄 Add ${selectedNotes.length} Notes to Report`;
+        } else if (selectedNotes.length === 1) {
+            addToReportBtn.innerHTML = `📄 Add to Report`;
+        } else {
+            addToReportBtn.innerHTML = `📄 Add to Report`;
+        }
     }
 }
 
-// Deselect note
+// Legacy function for backward compatibility
 function deselectNote() {
-    if (selectedNote) {
-        selectedNote.classList.remove('selected');
-        selectedNote.classList.remove('editing');
-        selectedNote = null;
-    }
+    deselectAllNotes();
 }
 
 // Change note color
@@ -3807,20 +3849,21 @@ function saveStickyNotes() {
 
 // Add selected note to report
 function addSelectedToReport() {
-    if (!selectedNote) {
-        alert('Please select a note first by clicking on it.');
+    if (selectedNotes.length === 0) {
+        alert('Please select one or more notes first.\n\nTip: Hold Ctrl/Cmd and click to select multiple notes.');
         return;
     }
     
-    const content = selectedNote.querySelector('.sticky-note-content');
-    if (!content || !content.textContent.trim()) {
-        alert('The selected note is empty.');
+    // Filter out empty notes
+    const validNotes = selectedNotes.filter(note => {
+        const content = note.querySelector('.sticky-note-content');
+        return content && content.textContent.trim();
+    });
+    
+    if (validNotes.length === 0) {
+        alert('The selected notes are empty.');
         return;
     }
-    
-    const noteText = content.textContent.trim();
-    const noteColor = selectedNote.classList.contains('green') ? 'positive' : 
-                      selectedNote.classList.contains('red') ? 'negative' : 'neutral';
     
     // Add to report notes (stored in campaign)
     const campaigns = getCampaigns();
@@ -3835,26 +3878,41 @@ function addSelectedToReport() {
         activeCampaign.reportNotes = [];
     }
     
-    activeCampaign.reportNotes.push({
-        id: 'report-note-' + Date.now(),
-        content: noteText,
-        type: noteColor,
-        addedAt: new Date().toISOString(),
-        fromBoard: currentBoardId
+    // Add each selected note
+    validNotes.forEach(note => {
+        const content = note.querySelector('.sticky-note-content');
+        const noteText = content.textContent.trim();
+        const noteColor = note.classList.contains('green') ? 'positive' : 
+                          note.classList.contains('red') ? 'negative' : 'neutral';
+        const noteTopic = note.dataset.topic || '';
+        
+        activeCampaign.reportNotes.push({
+            id: 'report-note-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            content: noteText,
+            type: noteColor,
+            topic: noteTopic,
+            addedAt: new Date().toISOString(),
+            fromBoard: currentBoardId
+        });
+        
+        // Visual feedback for each note
+        note.style.outline = '3px solid var(--success)';
     });
     
     saveCampaigns(campaigns);
     
-    // Visual feedback
-    selectedNote.style.outline = '3px solid var(--success)';
+    // Clear visual feedback after delay
     setTimeout(() => {
-        if (selectedNote) {
-            selectedNote.style.outline = '';
-            selectedNote.classList.remove('selected');
-        }
+        validNotes.forEach(note => {
+            note.style.outline = '';
+            note.classList.remove('selected');
+        });
+        selectedNotes = [];
+        updateSelectionCount();
     }, 1500);
     
-    alert('Note added to report! You can view it in the Key Findings section.');
+    const noteWord = validNotes.length === 1 ? 'note' : 'notes';
+    alert(`${validNotes.length} ${noteWord} added to report!`);
 }
 
 // Initialize Note Taker when page loads
