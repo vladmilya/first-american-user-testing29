@@ -2647,6 +2647,12 @@ function exitNoteTaker() {
     if (header) header.style.display = '';
 }
 
+// Go to Executive Summary from Note Taker
+function goToExecutiveSummary() {
+    exitNoteTaker();
+    navigateToSection('executive-summary');
+}
+
 // ========== BOARD MANAGEMENT ==========
 
 // Get all boards from localStorage
