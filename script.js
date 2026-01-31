@@ -2653,10 +2653,15 @@ function exitNoteTaker() {
 function getBoards() {
     const stored = localStorage.getItem('note_boards');
     if (!stored) {
-        // Create default board for User 1
+        // Get first participant name from report if available
+        const participantNames = getParticipantNames();
+        const firstParticipant = participantNames.find(p => p.userId === 1);
+        const boardName = firstParticipant ? `${firstParticipant.name} (User 1)` : 'User 1';
+        
+        // Create default board
         const defaultBoard = {
             id: 'board-' + Date.now(),
-            name: 'User 1',
+            name: boardName,
             notes: [],
             createdAt: new Date().toISOString()
         };
@@ -2734,14 +2739,35 @@ function updateUserPreview() {
     if (!input || !preview) return;
     
     const count = parseInt(input.value) || 1;
+    const participantNames = getParticipantNames();
     
     let html = '<div class="user-preview-title">Boards to be created:</div><div class="user-preview-list">';
     for (let i = 1; i <= count; i++) {
-        html += `<span class="user-preview-item">User ${i}</span>`;
+        const participant = participantNames.find(p => p.userId === i);
+        const boardName = participant ? `${participant.name} (User ${i})` : `User ${i}`;
+        html += `<span class="user-preview-item">${boardName}</span>`;
     }
     html += '</div>';
     
     preview.innerHTML = html;
+}
+
+// Get participant names from synthesis data
+function getParticipantNames() {
+    if (typeof synthesisData !== 'undefined' && synthesisData.participantDetails) {
+        // Sort by user ID number and extract names
+        return synthesisData.participantDetails
+            .sort((a, b) => {
+                const numA = parseInt(a.id.replace('user', '')) || 0;
+                const numB = parseInt(b.id.replace('user', '')) || 0;
+                return numA - numB;
+            })
+            .map((p, index) => ({
+                name: p.name,
+                userId: index + 1
+            }));
+    }
+    return [];
 }
 
 // Create user boards
@@ -2761,14 +2787,21 @@ function createUserBoards() {
         }
     }
     
+    // Get participant names from report if available
+    const participantNames = getParticipantNames();
+    
     // Create new boards for each user
     const newBoards = [];
     const timestamp = Date.now();
     
     for (let i = 1; i <= count; i++) {
+        // Use participant name from report if available, otherwise use "User X"
+        const participant = participantNames.find(p => p.userId === i);
+        const boardName = participant ? `${participant.name} (User ${i})` : `User ${i}`;
+        
         newBoards.push({
             id: 'board-' + timestamp + '-' + i,
-            name: 'User ' + i,
+            name: boardName,
             notes: [],
             createdAt: new Date().toISOString()
         });
