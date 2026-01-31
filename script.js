@@ -2630,11 +2630,21 @@ function initNoteTaker() {
 // Enter full-screen Note Taker mode
 function enterNoteTaker() {
     document.body.classList.add('note-taker-active');
+    // Hide sidebar and header immediately
+    const sidebar = document.querySelector('.sidebar');
+    const header = document.querySelector('.report-header');
+    if (sidebar) sidebar.style.display = 'none';
+    if (header) header.style.display = 'none';
 }
 
 // Exit full-screen Note Taker mode
 function exitNoteTaker() {
     document.body.classList.remove('note-taker-active');
+    // Show sidebar and header
+    const sidebar = document.querySelector('.sidebar');
+    const header = document.querySelector('.report-header');
+    if (sidebar) sidebar.style.display = '';
+    if (header) header.style.display = '';
 }
 
 // ========== BOARD MANAGEMENT ==========
