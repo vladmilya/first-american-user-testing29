@@ -435,9 +435,9 @@ function renderExecutiveSummary(insights) {
         ` : ''}
         
         ${metadata.studyGoals ? `
-            <div style="background: var(--surface); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--secondary); margin-bottom: 2rem;">
-                <h3 style="margin-bottom: 1rem; color: var(--secondary); font-size: 1.25rem;">🎯 Study Goals</h3>
-                <p style="line-height: 1.7; color: var(--text); margin: 0;">${metadata.studyGoals}</p>
+            <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: white; font-size: 1.25rem;">🎯 Study Goals</h3>
+                <p style="line-height: 1.7; color: rgba(255,255,255,0.95); margin: 0;">${metadata.studyGoals}</p>
             </div>
         ` : ''}
         
