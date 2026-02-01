@@ -853,7 +853,7 @@ function renderRecommendations(recommendations) {
             </button>
             <div class="rec-header">
                 <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
-                <span class="related-theme">Theme: ${rec.relatedTheme}</span>
+                <span class="related-theme">${rec.relatedTheme}</span>
             </div>
             <h3>${rec.title}</h3>
             <div class="editable-content">
