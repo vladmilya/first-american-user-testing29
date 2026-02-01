@@ -776,10 +776,15 @@ function renderOtherNotes(grid) {
                         </div>
                     ` : ''}
                     <p style="color: #1f2937; line-height: 1.6; margin: 0 0 1rem 0;">${escapeHtml(note.content)}</p>
-                    <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: #6b7280; flex-wrap: wrap;">
-                        <span>📅 ${new Date(note.addedAt).toLocaleDateString()}</span>
-                        ${note.fromBoard ? `<span>📋 ${escapeHtml(formatBoardName(note.fromBoard))}</span>` : ''}
-                    </div>
+                    ${note.fromBoard ? `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #6b7280; margin-top: 0.75rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>${escapeHtml(formatBoardName(note.fromBoard))}</span>
+                        </div>
+                    ` : ''}
                     <button onclick="deleteNoteFromReport('${note.id}')" 
                             style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;"
                             title="Delete note">×</button>
@@ -1071,10 +1076,15 @@ function renderResearchQuestions(questionSections) {
                                                 style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;"
                                                 title="Delete note">×</button>
                                         <p style="margin: 0; color: #1f2937; line-height: 1.6; padding-right: 2rem;">${escapeHtml(note.content)}</p>
-                                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
-                                            <span>📅 ${new Date(note.addedAt).toLocaleDateString()}</span>
-                                            ${note.fromBoard ? `<span>📋 ${formatBoardName(note.fromBoard)}</span>` : ''}
-                                        </div>
+                                        ${note.fromBoard ? `
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="12" cy="7" r="4"></circle>
+                                                </svg>
+                                                <span>${formatBoardName(note.fromBoard)}</span>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 `).join('')}
                             </div>
