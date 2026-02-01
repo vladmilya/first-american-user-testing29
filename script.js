@@ -645,6 +645,7 @@ function renderThemes(themes) {
                         ${cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </button>
                 `).join('')}
+                <button class="filter-btn" data-filter="category" data-value="other-notes">Other Notes</button>
             </div>
         </div>
     `;
@@ -709,16 +710,84 @@ function initializeThemeFilters() {
 
 function filterThemes(category) {
     const cards = document.querySelectorAll('#themes .theme-card');
+    const grid = document.querySelector('#themes .themes-grid');
     
-    cards.forEach(card => {
-        const cardCategory = card.getAttribute('data-category');
+    if (category === 'other-notes') {
+        // Hide all theme cards
+        cards.forEach(card => card.style.display = 'none');
         
-        if (category === 'all' || cardCategory === category) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
-    });
+        // Show other notes section
+        renderOtherNotes(grid);
+    } else {
+        // Remove other notes section if it exists
+        const otherNotesSection = document.querySelector('.other-notes-section');
+        if (otherNotesSection) otherNotesSection.remove();
+        
+        // Show/hide theme cards based on category
+        cards.forEach(card => {
+            const cardCategory = card.getAttribute('data-category');
+            
+            if (category === 'all' || cardCategory === category) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+}
+
+function renderOtherNotes(grid) {
+    // Get added notes from active campaign
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    const reportNotes = (activeCampaign && activeCampaign.reportNotes) ? activeCampaign.reportNotes : [];
+    
+    // Remove existing other notes section
+    const existingSection = document.querySelector('.other-notes-section');
+    if (existingSection) existingSection.remove();
+    
+    if (reportNotes.length === 0) {
+        const section = document.createElement('div');
+        section.className = 'other-notes-section';
+        section.innerHTML = `
+            <div class="card" style="text-align: center; padding: 3rem;">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">No Notes Added Yet</h3>
+                <p style="color: var(--text-light);">Add notes from the Note Taker to see them here.</p>
+            </div>
+        `;
+        grid.appendChild(section);
+        return;
+    }
+    
+    // Create other notes section
+    const section = document.createElement('div');
+    section.className = 'other-notes-section';
+    section.innerHTML = `
+        <div style="margin-bottom: 2rem;">
+            <h3 style="color: var(--text); margin-bottom: 0.5rem;">Other Notes (${reportNotes.length})</h3>
+            <p style="color: var(--text-light); margin: 0;">Notes added from the Note Taker</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            ${reportNotes.map(note => `
+                <div class="card" style="position: relative; padding: 1.5rem; background: #fff9c4; border-left: 4px solid #fbbf24;">
+                    ${note.topic ? `
+                        <div style="display: inline-block; background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem;">
+                            ${escapeHtml(note.topic)}
+                        </div>
+                    ` : ''}
+                    <p style="color: #1f2937; line-height: 1.6; margin: 0 0 1rem 0;">${escapeHtml(note.content)}</p>
+                    <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: #6b7280; flex-wrap: wrap;">
+                        <span>📅 ${new Date(note.addedAt).toLocaleDateString()}</span>
+                        ${note.fromBoard ? `<span>📋 ${escapeHtml(note.fromBoard)}</span>` : ''}
+                    </div>
+                    <button onclick="deleteNoteFromReport('${note.id}')" 
+                            style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;"
+                            title="Delete note">×</button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    grid.appendChild(section);
 }
 
 function renderPainPoints(painPoints) {
@@ -1041,9 +1110,29 @@ function deleteNoteFromReport(noteId) {
     activeCampaign.reportNotes = activeCampaign.reportNotes.filter(n => n.id !== noteId);
     saveCampaigns(campaigns);
     
+    // Also remove "Added to Study" status from the sticky note if it exists
+    const stickyNotes = document.querySelectorAll('.sticky-note');
+    stickyNotes.forEach(note => {
+        if (note.id === noteId) {
+            note.dataset.addedToStudy = 'false';
+            const pill = note.querySelector('.added-to-study-pill');
+            if (pill) pill.remove();
+        }
+    });
+    
+    // Save updated sticky notes
+    saveStickyNotes();
+    
     // Re-render the research questions to show updated notes
     if (typeof synthesisData !== 'undefined' && synthesisData.researchQuestions) {
         renderResearchQuestions(synthesisData.researchQuestions);
+    }
+    
+    // If Other Notes view is currently visible, refresh it
+    const otherNotesSection = document.querySelector('.other-notes-section');
+    if (otherNotesSection) {
+        const grid = document.querySelector('#themes .themes-grid');
+        renderOtherNotes(grid);
     }
 }
 
