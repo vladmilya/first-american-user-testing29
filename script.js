@@ -1671,7 +1671,7 @@ function initializeCampaigns() {
         ]
     };
     
-    // Default Discussion Guide topics for ISS campaign
+    // Default Evaluation Report topics for ISS campaign
     const defaultDiscussionGuideTopics = [
         { id: 'topic-default-1', name: 'Auto Deposits', category: 'behavioral' },
         { id: 'topic-default-2', name: 'SS In-Line Editing', category: 'behavioral' },
@@ -2651,7 +2651,7 @@ function enterNoteTaker() {
     if (sidebar) sidebar.style.display = 'none';
     if (header) header.style.display = 'none';
     
-    // Refresh topic filter to sync with Discussion Guide topics
+    // Refresh topic filter to sync with Evaluation Report topics
     populateTopicFilter();
     
     // Also refresh the topic selects in existing notes
@@ -2728,7 +2728,7 @@ function getCampaignThemes() {
     return [];
 }
 
-// Get topic options HTML for sticky note dropdown - ONLY Discussion Guide topics
+// Get topic options HTML for sticky note dropdown - ONLY Evaluation Report topics
 function getTopicOptionsHtml(selectedTopic = '') {
     const customTopics = getCustomTopics();
     return customTopics.map(t => {
@@ -2746,7 +2746,7 @@ function getTopicCategory(topicName) {
     return topic ? topic.category : null;
 }
 
-// Populate topic filter dropdown - ONLY shows Discussion Guide topics
+// Populate topic filter dropdown - ONLY shows Evaluation Report topics
 function populateTopicFilter() {
     const select = document.getElementById('topic-filter-select');
     if (!select) return;
@@ -2754,7 +2754,7 @@ function populateTopicFilter() {
     // Clear existing options
     select.innerHTML = '<option value="all">All Topics</option>';
     
-    // Only get custom topics from Discussion Guide
+    // Only get custom topics from Evaluation Report
     const customTopics = getCustomTopics();
     
     if (customTopics.length === 0) {
@@ -2778,7 +2778,7 @@ function populateTopicFilter() {
         return true;
     });
     
-    // Add unique Discussion Guide topics
+    // Add unique Evaluation Report topics
     uniqueTopics.forEach(topic => {
         const option = document.createElement('option');
         option.value = topic.name;
@@ -3031,12 +3031,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function showHowItWorks(section) {
     const content = {
-        'discussion-guide': {
-            title: 'Discussion Guide',
-            description: 'Upload your research discussion guide or interview script.',
+        'evaluation-report': {
+            title: 'Evaluation Report',
+            description: 'Upload your evaluation report or research discussion guide.',
             steps: [
-                'Upload a PDF or DOC file with your discussion guide',
-                'Topics from the guide will appear in the Note Taker filter',
+                'Upload a PDF or DOC file with your evaluation report',
+                'Topics from the report will appear in the Note Taker filter',
                 'Use topics to organize and categorize your interview notes',
                 'Topics sync automatically between Build Report and Note Taker'
             ]
@@ -4014,7 +4014,7 @@ function renderCampaignFiles(files) {
                     <div class="file-icon questions-icon">📋</div>
                     <div class="file-info">
                         <div class="file-name" title="${file.name}">${file.name}</div>
-                        <div class="file-type">Discussion Guide</div>
+                        <div class="file-type">Evaluation Report</div>
                     </div>
                 </div>
             `;

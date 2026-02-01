@@ -2543,8 +2543,8 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* Discussion Guide Topics Section */
-.discussion-guide-topics {
+/* Evaluation Report Topics Section */
+.evaluation-report-topics {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
