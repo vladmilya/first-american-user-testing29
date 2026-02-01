@@ -2694,30 +2694,27 @@ body {
     gap: 0.75rem;
 }
 
-/* Info Button - Block Party Style */
-.info-btn {
-    width: 28px;
-    height: 28px;
+/* Info Button Inline - Block Party Style */
+.info-btn-inline {
     padding: 0;
+    margin-left: 0.5rem;
     background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 50%;
+    border: none;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
     color: var(--text-light);
+    vertical-align: middle;
 }
 
-.info-btn:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
+.info-btn-inline svg {
+    stroke: var(--text-light);
 }
 
-.info-btn:hover svg {
-    stroke: white;
+.info-btn-inline:hover svg {
+    stroke: var(--primary);
 }
 
 /* How It Works Popup */
