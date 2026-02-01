@@ -1471,7 +1471,10 @@ body {
     position: relative;
 }
 
-.description-edit {
+.description-edit,
+.title-edit,
+.rationale-edit,
+.impact-edit {
     width: 100%;
     min-height: 100px;
     padding: 0.75rem;
@@ -1486,7 +1489,16 @@ body {
     margin-bottom: 0.75rem;
 }
 
-.description-edit:focus {
+.title-edit {
+    min-height: 50px;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.description-edit:focus,
+.title-edit:focus,
+.rationale-edit:focus,
+.impact-edit:focus {
     outline: none;
     border-color: var(--secondary);
     box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);

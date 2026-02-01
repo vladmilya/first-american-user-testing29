@@ -840,12 +840,15 @@ function renderRecommendations(recommendations) {
     
     section.innerHTML = recommendations.map((rec, index) => {
         // Get stored edits from localStorage
-        const storedEdit = getStoredEdit('recommendation', index);
-        const description = storedEdit || rec.description;
+        const storedEdits = getStoredEdit('recommendation', index) || {};
+        const title = storedEdits.title || rec.title;
+        const description = storedEdits.description || rec.description;
+        const rationale = storedEdits.rationale || rec.rationale;
+        const impact = storedEdits.impact || rec.impact;
         
         return `
         <div class="card recommendation-card" data-index="${index}">
-            <button class="edit-btn" onclick="toggleEdit('recommendation', ${index})" title="Edit description">
+            <button class="edit-btn" onclick="toggleEdit('recommendation', ${index})" title="Edit recommendation">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -855,24 +858,29 @@ function renderRecommendations(recommendations) {
                 <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
                 <span class="related-theme">${rec.relatedTheme}</span>
             </div>
-            <h3>${rec.title}</h3>
+            <div class="editable-content">
+                <h3 class="title-text">${title}</h3>
+                <textarea class="title-edit" style="display: none;">${title}</textarea>
+            </div>
             <div class="editable-content">
                 <p class="rec-description description-text">${description}</p>
                 <textarea class="description-edit" style="display: none;">${description}</textarea>
-                <div class="edit-actions" style="display: none;">
-                    <button class="save-btn" onclick="saveEdit('recommendation', ${index})">Save</button>
-                    <button class="cancel-btn" onclick="cancelEdit('recommendation', ${index})">Cancel</button>
-                </div>
             </div>
             <div class="rec-details">
-                <div class="detail-block">
+                <div class="detail-block editable-content">
                     <h4>📊 Rationale:</h4>
-                    <p>${rec.rationale}</p>
+                    <p class="rationale-text">${rationale}</p>
+                    <textarea class="rationale-edit" style="display: none;">${rationale}</textarea>
                 </div>
-                <div class="detail-block">
+                <div class="detail-block editable-content">
                     <h4>💡 Expected Impact:</h4>
-                    <p>${rec.impact}</p>
+                    <p class="impact-text">${impact}</p>
+                    <textarea class="impact-edit" style="display: none;">${impact}</textarea>
                 </div>
+            </div>
+            <div class="edit-actions" style="display: none;">
+                <button class="save-btn" onclick="saveEdit('recommendation', ${index})">Save</button>
+                <button class="cancel-btn" onclick="cancelEdit('recommendation', ${index})">Cancel</button>
             </div>
         </div>
     `}).join('');
@@ -1215,22 +1223,33 @@ function toggleEdit(type, index) {
     const card = document.querySelector(`.${type}-card[data-index="${index}"]`);
     if (!card) return;
     
-    const textEl = card.querySelector('.description-text');
-    const editEl = card.querySelector('.description-edit');
-    const actionsEl = card.querySelector('.edit-actions');
     const editBtn = card.querySelector('.edit-btn');
+    const actionsEl = card.querySelector('.edit-actions');
     
-    // Enter edit mode
-    textEl.style.display = 'none';
-    editEl.style.display = 'block';
-    actionsEl.style.display = 'flex';
-    editBtn.style.display = 'none';
+    // Fields to edit (for recommendations)
+    const fields = ['title', 'description', 'rationale', 'impact'];
     
-    // Focus the textarea
-    editEl.focus();
+    fields.forEach(field => {
+        const textEl = card.querySelector(`.${field}-text`);
+        const editEl = card.querySelector(`.${field}-edit`);
+        
+        if (textEl && editEl) {
+            // Enter edit mode
+            textEl.style.display = 'none';
+            editEl.style.display = 'block';
+            
+            // Store original value for cancel
+            editEl.dataset.original = textEl.textContent;
+        }
+    });
     
-    // Store original value for cancel
-    editEl.dataset.original = textEl.textContent;
+    // Show actions, hide edit button
+    if (actionsEl) actionsEl.style.display = 'flex';
+    if (editBtn) editBtn.style.display = 'none';
+    
+    // Focus the first textarea (title)
+    const firstEdit = card.querySelector('.title-edit');
+    if (firstEdit) firstEdit.focus();
 }
 
 // Save edit
@@ -1238,28 +1257,45 @@ function saveEdit(type, index) {
     const card = document.querySelector(`.${type}-card[data-index="${index}"]`);
     if (!card) return;
     
-    const textEl = card.querySelector('.description-text');
-    const editEl = card.querySelector('.description-edit');
     const actionsEl = card.querySelector('.edit-actions');
     const editBtn = card.querySelector('.edit-btn');
     
-    const newValue = editEl.value.trim();
+    // Fields to save (for recommendations)
+    const fields = ['title', 'description', 'rationale', 'impact'];
+    const updatedValues = {};
+    let allValid = true;
     
-    if (newValue) {
+    fields.forEach(field => {
+        const textEl = card.querySelector(`.${field}-text`);
+        const editEl = card.querySelector(`.${field}-edit`);
+        
+        if (textEl && editEl) {
+            const newValue = editEl.value.trim();
+            if (!newValue) {
+                allValid = false;
+            } else {
+                updatedValues[field] = newValue;
+                // Update display
+                textEl.textContent = newValue;
+                // Exit edit mode for this field
+                textEl.style.display = 'block';
+                editEl.style.display = 'none';
+            }
+        }
+    });
+    
+    if (allValid) {
         // Save to localStorage
-        saveStoredEdit(type, index, newValue);
+        saveStoredEdit(type, index, updatedValues);
         
-        // Update display
-        textEl.textContent = newValue;
-        
-        // Exit edit mode
-        textEl.style.display = 'block';
-        editEl.style.display = 'none';
-        actionsEl.style.display = 'none';
-        editBtn.style.display = 'flex';
+        // Hide actions, show edit button
+        if (actionsEl) actionsEl.style.display = 'none';
+        if (editBtn) editBtn.style.display = 'flex';
         
         // Show success feedback
         showEditFeedback(card, 'Saved!');
+    } else {
+        alert('All fields are required');
     }
 }
 
@@ -1268,19 +1304,29 @@ function cancelEdit(type, index) {
     const card = document.querySelector(`.${type}-card[data-index="${index}"]`);
     if (!card) return;
     
-    const textEl = card.querySelector('.description-text');
-    const editEl = card.querySelector('.description-edit');
     const actionsEl = card.querySelector('.edit-actions');
     const editBtn = card.querySelector('.edit-btn');
     
-    // Restore original value
-    editEl.value = editEl.dataset.original || textEl.textContent;
+    // Fields to cancel (for recommendations)
+    const fields = ['title', 'description', 'rationale', 'impact'];
     
-    // Exit edit mode
-    textEl.style.display = 'block';
-    editEl.style.display = 'none';
-    actionsEl.style.display = 'none';
-    editBtn.style.display = 'flex';
+    fields.forEach(field => {
+        const textEl = card.querySelector(`.${field}-text`);
+        const editEl = card.querySelector(`.${field}-edit`);
+        
+        if (textEl && editEl) {
+            // Restore original value
+            editEl.value = editEl.dataset.original || textEl.textContent;
+            
+            // Exit edit mode
+            textEl.style.display = 'block';
+            editEl.style.display = 'none';
+        }
+    });
+    
+    // Hide actions, show edit button
+    if (actionsEl) actionsEl.style.display = 'none';
+    if (editBtn) editBtn.style.display = 'flex';
 }
 
 // Show feedback message
