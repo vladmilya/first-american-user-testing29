@@ -3010,7 +3010,7 @@ function renderBuildReportTopics() {
     const customTopics = getCustomTopics();
     
     if (customTopics.length === 0) {
-        container.innerHTML = '<span class="topics-empty-message">No topics added yet. Add topics from your discussion guide above.</span>';
+        container.innerHTML = '<span class="topics-empty-message">No topics</span>';
         return;
     }
     
@@ -3018,7 +3018,6 @@ function renderBuildReportTopics() {
         <div class="topic-tag">
             <span class="topic-tag-dot ${topic.category}"></span>
             <span class="topic-tag-name">${escapeHtml(topic.name)}</span>
-            <button class="topic-tag-remove" onclick="deleteTopicFromBuildReport('${topic.id}')" title="Remove">×</button>
         </div>
     `).join('');
 }

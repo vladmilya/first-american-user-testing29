@@ -305,7 +305,12 @@
                                     </svg>
                                 </button>
                             </h3>
-                            <span class="required-badge">Required</span>
+                            <div class="header-right">
+                                <div id="build-report-topics-list" class="topics-list-header">
+                                    <!-- Topics will be listed here -->
+                                </div>
+                                <span class="required-badge">Required</span>
+                            </div>
                         </div>
                         <p style="color: var(--text-light); margin-bottom: 1rem;">Upload a PDF or DOC file containing your discussion guide</p>
                         <input type="file" id="questions-file" accept=".pdf,.doc,.docx,.txt" style="display: none;">
@@ -313,17 +318,6 @@
                             📄 Upload Discussion Guide
                         </button>
                         <div id="questions-status" class="upload-status"></div>
-                        
-                        <!-- Topics Section -->
-                        <div class="discussion-guide-topics">
-                            <div class="topics-header">
-                                <h4>🏷️ Discussion Topics</h4>
-                                <span class="topics-sync-note">Topics from Discussion Guide</span>
-                            </div>
-                            <div id="build-report-topics-list" class="topics-list-inline">
-                                <!-- Topics will be listed here -->
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Transcript Data -->

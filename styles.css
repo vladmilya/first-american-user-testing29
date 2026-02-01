@@ -2688,6 +2688,24 @@ body {
     align-items: center;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topics-list-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.topics-list-header .topic-tag {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.5rem;
+}
+
 .header-actions {
     display: flex;
     align-items: center;
