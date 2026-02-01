@@ -812,7 +812,7 @@ function renderResearchQuestions(questionSections) {
     
     section.innerHTML = `
         <div style="background: var(--surface); padding: 2rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
-            <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.5rem;">📋 Evaluation Study Report</h3>
+            <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.5rem;">📋 Report Details</h3>
             <p style="color: var(--text-light); line-height: 1.7; margin-bottom: 1rem;">
                 This section contains <strong>all ${totalQuestions} detailed research questions</strong> from the ISS P4.1 Iterative Testing Evaluation Study, 
                 organized by feature area. Each answer represents synthesized findings from patterns observed across all 6 participants, 
