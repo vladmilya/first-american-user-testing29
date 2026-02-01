@@ -2760,10 +2760,15 @@ function exitNoteTaker() {
     if (header) header.style.display = '';
 }
 
-// Go to Evaluation Details from Note Taker
-function goToExecutiveSummary() {
+// Go to Study Evaluation Details from Note Taker
+function goToStudyEvaluationDetails() {
     exitNoteTaker();
-    navigateToSection('executive-summary');
+    navigateToSection('research-questions');
+}
+
+// Legacy function for backward compatibility
+function goToExecutiveSummary() {
+    goToStudyEvaluationDetails();
 }
 
 // ========== TOPIC MANAGEMENT ==========
