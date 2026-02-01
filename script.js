@@ -3757,8 +3757,8 @@ function addStudyPill(note) {
     // Create and add new pill
     const pill = document.createElement('div');
     pill.className = 'added-to-study-pill';
-    pill.innerHTML = '📌 Added to Study';
-    pill.title = 'Click to remove from study';
+    pill.innerHTML = '📌';
+    pill.title = 'Added to Study - Click to remove';
     pill.onclick = (e) => {
         e.stopPropagation();
         removeNoteFromStudy(note);

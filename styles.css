@@ -4853,21 +4853,20 @@ body.note-taker-active .sticky-board-wrapper {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    background: #eff6ff;
-    color: var(--primary);
-    padding: 0.175rem 0.5rem;
-    border-radius: 8px;
-    border: 1px solid var(--primary);
-    font-size: 0.525rem;
-    font-weight: 600;
+    background: transparent;
+    padding: 0;
+    border: none;
+    font-size: 1.25rem;
+    line-height: 1;
     z-index: 10;
     cursor: pointer;
     transition: all 0.2s;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) hue-rotate(340deg) saturate(2);
 }
 
 .added-to-study-pill:hover {
-    background: #dbeafe;
-    transform: scale(1.05);
+    transform: scale(1.15) rotate(-10deg);
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4)) hue-rotate(340deg) saturate(2);
 }
 
 /* Sticky Note Colors */
