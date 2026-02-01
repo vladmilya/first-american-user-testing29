@@ -79,8 +79,8 @@ From high-severity (manual wire checking, screen switching) to low-severity (pro
 ### **8 Notable Quotes**
 Direct user feedback highlighting enthusiasm and concerns
 
-### **📋 Complete Research Discussion Guide (50+ Questions)**
-All detailed questions from the ISS P4.1 Iterative Testing Discussion Guide with synthesized findings:
+### **📋 Evaluation Study Report (50+ Questions)**
+All detailed questions from the ISS P4.1 Iterative Testing Evaluation Study with synthesized findings:
 
 **6 Topic Areas:**
 1. **Auto Deposit - Ways of Working** (10 questions) - Deposit frequency, notifications, OBI usage, hold processes
