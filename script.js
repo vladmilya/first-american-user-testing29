@@ -3700,7 +3700,29 @@ function addStudyPill(note) {
     const pill = document.createElement('div');
     pill.className = 'added-to-study-pill';
     pill.textContent = 'Added to Study';
+    pill.title = 'Click to remove from study';
+    pill.onclick = (e) => {
+        e.stopPropagation();
+        removeNoteFromStudy(note);
+    };
     note.appendChild(pill);
+}
+
+// Remove note from study
+function removeNoteFromStudy(note) {
+    if (!confirm('Remove this note from the study?')) return;
+    
+    // Remove the pill
+    const pill = note.querySelector('.added-to-study-pill');
+    if (pill) pill.remove();
+    
+    // Unmark as added to study
+    note.dataset.addedToStudy = 'false';
+    
+    // Save sticky notes
+    saveStickyNotes();
+    
+    // TODO: Also remove from campaign reportNotes if needed
 }
 
 // Add a new sticky note
