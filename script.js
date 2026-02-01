@@ -854,10 +854,6 @@ function renderRecommendations(recommendations) {
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
             </button>
-            <div class="rec-header">
-                <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
-                <span class="related-theme">${rec.relatedTheme}</span>
-            </div>
             <div class="editable-content">
                 <h3 class="title-text">${title}</h3>
                 <textarea class="title-edit" style="display: none;">${title}</textarea>
@@ -868,12 +864,10 @@ function renderRecommendations(recommendations) {
             </div>
             <div class="rec-details">
                 <div class="detail-block editable-content">
-                    <h4>📊 Rationale:</h4>
                     <p class="rationale-text">${rationale}</p>
                     <textarea class="rationale-edit" style="display: none;">${rationale}</textarea>
                 </div>
                 <div class="detail-block editable-content">
-                    <h4>💡 Expected Impact:</h4>
                     <p class="impact-text">${impact}</p>
                     <textarea class="impact-edit" style="display: none;">${impact}</textarea>
                 </div>
