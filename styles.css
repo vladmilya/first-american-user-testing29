@@ -1460,6 +1460,35 @@ body {
     display: block;
 }
 
+.delete-btn {
+    position: absolute;
+    top: 1rem;
+    right: 3.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.delete-btn:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.delete-btn svg {
+    display: block;
+}
+
 /* Position cards relatively for absolute edit button */
 .finding-card,
 .recommendation-card {
