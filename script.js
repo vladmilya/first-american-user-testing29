@@ -771,7 +771,7 @@ function renderOtherNotes(grid) {
             ${reportNotes.map(note => `
                 <div class="card" style="position: relative; padding: 1.5rem; background: #fff9c4; border-left: 4px solid #fbbf24;">
                     ${note.topic ? `
-                        <div style="display: inline-block; background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem;">
+                        <div style="display: inline-block; background: #fcd34d; color: #92400e; border: 1px solid #d97706; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem;">
                             ${escapeHtml(note.topic)}
                         </div>
                     ` : ''}
