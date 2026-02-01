@@ -778,7 +778,7 @@ function renderOtherNotes(grid) {
                     <p style="color: #1f2937; line-height: 1.6; margin: 0 0 1rem 0;">${escapeHtml(note.content)}</p>
                     <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: #6b7280; flex-wrap: wrap;">
                         <span>📅 ${new Date(note.addedAt).toLocaleDateString()}</span>
-                        ${note.fromBoard ? `<span>📋 ${escapeHtml(note.fromBoard)}</span>` : ''}
+                        ${note.fromBoard ? `<span>📋 ${escapeHtml(formatBoardName(note.fromBoard))}</span>` : ''}
                     </div>
                     <button onclick="deleteNoteFromReport('${note.id}')" 
                             style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;"
@@ -1073,7 +1073,7 @@ function renderResearchQuestions(questionSections) {
                                         <p style="margin: 0; color: #1f2937; line-height: 1.6; padding-right: 2rem;">${escapeHtml(note.content)}</p>
                                         <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
                                             <span>📅 ${new Date(note.addedAt).toLocaleDateString()}</span>
-                                            ${note.fromBoard ? `<span>📋 ${note.fromBoard}</span>` : ''}
+                                            ${note.fromBoard ? `<span>📋 ${formatBoardName(note.fromBoard)}</span>` : ''}
                                         </div>
                                     </div>
                                 `).join('')}
@@ -2709,6 +2709,17 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Format board name (board-1 -> User 1)
+function formatBoardName(boardId) {
+    if (!boardId) return '';
+    // Extract number from board-1, board-2, etc.
+    const match = boardId.match(/board-(\d+)/);
+    if (match) {
+        return `User ${match[1]}`;
+    }
+    return boardId;
 }
 
 // Show typing indicator
