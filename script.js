@@ -812,6 +812,10 @@ function renderResearchQuestions(questionSections) {
     const activeCampaign = campaigns.find(c => c.isActive);
     const reportNotes = (activeCampaign && activeCampaign.reportNotes) ? activeCampaign.reportNotes : [];
     
+    // Debug: log report notes
+    console.log('Report notes:', reportNotes);
+    console.log('Active campaign:', activeCampaign);
+    
     // Count total questions
     const totalQuestions = questionSections.reduce((sum, sec) => sum + sec.questions.length, 0);
     
@@ -951,11 +955,38 @@ function renderResearchQuestions(questionSections) {
                 ${(() => {
                     // Get notes for this topic - match by section name or topic name
                     const customTopics = getCustomTopics();
-                    const topicMatch = customTopics.find(t => t.name === section.section);
-                    const sectionNotes = reportNotes.filter(note => 
-                        note.topic === section.section || 
-                        (topicMatch && note.topic === topicMatch.name)
-                    );
+                    
+                    // Debug log
+                    console.log('Section:', section.section, 'Custom topics:', customTopics);
+                    
+                    // Try to match notes by topic name (case-insensitive and trimmed)
+                    const sectionNotes = reportNotes.filter(note => {
+                        if (!note.topic) return false;
+                        const noteTopic = note.topic.trim().toLowerCase();
+                        const sectionName = section.section.trim().toLowerCase();
+                        
+                        // Debug log
+                        console.log('Checking note topic:', noteTopic, 'against section:', sectionName);
+                        
+                        // Direct match
+                        if (noteTopic === sectionName) {
+                            console.log('Direct match found!');
+                            return true;
+                        }
+                        
+                        // Check if matches any custom topic that matches this section
+                        const topicMatch = customTopics.find(t => 
+                            t.name.trim().toLowerCase() === sectionName
+                        );
+                        if (topicMatch && noteTopic === topicMatch.name.trim().toLowerCase()) {
+                            console.log('Custom topic match found!');
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                    
+                    console.log('Section notes found:', sectionNotes.length, 'for section:', section.section);
                     
                     if (sectionNotes.length === 0) return '';
                     
@@ -966,8 +997,11 @@ function renderResearchQuestions(questionSections) {
                             </h4>
                             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                                 ${sectionNotes.map(note => `
-                                    <div style="background: white; padding: 1rem; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                        <p style="margin: 0; color: #1f2937; line-height: 1.6;">${escapeHtml(note.content)}</p>
+                                    <div style="background: white; padding: 1rem; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;">
+                                        <button onclick="deleteNoteFromReport('${note.id}')" 
+                                                style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;"
+                                                title="Delete note">×</button>
+                                        <p style="margin: 0; color: #1f2937; line-height: 1.6; padding-right: 2rem;">${escapeHtml(note.content)}</p>
                                         <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
                                             <span>📅 ${new Date(note.addedAt).toLocaleDateString()}</span>
                                             ${note.fromBoard ? `<span>📋 ${note.fromBoard}</span>` : ''}
@@ -992,6 +1026,25 @@ function renderResearchQuestions(questionSections) {
             </p>
         </div>
     `;
+}
+
+// Delete note from report
+function deleteNoteFromReport(noteId) {
+    if (!confirm('Delete this note from the study?')) return;
+    
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    
+    if (!activeCampaign || !activeCampaign.reportNotes) return;
+    
+    // Remove the note
+    activeCampaign.reportNotes = activeCampaign.reportNotes.filter(n => n.id !== noteId);
+    saveCampaigns(campaigns);
+    
+    // Re-render the research questions to show updated notes
+    if (typeof synthesisData !== 'undefined' && synthesisData.researchQuestions) {
+        renderResearchQuestions(synthesisData.researchQuestions);
+    }
 }
 
 function updateParticipantCount(count) {
