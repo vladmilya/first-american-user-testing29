@@ -2933,7 +2933,7 @@ function exitNoteTaker() {
     if (header) header.style.display = '';
 }
 
-// Go to Study Evaluation Details from Note Taker
+// Go to Behavioral Patterns Syntheses from Note Taker
 function goToStudyEvaluationDetails() {
     exitNoteTaker();
     navigateToSection('research-questions');
