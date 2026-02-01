@@ -813,7 +813,7 @@ function renderResearchQuestions(questionSections) {
     section.innerHTML = `
         <div style="background: var(--surface); padding: 2rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
             <p style="color: var(--text-light); line-height: 1.7; margin-bottom: 1rem;">
-                This section contains <strong>all ${totalQuestions} detailed research questions</strong> from the ISS P4.1 Iterative Testing Evaluation Study, 
+                This section contains <strong>all ${totalQuestions} detailed research questions</strong> from the ISS P4.1 Iterative Testing Study Evaluation, 
                 organized by feature area. Each answer represents synthesized findings from patterns observed across all 6 participants, 
                 with <strong>user consensus indicators (👤)</strong> showing how many participants expressed similar responses.
             </p>
@@ -948,7 +948,7 @@ function renderResearchQuestions(questionSections) {
         <div style="background: var(--surface); padding: 2rem; border-radius: 8px; margin-top: 3rem; border: 2px solid var(--primary);">
             <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.25rem;">📚 About These Questions & Answers</h3>
             <p style="margin: 0 0 1rem 0; line-height: 1.7; color: var(--text);">
-                These ${totalQuestions} questions were part of the <strong>ISS P4.1 Iterative Testing Evaluation Study</strong> used during moderated usability testing sessions. 
+                These ${totalQuestions} questions were part of the <strong>ISS P4.1 Iterative Testing Study Evaluation</strong> used during moderated usability testing sessions. 
                 The answers synthesize patterns, behaviors, and insights observed across all 6 participants.
             </p>
             <p style="margin: 0; line-height: 1.7; color: var(--text-light);">
@@ -1671,7 +1671,7 @@ function initializeCampaigns() {
         ]
     };
     
-    // Default Evaluation Study topics for ISS campaign
+    // Default Study Evaluation topics for ISS campaign
     const defaultDiscussionGuideTopics = [
         { id: 'topic-default-1', name: 'Auto Deposits', category: 'behavioral' },
         { id: 'topic-default-2', name: 'SS In-Line Editing', category: 'behavioral' },
@@ -2707,7 +2707,7 @@ function enterNoteTaker() {
     if (sidebar) sidebar.style.display = 'none';
     if (header) header.style.display = 'none';
     
-    // Refresh topic filter to sync with Evaluation Study topics
+    // Refresh topic filter to sync with Study Evaluation topics
     populateTopicFilter();
     
     // Also refresh the topic selects in existing notes
@@ -2784,7 +2784,7 @@ function getCampaignThemes() {
     return [];
 }
 
-// Get topic options HTML for sticky note dropdown - ONLY Evaluation Study topics
+// Get topic options HTML for sticky note dropdown - ONLY Study Evaluation topics
 function getTopicOptionsHtml(selectedTopic = '') {
     const customTopics = getCustomTopics();
     return customTopics.map(t => {
@@ -2802,7 +2802,7 @@ function getTopicCategory(topicName) {
     return topic ? topic.category : null;
 }
 
-// Populate topic filter dropdown - ONLY shows Evaluation Study topics
+// Populate topic filter dropdown - ONLY shows Study Evaluation topics
 function populateTopicFilter() {
     const select = document.getElementById('topic-filter-select');
     if (!select) return;
@@ -2810,7 +2810,7 @@ function populateTopicFilter() {
     // Clear existing options
     select.innerHTML = '<option value="all">All Topics</option>';
     
-    // Only get custom topics from Evaluation Study
+    // Only get custom topics from Study Evaluation
     const customTopics = getCustomTopics();
     
     if (customTopics.length === 0) {
@@ -2834,7 +2834,7 @@ function populateTopicFilter() {
         return true;
     });
     
-    // Add unique Evaluation Study topics
+    // Add unique Study Evaluation topics
     uniqueTopics.forEach(topic => {
         const option = document.createElement('option');
         option.value = topic.name;
@@ -3088,7 +3088,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function showHowItWorks(section) {
     const content = {
         'evaluation-report': {
-            title: 'Evaluation Study',
+            title: 'Study Evaluation',
             description: 'Upload your evaluation report or research discussion guide.',
             steps: [
                 'Upload a PDF or DOC file with your evaluation report',
@@ -4070,7 +4070,7 @@ function renderCampaignFiles(files) {
                     <div class="file-icon questions-icon">📋</div>
                     <div class="file-info">
                         <div class="file-name" title="${file.name}">${file.name}</div>
-                        <div class="file-type">Evaluation Study</div>
+                        <div class="file-type">Study Evaluation</div>
                     </div>
                 </div>
             `;
