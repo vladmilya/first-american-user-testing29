@@ -2711,14 +2711,24 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Format board name (board-1 -> User 1)
+// Format board name (board-{timestamp}-{index} -> User {index+1})
 function formatBoardName(boardId) {
     if (!boardId) return '';
-    // Extract number from board-1, board-2, etc.
-    const match = boardId.match(/board-(\d+)/);
-    if (match) {
-        return `User ${match[1]}`;
+    
+    // Get all boards to find the index
+    const boards = getBoards();
+    const boardIndex = boards.findIndex(b => b.id === boardId);
+    
+    if (boardIndex !== -1) {
+        return `User ${boardIndex + 1}`;
     }
+    
+    // Fallback: try to extract index from board-timestamp-index format
+    const match = boardId.match(/board-\d+-(\d+)$/);
+    if (match) {
+        return `User ${parseInt(match[1]) + 1}`;
+    }
+    
     return boardId;
 }
 
