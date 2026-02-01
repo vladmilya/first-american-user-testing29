@@ -18,7 +18,7 @@ This repository contains:
 
 - Executive Summary with 6 participant profiles
 - 8 Key Findings
-- 12 Themes & Patterns
+- 12 Behavioral Patterns
 - 12 User Pain Points
 - 10 Notable Quotes
 - 9 Actionable Recommendations

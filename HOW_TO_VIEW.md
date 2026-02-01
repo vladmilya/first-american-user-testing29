@@ -38,7 +38,7 @@ An interactive user testing synthesis report with:
 
 - **Executive Summary** - 6 participant profiles (click to expand)
 - **Key Findings** - 8 major insights from testing
-- **Themes & Patterns** - 12 themes with frequency and examples
+- **Behavioral Patterns** - 12 themes with frequency and examples
 - **User Pain Points** - 12 identified issues with severity
 - **Notable Quotes** - 10 impactful participant quotes
 - **Recommendations** - 9 actionable improvements

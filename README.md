@@ -30,7 +30,7 @@ An interactive web application displaying comprehensive analysis of 6 user testi
 2. **Navigate Sections**: Use the sidebar to jump between:
    - Executive Summary
    - Key Findings (6 major insights)
-   - Themes & Patterns (9 categories)
+   - Behavioral Patterns (9 categories)
    - Pain Points (10 identified issues)
    - Notable Quotes (8 key statements)
    - Recommendations (7 prioritized actions)
