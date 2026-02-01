@@ -645,7 +645,7 @@ function renderThemes(themes) {
                         ${cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </button>
                 `).join('')}
-                <button class="filter-btn" data-filter="category" data-value="other-notes">Other Notes</button>
+                <button class="filter-btn" data-filter="category" data-value="other-notes">Important Notes</button>
             </div>
         </div>
     `;
@@ -764,7 +764,7 @@ function renderOtherNotes(grid) {
     section.className = 'other-notes-section';
     section.innerHTML = `
         <div style="margin-bottom: 2rem;">
-            <h3 style="color: var(--text); margin-bottom: 0.5rem;">Other Notes (${reportNotes.length})</h3>
+            <h3 style="color: var(--text); margin-bottom: 0.5rem;">Important Notes (${reportNotes.length})</h3>
             <p style="color: var(--text-light); margin: 0;">Notes added from the Note Taker</p>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
@@ -1128,7 +1128,7 @@ function deleteNoteFromReport(noteId) {
         renderResearchQuestions(synthesisData.researchQuestions);
     }
     
-    // If Other Notes view is currently visible, refresh it
+    // If Important Notes view is currently visible, refresh it
     const otherNotesSection = document.querySelector('.other-notes-section');
     if (otherNotesSection) {
         const grid = document.querySelector('#themes .themes-grid');
