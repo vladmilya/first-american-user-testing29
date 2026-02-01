@@ -1983,7 +1983,7 @@ function selectStudy(campaignId) {
     setActiveCampaign(campaignId);
     renderStudiesList();
     
-    // Navigate to the study summary
+    // Navigate to the evaluation details
     window.location.hash = 'executive-summary';
     navigateToSection('executive-summary');
 }
@@ -2760,7 +2760,7 @@ function exitNoteTaker() {
     if (header) header.style.display = '';
 }
 
-// Go to Study Summary from Note Taker
+// Go to Evaluation Details from Note Taker
 function goToExecutiveSummary() {
     exitNoteTaker();
     navigateToSection('executive-summary');
