@@ -3065,7 +3065,7 @@ function showHowItWorks(section) {
     
     popup.innerHTML = `
         <div class="how-it-works-content">
-            <h3>How it works: ${info.title}</h3>
+            <h3>How it works</h3>
             <p>${info.description}</p>
             <ul>
                 ${info.steps.map(step => `<li>${step}</li>`).join('')}
