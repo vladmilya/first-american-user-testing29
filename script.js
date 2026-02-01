@@ -4116,7 +4116,23 @@ function addSelectedToReport() {
         ? `The note was added to "${Object.keys(topicCounts)[0]}" section`
         : `${validNotes.length} notes added:\n\n${topicMessages.join('\n')}`;
     
-    alert(message);
+    showSuccessNotification(message);
+}
+
+// Show success notification
+function showSuccessNotification(message) {
+    const notification = document.getElementById('success-notification');
+    const messageEl = document.getElementById('notification-message');
+    
+    if (!notification || !messageEl) return;
+    
+    messageEl.textContent = message;
+    notification.style.display = 'block';
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
 }
 
 // Initialize Note Taker when page loads
