@@ -3706,6 +3706,11 @@ function startDrag(e, noteId) {
     // Pass event for multi-select detection
     selectNote(noteId, e);
     
+    // Don't start dragging if multi-selecting (Ctrl/Cmd held)
+    if (e.ctrlKey || e.metaKey) {
+        return;
+    }
+    
     isDragging = true;
     note.classList.add('dragging');
     
