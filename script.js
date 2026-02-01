@@ -2934,9 +2934,22 @@ function exitNoteTaker() {
 }
 
 // Go to Behavioral Patterns Syntheses from Note Taker
-function goToStudyEvaluationDetails() {
+function goToBehavioralPatternsImportantNotes() {
     exitNoteTaker();
-    navigateToSection('research-questions');
+    navigateToSection('themes');
+    
+    // Wait for section to load, then select Important Notes filter
+    setTimeout(() => {
+        const importantNotesBtn = document.querySelector('#themes .filter-btn[data-value="other-notes"]');
+        if (importantNotesBtn) {
+            importantNotesBtn.click();
+        }
+    }, 100);
+}
+
+// Legacy function for backward compatibility
+function goToStudyEvaluationDetails() {
+    goToBehavioralPatternsImportantNotes();
 }
 
 // Legacy function for backward compatibility
