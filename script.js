@@ -1645,6 +1645,7 @@ function toggleFAQ() {
 document.addEventListener('DOMContentLoaded', () => {
     initializeCampaigns();
     renderCampaignsList();
+    renderStudiesList();
 });
 
 // Campaign storage structure
@@ -1893,6 +1894,62 @@ function renderCampaignsList() {
     `).join('');
     
     updateCurrentCampaignDisplay();
+}
+
+// Render studies list for Select Study page
+function renderStudiesList() {
+    const container = document.getElementById('studies-list');
+    if (!container) return;
+    
+    const campaigns = getCampaigns();
+    
+    if (campaigns.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-light); text-align: center; padding: 2rem;">No studies available. Create a campaign in UXD Admin to get started.</p>';
+        return;
+    }
+    
+    container.innerHTML = campaigns.map(campaign => {
+        const fileCount = (campaign.files?.questions?.length || 0) + 
+                          (campaign.files?.transcripts?.length || 0) + 
+                          (campaign.files?.videos?.length || 0) + 
+                          (campaign.files?.presentations?.length || 0);
+        
+        return `
+            <div class="study-card ${campaign.isActive ? 'active' : ''}" onclick="selectStudy('${campaign.id}')">
+                <div class="study-card-header">
+                    <div class="study-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="study-card-title">${campaign.name}</h4>
+                        <p class="study-card-date">Created: ${new Date(campaign.createdDate).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                <p class="study-card-description">
+                    ${campaign.isActive ? '✓ Currently Active Study' : 'Click to view this study'}
+                </p>
+                <div class="study-card-stats">
+                    <span class="study-stat"><strong>${fileCount}</strong> files uploaded</span>
+                    <span class="study-stat"><strong>${campaign.userCount || 6}</strong> participants</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Select a study and navigate to its summary
+function selectStudy(campaignId) {
+    setActiveCampaign(campaignId);
+    renderStudiesList();
+    
+    // Navigate to the study summary
+    window.location.hash = 'executive-summary';
+    navigateToSection('executive-summary');
 }
 
 // Open create campaign modal
