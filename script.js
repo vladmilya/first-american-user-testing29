@@ -3825,6 +3825,8 @@ function deselectAllNotes() {
 // Update selection count display
 function updateSelectionCount() {
     const addToReportBtn = document.querySelector('.add-to-report-btn');
+    const clearBtn = document.querySelector('.clear-selection-btn');
+    
     if (addToReportBtn) {
         if (selectedNotes.length > 1) {
             addToReportBtn.innerHTML = `+ Add ${selectedNotes.length} Notes To Study`;
@@ -3833,6 +3835,11 @@ function updateSelectionCount() {
         } else {
             addToReportBtn.innerHTML = `+ Add Notes To Study`;
         }
+    }
+    
+    // Show/hide clear selection button
+    if (clearBtn) {
+        clearBtn.style.display = selectedNotes.length > 0 ? 'flex' : 'none';
     }
 }
 
@@ -3995,7 +4002,7 @@ function saveStickyNotes() {
 // Add selected note to report
 function addSelectedToReport() {
     if (selectedNotes.length === 0) {
-        alert('Please select one or more notes first.\n\nTip: Hold Ctrl/Cmd and click to select multiple notes.');
+        alert('Please select one or more notes first.\n\nTip: Hold Ctrl/Cmd and click to select multiple notes.\nClick again on a selected note to deselect it.');
         return;
     }
     

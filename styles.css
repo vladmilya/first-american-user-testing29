@@ -4425,6 +4425,26 @@ body.note-taker-active .sticky-board-wrapper {
     transform: translateY(-2px);
 }
 
+.clear-selection-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-selection-btn:hover {
+    background: var(--surface);
+    border-color: var(--text-light);
+}
+
 .setup-users-btn {
     display: flex;
     align-items: center;
