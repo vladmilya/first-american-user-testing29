@@ -4826,9 +4826,7 @@ body.note-taker-active .sticky-board-wrapper {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: box-shadow 0.2s;
-    border: none;
-    border-top: none;
+    transition: box-shadow 0.2s, outline 0.2s;
 }
 
 .sticky-note:hover {
@@ -4841,9 +4839,7 @@ body.note-taker-active .sticky-board-wrapper {
 }
 
 .sticky-note.selected {
-    /* No visual styling for selection */
-    outline: none !important;
-    border: none !important;
+    outline: 1px solid var(--primary);
 }
 
 .sticky-note:focus,
