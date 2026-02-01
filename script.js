@@ -1670,7 +1670,7 @@ function initializeCampaigns() {
         ]
     };
     
-    // Default Evaluation Report topics for ISS campaign
+    // Default Evaluation Study topics for ISS campaign
     const defaultDiscussionGuideTopics = [
         { id: 'topic-default-1', name: 'Auto Deposits', category: 'behavioral' },
         { id: 'topic-default-2', name: 'SS In-Line Editing', category: 'behavioral' },
@@ -2650,7 +2650,7 @@ function enterNoteTaker() {
     if (sidebar) sidebar.style.display = 'none';
     if (header) header.style.display = 'none';
     
-    // Refresh topic filter to sync with Evaluation Report topics
+    // Refresh topic filter to sync with Evaluation Study topics
     populateTopicFilter();
     
     // Also refresh the topic selects in existing notes
@@ -2727,7 +2727,7 @@ function getCampaignThemes() {
     return [];
 }
 
-// Get topic options HTML for sticky note dropdown - ONLY Evaluation Report topics
+// Get topic options HTML for sticky note dropdown - ONLY Evaluation Study topics
 function getTopicOptionsHtml(selectedTopic = '') {
     const customTopics = getCustomTopics();
     return customTopics.map(t => {
@@ -2745,7 +2745,7 @@ function getTopicCategory(topicName) {
     return topic ? topic.category : null;
 }
 
-// Populate topic filter dropdown - ONLY shows Evaluation Report topics
+// Populate topic filter dropdown - ONLY shows Evaluation Study topics
 function populateTopicFilter() {
     const select = document.getElementById('topic-filter-select');
     if (!select) return;
@@ -2753,7 +2753,7 @@ function populateTopicFilter() {
     // Clear existing options
     select.innerHTML = '<option value="all">All Topics</option>';
     
-    // Only get custom topics from Evaluation Report
+    // Only get custom topics from Evaluation Study
     const customTopics = getCustomTopics();
     
     if (customTopics.length === 0) {
@@ -2777,7 +2777,7 @@ function populateTopicFilter() {
         return true;
     });
     
-    // Add unique Evaluation Report topics
+    // Add unique Evaluation Study topics
     uniqueTopics.forEach(topic => {
         const option = document.createElement('option');
         option.value = topic.name;
@@ -3031,7 +3031,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function showHowItWorks(section) {
     const content = {
         'evaluation-report': {
-            title: 'Evaluation Report',
+            title: 'Evaluation Study',
             description: 'Upload your evaluation report or research discussion guide.',
             steps: [
                 'Upload a PDF or DOC file with your evaluation report',
@@ -4013,7 +4013,7 @@ function renderCampaignFiles(files) {
                     <div class="file-icon questions-icon">📋</div>
                     <div class="file-info">
                         <div class="file-name" title="${file.name}">${file.name}</div>
-                        <div class="file-type">Evaluation Report</div>
+                        <div class="file-type">Evaluation Study</div>
                     </div>
                 </div>
             `;
