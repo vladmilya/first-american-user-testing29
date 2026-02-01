@@ -4066,19 +4066,25 @@ function addSelectedToReport() {
         activeCampaign.reportNotes = [];
     }
     
+    // Track topics for confirmation message
+    const topicCounts = {};
+    
     // Add each selected note
     validNotes.forEach(note => {
         const content = note.querySelector('.sticky-note-content');
         const noteText = content.textContent.trim();
         const noteColor = note.classList.contains('green') ? 'positive' : 
                           note.classList.contains('red') ? 'negative' : 'neutral';
-        const noteTopic = note.dataset.topic || '';
+        const noteTopic = note.dataset.topic || 'No Topic';
+        
+        // Count notes by topic
+        topicCounts[noteTopic] = (topicCounts[noteTopic] || 0) + 1;
         
         activeCampaign.reportNotes.push({
             id: 'report-note-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
             content: noteText,
             type: noteColor,
-            topic: noteTopic,
+            topic: noteTopic === 'No Topic' ? '' : noteTopic,
             addedAt: new Date().toISOString(),
             fromBoard: currentBoardId
         });
@@ -4099,8 +4105,18 @@ function addSelectedToReport() {
         updateSelectionCount();
     }, 1500);
     
+    // Build confirmation message
     const noteWord = validNotes.length === 1 ? 'note' : 'notes';
-    alert(`${validNotes.length} ${noteWord} added to study!`);
+    const topicMessages = Object.entries(topicCounts).map(([topic, count]) => {
+        const countText = count === 1 ? '1 note' : `${count} notes`;
+        return `• ${countText} to "${topic}" section`;
+    });
+    
+    const message = validNotes.length === 1 
+        ? `The note was added to "${Object.keys(topicCounts)[0]}" section`
+        : `${validNotes.length} notes added:\n\n${topicMessages.join('\n')}`;
+    
+    alert(message);
 }
 
 // Initialize Note Taker when page loads
