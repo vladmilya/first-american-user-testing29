@@ -266,18 +266,13 @@
                 <!-- Manage Topics Modal -->
                 <div id="manage-topics-modal" class="modal" style="display: none;">
                     <div class="manage-topics-modal-content">
-                        <h3>🏷️ Manage Campaign Topics</h3>
+                        <h3>🏷️ Discussion Guide Topics</h3>
                         <p style="color: var(--text-light); margin-bottom: 1rem;">
-                            Add custom topics from your scenario file. These will appear in the topic dropdown for sticky notes.
+                            Topics from your Discussion Guide file. Use the Reset button to restore default topics.
                         </p>
                         
-                        <div class="add-topic-section">
-                            <input type="text" id="new-topic-input" class="new-topic-input" placeholder="Enter topic name (e.g., 'Wire Transfer Process')">
-                            <button class="add-topic-btn" onclick="addCustomTopic()">+ Add</button>
-                        </div>
-                        
                         <div class="topics-list-section">
-                            <h4>Custom Topics</h4>
+                            <h4>Discussion Guide Topics</h4>
                             <div id="custom-topics-list" class="custom-topics-list">
                                 <!-- Topics will be listed here -->
                             </div>
@@ -314,11 +309,7 @@
                         <div class="discussion-guide-topics">
                             <div class="topics-header">
                                 <h4>🏷️ Discussion Topics</h4>
-                                <span class="topics-sync-note">These topics sync to Note Taker</span>
-                            </div>
-                            <div class="add-topic-inline">
-                                <input type="text" id="build-report-topic-input" class="topic-input-inline" placeholder="Enter a topic from your discussion guide...">
-                                <button class="add-topic-inline-btn" onclick="addTopicFromBuildReport()">+ Add</button>
+                                <span class="topics-sync-note">Topics from Discussion Guide</span>
                             </div>
                             <div id="build-report-topics-list" class="topics-list-inline">
                                 <!-- Topics will be listed here -->
