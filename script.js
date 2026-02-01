@@ -864,10 +864,12 @@ function renderRecommendations(recommendations) {
             </div>
             <div class="rec-details">
                 <div class="detail-block editable-content">
+                    <h4>📊 Rationale:</h4>
                     <p class="rationale-text">${rationale}</p>
                     <textarea class="rationale-edit" style="display: none;">${rationale}</textarea>
                 </div>
                 <div class="detail-block editable-content">
+                    <h4>💡 Expected Impact:</h4>
                     <p class="impact-text">${impact}</p>
                     <textarea class="impact-edit" style="display: none;">${impact}</textarea>
                 </div>
