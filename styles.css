@@ -4839,7 +4839,21 @@ body.note-taker-active .sticky-board-wrapper {
 }
 
 .sticky-note.selected {
-    outline: 3px solid var(--primary);
+    position: relative;
+}
+
+.added-to-study-pill {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    pointer-events: none;
 }
 
 /* Sticky Note Colors */

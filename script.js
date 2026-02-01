@@ -3831,16 +3831,20 @@ function selectNote(noteId, event) {
         if (selectedNotes.includes(note)) {
             // Remove from selection
             note.classList.remove('selected');
+            const pill = note.querySelector('.added-to-study-pill');
+            if (pill) pill.remove();
             selectedNotes = selectedNotes.filter(n => n !== note);
         } else {
             // Add to selection
             note.classList.add('selected');
+            addStudyPill(note);
             selectedNotes.push(note);
         }
     } else {
         // Single select - clear others first
         deselectAllNotes();
         note.classList.add('selected');
+        addStudyPill(note);
         selectedNotes = [note];
     }
     
@@ -3848,11 +3852,27 @@ function selectNote(noteId, event) {
     updateSelectionCount();
 }
 
+// Add "Added to Study" pill to note
+function addStudyPill(note) {
+    // Remove existing pill if any
+    const existingPill = note.querySelector('.added-to-study-pill');
+    if (existingPill) existingPill.remove();
+    
+    // Create and add new pill
+    const pill = document.createElement('div');
+    pill.className = 'added-to-study-pill';
+    pill.textContent = 'Added to Study';
+    note.appendChild(pill);
+}
+
 // Deselect all notes
 function deselectAllNotes() {
     selectedNotes.forEach(note => {
         note.classList.remove('selected');
         note.classList.remove('editing');
+        // Remove pill badge
+        const pill = note.querySelector('.added-to-study-pill');
+        if (pill) pill.remove();
     });
     selectedNotes = [];
     updateSelectionCount();
@@ -4100,6 +4120,9 @@ function addSelectedToReport() {
         validNotes.forEach(note => {
             note.style.outline = '';
             note.classList.remove('selected');
+            // Remove pill badge
+            const pill = note.querySelector('.added-to-study-pill');
+            if (pill) pill.remove();
         });
         selectedNotes = [];
         updateSelectionCount();
