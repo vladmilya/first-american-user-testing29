@@ -3824,9 +3824,9 @@ function updateSelectionCount() {
         if (selectedNotes.length > 1) {
             addToReportBtn.innerHTML = `📄 Add ${selectedNotes.length} Notes to Report`;
         } else if (selectedNotes.length === 1) {
-            addToReportBtn.innerHTML = `📄 Add to Report`;
+            addToReportBtn.innerHTML = `📄 Add Notes To Study`;
         } else {
-            addToReportBtn.innerHTML = `📄 Add to Report`;
+            addToReportBtn.innerHTML = `📄 Add Notes To Study`;
         }
     }
 }
