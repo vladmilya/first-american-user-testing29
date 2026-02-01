@@ -3028,6 +3028,55 @@ document.addEventListener('DOMContentLoaded', function() {
     renderBuildReportTopics();
 });
 
+// ========== HOW IT WORKS POPUP ==========
+
+function showHowItWorks(section) {
+    const content = {
+        'discussion-guide': {
+            title: 'Discussion Guide',
+            description: 'Upload your research discussion guide or interview script.',
+            steps: [
+                'Upload a PDF or DOC file with your discussion guide',
+                'Topics from the guide will appear in the Note Taker filter',
+                'Use topics to organize and categorize your interview notes',
+                'Topics sync automatically between Build Report and Note Taker'
+            ]
+        },
+        'transcripts': {
+            title: 'Interview Transcripts',
+            description: 'Upload transcripts from your user interviews.',
+            steps: [
+                'Upload PDF or DOC files containing interview transcripts',
+                'Each file should contain one participant\'s interview',
+                'The system will extract quotes and insights automatically',
+                'Transcripts are used to generate the synthesis report'
+            ]
+        }
+    };
+    
+    const info = content[section];
+    if (!info) return;
+    
+    const popup = document.createElement('div');
+    popup.className = 'how-it-works-popup';
+    popup.onclick = (e) => {
+        if (e.target === popup) popup.remove();
+    };
+    
+    popup.innerHTML = `
+        <div class="how-it-works-content">
+            <h3>ℹ️ How it works: ${info.title}</h3>
+            <p>${info.description}</p>
+            <ul>
+                ${info.steps.map(step => `<li>${step}</li>`).join('')}
+            </ul>
+            <button class="how-it-works-close" onclick="this.closest('.how-it-works-popup').remove()">Got it</button>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+}
+
 // ========== SPLIT SCREEN FUNCTIONALITY ==========
 
 let isSplitScreenActive = false;

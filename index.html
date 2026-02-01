@@ -295,8 +295,17 @@
                 <div class="upload-section-unified">
                     <div class="upload-card-unified discussion-guide-card">
                         <div class="upload-card-header">
-                            <h3>📋 1. Discussion Guide</h3>
-                            <span class="required-badge">Required</span>
+                            <h3>Discussion Guide</h3>
+                            <div class="header-actions">
+                                <button class="info-btn" onclick="showHowItWorks('discussion-guide')" title="How it works">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                </button>
+                                <span class="required-badge">Required</span>
+                            </div>
                         </div>
                         <p style="color: var(--text-light); margin-bottom: 1rem;">Upload a PDF or DOC file containing your discussion guide</p>
                         <input type="file" id="questions-file" accept=".pdf,.doc,.docx,.txt" style="display: none;">
@@ -320,8 +329,17 @@
                     <!-- Transcript Data -->
                     <div class="upload-card-unified">
                         <div class="upload-card-header">
-                            <h3>📝 2. Interview Transcripts</h3>
-                            <span class="required-badge">Required</span>
+                            <h3>Interview Transcripts</h3>
+                            <div class="header-actions">
+                                <button class="info-btn" onclick="showHowItWorks('transcripts')" title="How it works">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                </button>
+                                <span class="required-badge">Required</span>
+                            </div>
                         </div>
                         <p style="color: var(--text-light); margin-bottom: 1rem;">Upload PDF or DOC files containing interview transcripts</p>
                         <input type="file" id="transcript-files" accept=".pdf,.doc,.docx,.txt" multiple style="display: none;">
@@ -336,7 +354,14 @@
                     <!-- AI Training Examples -->
                     <div class="upload-card-unified">
                         <div class="upload-card-header">
-                            <h3>🤖 3. AI Training Examples</h3>
+                            <h3>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                                    <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"></path>
+                                    <path d="M16 14v6a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-6"></path>
+                                    <circle cx="12" cy="14" r="4"></circle>
+                                </svg>
+                                AI Training Examples
+                            </h3>
                             <span class="optional-badge">Optional</span>
                         </div>
                         <p style="color: var(--text-light); margin-bottom: 1rem;">Upload presentation examples to train AI on your preferred style</p>

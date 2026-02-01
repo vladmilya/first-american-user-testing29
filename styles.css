@@ -2682,8 +2682,100 @@ body {
 
 .upload-card-header h3 {
     margin: 0;
-    color: var(--primary);
+    color: var(--text);
     font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Info Button - Block Party Style */
+.info-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: var(--text-light);
+}
+
+.info-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.info-btn:hover svg {
+    stroke: white;
+}
+
+/* How It Works Popup */
+.how-it-works-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.how-it-works-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.how-it-works-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.how-it-works-content p {
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+}
+
+.how-it-works-content ul {
+    margin: 0 0 1.5rem 0;
+    padding-left: 1.25rem;
+    color: var(--text);
+    line-height: 1.8;
+}
+
+.how-it-works-close {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.how-it-works-close:hover {
+    background: var(--primary-dark);
 }
 
 .required-badge {
