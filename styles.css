@@ -4853,11 +4853,12 @@ body.note-taker-active .sticky-board-wrapper {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    background: var(--primary);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    background: #eff6ff;
+    color: var(--primary);
+    padding: 0.175rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--primary);
+    font-size: 0.525rem;
     font-weight: 600;
     z-index: 10;
     cursor: pointer;
@@ -4865,7 +4866,7 @@ body.note-taker-active .sticky-board-wrapper {
 }
 
 .added-to-study-pill:hover {
-    background: #2563eb;
+    background: #dbeafe;
     transform: scale(1.05);
 }
 
