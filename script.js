@@ -3822,7 +3822,7 @@ function updateSelectionCount() {
     const addToReportBtn = document.querySelector('.add-to-report-btn');
     if (addToReportBtn) {
         if (selectedNotes.length > 1) {
-            addToReportBtn.innerHTML = `📄 Add ${selectedNotes.length} Notes to Report`;
+            addToReportBtn.innerHTML = `+ Add ${selectedNotes.length} Notes To Study`;
         } else if (selectedNotes.length === 1) {
             addToReportBtn.innerHTML = `+ Add Notes To Study`;
         } else {
@@ -4052,7 +4052,7 @@ function addSelectedToReport() {
     }, 1500);
     
     const noteWord = validNotes.length === 1 ? 'note' : 'notes';
-    alert(`${validNotes.length} ${noteWord} added to report!`);
+    alert(`${validNotes.length} ${noteWord} added to study!`);
 }
 
 // Initialize Note Taker when page loads
