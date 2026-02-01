@@ -2855,10 +2855,9 @@ function closeManageTopicsModal() {
 // Add custom topic
 function addCustomTopic() {
     const input = document.getElementById('new-topic-input');
-    const categorySelect = document.getElementById('topic-category-select');
     
     const topicName = input.value.trim();
-    const category = categorySelect.value;
+    const category = 'behavioral'; // Default category
     
     if (!topicName) {
         alert('Please enter a topic name');
@@ -2963,10 +2962,9 @@ function refreshAllNoteTopicSelects() {
 // Add topic from Build Report page
 function addTopicFromBuildReport() {
     const input = document.getElementById('build-report-topic-input');
-    const categorySelect = document.getElementById('build-report-topic-category');
     
     const topicName = input.value.trim();
-    const category = categorySelect.value;
+    const category = 'behavioral'; // Default category
     
     if (!topicName) {
         alert('Please enter a topic name');
