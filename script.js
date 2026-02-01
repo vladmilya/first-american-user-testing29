@@ -3679,9 +3679,28 @@ function createNoteElement(noteData) {
     board.appendChild(note);
     note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
     
+    // Mark if added to study
+    if (noteData.addedToStudy) {
+        note.dataset.addedToStudy = 'true';
+        addStudyPill(note);
+    }
+    
     // Apply auto-resize font
     const content = note.querySelector('.sticky-note-content');
     if (content) autoResizeFont(content);
+}
+
+// Add "Added to Study" pill to note
+function addStudyPill(note) {
+    // Remove existing pill if any
+    const existingPill = note.querySelector('.added-to-study-pill');
+    if (existingPill) return; // Don't add duplicate
+    
+    // Create and add new pill
+    const pill = document.createElement('div');
+    pill.className = 'added-to-study-pill';
+    pill.textContent = 'Added to Study';
+    note.appendChild(pill);
 }
 
 // Add a new sticky note
@@ -3831,20 +3850,16 @@ function selectNote(noteId, event) {
         if (selectedNotes.includes(note)) {
             // Remove from selection
             note.classList.remove('selected');
-            const pill = note.querySelector('.added-to-study-pill');
-            if (pill) pill.remove();
             selectedNotes = selectedNotes.filter(n => n !== note);
         } else {
             // Add to selection
             note.classList.add('selected');
-            addStudyPill(note);
             selectedNotes.push(note);
         }
     } else {
         // Single select - clear others first
         deselectAllNotes();
         note.classList.add('selected');
-        addStudyPill(note);
         selectedNotes = [note];
     }
     
@@ -3852,27 +3867,11 @@ function selectNote(noteId, event) {
     updateSelectionCount();
 }
 
-// Add "Added to Study" pill to note
-function addStudyPill(note) {
-    // Remove existing pill if any
-    const existingPill = note.querySelector('.added-to-study-pill');
-    if (existingPill) existingPill.remove();
-    
-    // Create and add new pill
-    const pill = document.createElement('div');
-    pill.className = 'added-to-study-pill';
-    pill.textContent = 'Added to Study';
-    note.appendChild(pill);
-}
-
 // Deselect all notes
 function deselectAllNotes() {
     selectedNotes.forEach(note => {
         note.classList.remove('selected');
         note.classList.remove('editing');
-        // Remove pill badge
-        const pill = note.querySelector('.added-to-study-pill');
-        if (pill) pill.remove();
     });
     selectedNotes = [];
     updateSelectionCount();
@@ -4033,6 +4032,7 @@ function saveStickyNotes() {
         const color = note.classList.contains('green') ? 'green' : 
                       note.classList.contains('red') ? 'red' : 'yellow';
         const topic = note.dataset.topic || '';
+        const addedToStudy = note.dataset.addedToStudy === 'true';
         
         notes.push({
             id: note.id,
@@ -4042,7 +4042,8 @@ function saveStickyNotes() {
             height: note.style.minHeight,
             color: color,
             content: content ? content.innerHTML : '',
-            topic: topic
+            topic: topic,
+            addedToStudy: addedToStudy
         });
     });
     
@@ -4109,20 +4110,25 @@ function addSelectedToReport() {
             fromBoard: currentBoardId
         });
         
+        // Mark note as added to study and add pill
+        note.dataset.addedToStudy = 'true';
+        addStudyPill(note);
+        
         // Visual feedback for each note
         note.style.outline = '3px solid var(--success)';
     });
     
     saveCampaigns(campaigns);
     
+    // Save sticky notes with updated addedToStudy flags
+    saveStickyNotes();
+    
     // Clear visual feedback after delay
     setTimeout(() => {
         validNotes.forEach(note => {
             note.style.outline = '';
             note.classList.remove('selected');
-            // Remove pill badge
-            const pill = note.querySelector('.added-to-study-pill');
-            if (pill) pill.remove();
+            // Don't remove pill - it should stay permanently
         });
         selectedNotes = [];
         updateSelectionCount();

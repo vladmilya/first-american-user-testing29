@@ -4839,7 +4839,7 @@ body.note-taker-active .sticky-board-wrapper {
 }
 
 .sticky-note.selected {
-    position: relative;
+    /* No visual styling for selection */
 }
 
 .added-to-study-pill {
@@ -4853,7 +4853,13 @@ body.note-taker-active .sticky-board-wrapper {
     font-size: 0.75rem;
     font-weight: 600;
     z-index: 10;
-    pointer-events: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.added-to-study-pill:hover {
+    background: #2563eb;
+    transform: scale(1.05);
 }
 
 /* Sticky Note Colors */
