@@ -807,6 +807,11 @@ function renderRecommendations(recommendations) {
 function renderResearchQuestions(questionSections) {
     const section = document.querySelector('#research-questions .research-questions-list');
     
+    // Get active campaign notes
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    const reportNotes = (activeCampaign && activeCampaign.reportNotes) ? activeCampaign.reportNotes : [];
+    
     // Count total questions
     const totalQuestions = questionSections.reduce((sum, sec) => sum + sec.questions.length, 0);
     
@@ -942,6 +947,37 @@ function renderResearchQuestions(questionSections) {
                         </div>
                     </div>
                 `}).join('')}
+                
+                ${(() => {
+                    // Get notes for this topic - match by section name or topic name
+                    const customTopics = getCustomTopics();
+                    const topicMatch = customTopics.find(t => t.name === section.section);
+                    const sectionNotes = reportNotes.filter(note => 
+                        note.topic === section.section || 
+                        (topicMatch && note.topic === topicMatch.name)
+                    );
+                    
+                    if (sectionNotes.length === 0) return '';
+                    
+                    return `
+                        <div style="margin-top: 2rem; background: #fff9c4; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #fbbf24;">
+                            <h4 style="color: #92400e; margin: 0 0 1rem 0; font-size: 1.125rem; display: flex; align-items: center; gap: 0.5rem;">
+                                📝 Notes from Note Taker (${sectionNotes.length})
+                            </h4>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                ${sectionNotes.map(note => `
+                                    <div style="background: white; padding: 1rem; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                        <p style="margin: 0; color: #1f2937; line-height: 1.6;">${escapeHtml(note.content)}</p>
+                                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
+                                            <span>📅 ${new Date(note.addedAt).toLocaleDateString()}</span>
+                                            ${note.fromBoard ? `<span>📋 ${note.fromBoard}</span>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                })()}
             </div>
         `).join('')}
         
