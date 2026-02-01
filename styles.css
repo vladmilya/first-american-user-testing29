@@ -4827,6 +4827,8 @@ body.note-taker-active .sticky-board-wrapper {
     flex-direction: column;
     overflow: hidden;
     transition: box-shadow 0.2s;
+    border: none;
+    border-top: none;
 }
 
 .sticky-note:hover {
@@ -4840,6 +4842,15 @@ body.note-taker-active .sticky-board-wrapper {
 
 .sticky-note.selected {
     /* No visual styling for selection */
+    outline: none !important;
+    border: none !important;
+}
+
+.sticky-note:focus,
+.sticky-note:focus-visible,
+.sticky-note:focus-within {
+    outline: none !important;
+    border: none !important;
 }
 
 .added-to-study-pill {
@@ -4917,32 +4928,7 @@ body.note-taker-active .sticky-board-wrapper {
 }
 
 /* Topic Badge Colors */
-.sticky-note[data-topic]:not([data-topic=""]):not([data-topic="none"])::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--primary);
-    border-radius: 4px 4px 0 0;
-}
-
-.sticky-note[data-topic-category="positive"]::before {
-    background: #10b981;
-}
-
-.sticky-note[data-topic-category="pain"]::before {
-    background: #ef4444;
-}
-
-.sticky-note[data-topic-category="behavioral"]::before {
-    background: #f59e0b;
-}
-
-.sticky-note[data-topic-category="gap"]::before {
-    background: #8b5cf6;
-}
+/* Removed topic indicator bar from top of sticky notes */
 
 /* Filtered out notes */
 .sticky-note.filtered-out {
