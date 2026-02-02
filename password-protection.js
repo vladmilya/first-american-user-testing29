@@ -7,8 +7,9 @@
     // SET YOUR PASSWORD HERE
     const CORRECT_PASSWORD = 'FirstAmerican2026'; // Change this to your desired password
     
+    // TEMPORARILY DISABLED - Password protection turned off for development
     // Check if user is already authenticated in this session
-    const isAuthenticated = sessionStorage.getItem('reportAuthenticated') === 'true';
+    const isAuthenticated = true; // Force authenticated to bypass password
     
     if (!isAuthenticated) {
         // Create password overlay

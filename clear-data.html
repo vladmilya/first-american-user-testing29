@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear All Data</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 40px; text-align: center; }
+        .btn { padding: 20px 40px; font-size: 18px; cursor: pointer; margin: 10px; border-radius: 8px; }
+        .danger { background: #ef4444; color: white; border: none; }
+        .success { background: #10b981; color: white; border: none; }
+        .result { margin-top: 30px; padding: 20px; border-radius: 8px; background: #f0f9ff; }
+    </style>
+</head>
+<body>
+    <h1>🧹 Clear All Data</h1>
+    <p>This will clear all corrupted test data from the Note Taker and Important Notes.</p>
+    
+    <button class="btn danger" onclick="clearAll()">Clear All Data & Reload</button>
+    
+    <div id="result" class="result" style="display:none;"></div>
+    
+    <script>
+        function clearAll() {
+            try {
+                // Clear campaign reportNotes
+                const stored = localStorage.getItem('uxd_campaigns');
+                if (stored) {
+                    const campaigns = JSON.parse(stored);
+                    campaigns.forEach(c => {
+                        c.reportNotes = [];
+                    });
+                    localStorage.setItem('uxd_campaigns', JSON.stringify(campaigns));
+                }
+                
+                // Clear note boards
+                localStorage.removeItem('note_boards');
+                localStorage.removeItem('current_board_id');
+                localStorage.removeItem('customTopics');
+                
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('result').innerHTML = '✅ All data cleared! Redirecting to main page...';
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html#themes';
+                }, 1500);
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

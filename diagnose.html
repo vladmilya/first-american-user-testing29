@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #f8fafc;
+        }
+        h1 { color: #1e293b; }
+        .check {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .check.pass { background: #d1fae5; color: #065f46; }
+        .check.fail { background: #fee2e2; color: #991b1b; }
+        .check.warn { background: #fef3c7; color: #92400e; }
+        .icon { font-size: 1.5rem; }
+        button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover { background: #2563eb; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        #results { margin-top: 2rem; }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnostic Page</h1>
+    <p>This page will test what's working and what's broken.</p>
+    
+    <div id="results"></div>
+    
+    <h2>Actions</h2>
+    <button onclick="runDiagnostics()">🔄 Run Diagnostics</button>
+    <button class="btn-danger" onclick="clearAll()">🗑️ Clear All Storage</button>
+    <button class="btn-success" onclick="openApp()">📱 Open App</button>
+    
+    <h2>Console Output</h2>
+    <pre id="console"></pre>
+    
+    <!-- Load the same scripts as the main app -->
+    <script src="synthesis-data.js?v=diag"></script>
+    <script src="script.js?v=diag"></script>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        const consoleDiv = document.getElementById('console');
+        let logs = [];
+        
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            logs.push('LOG: ' + args.join(' '));
+            updateConsole();
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            logs.push('ERROR: ' + args.join(' '));
+            updateConsole();
+            originalError.apply(console, args);
+        };
+        
+        function updateConsole() {
+            consoleDiv.textContent = logs.slice(-20).join('\n');
+        }
+        
+        function addCheck(name, passed, message) {
+            const div = document.createElement('div');
+            div.className = 'check ' + (passed ? 'pass' : 'fail');
+            div.innerHTML = `
+                <span class="icon">${passed ? '✅' : '❌'}</span>
+                <span><strong>${name}</strong>: ${message}</span>
+            `;
+            resultsDiv.appendChild(div);
+        }
+        
+        function runDiagnostics() {
+            resultsDiv.innerHTML = '<h2>Results</h2>';
+            logs = [];
+            
+            // Test 1: synthesisData
+            const hasSynthesisData = typeof synthesisData !== 'undefined' && synthesisData !== null;
+            addCheck('synthesisData', hasSynthesisData, 
+                hasSynthesisData ? 'Loaded with ' + Object.keys(synthesisData).length + ' keys' : 'NOT LOADED');
+            
+            // Test 2: Key functions
+            const hasNavigate = typeof navigateToSection === 'function';
+            addCheck('navigateToSection', hasNavigate, 
+                hasNavigate ? 'Function exists' : 'MISSING');
+            
+            const hasLoadSampleData = typeof loadSampleData === 'function';
+            addCheck('loadSampleData', hasLoadSampleData, 
+                hasLoadSampleData ? 'Function exists' : 'MISSING');
+            
+            const hasRenderInsights = typeof renderInsights === 'function';
+            addCheck('renderInsights', hasRenderInsights, 
+                hasRenderInsights ? 'Function exists' : 'MISSING');
+            
+            // Test 3: State object
+            const hasState = typeof state !== 'undefined';
+            addCheck('state object', hasState, 
+                hasState ? 'Exists' : 'MISSING');
+            
+            // Test 4: Try calling loadSampleData
+            if (hasLoadSampleData && hasSynthesisData) {
+                try {
+                    loadSampleData();
+                    addCheck('loadSampleData()', true, 'Executed without errors');
+                } catch (e) {
+                    addCheck('loadSampleData()', false, 'ERROR: ' + e.message);
+                }
+            }
+            
+            // Test 5: Check localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                addCheck('localStorage', true, 'Working');
+            } catch (e) {
+                addCheck('localStorage', false, 'ERROR: ' + e.message);
+            }
+            
+            // Test 6: Check for global errors
+            if (window._pageErrors && window._pageErrors.length > 0) {
+                addCheck('JavaScript Errors', false, window._pageErrors.join(', '));
+            } else {
+                addCheck('JavaScript Errors', true, 'No errors captured');
+            }
+        }
+        
+        function clearAll() {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                alert('All storage cleared!');
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+        
+        function openApp() {
+            window.location.href = 'index.html';
+        }
+        
+        // Capture errors
+        window._pageErrors = [];
+        window.onerror = function(msg, url, line) {
+            window._pageErrors.push(msg + ' at line ' + line);
+        };
+        
+        // Run diagnostics on load
+        window.onload = function() {
+            console.log('Diagnostic page loaded');
+            runDiagnostics();
+        };
+    </script>
+</body>
+</html>

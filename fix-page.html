@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Fix Tool - Note Taker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        
+        p {
+            color: #64748b;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .fix-section {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .fix-section h2 {
+            color: #1e293b;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .fix-section p {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        button {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 0.75rem;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ Quick Fix Tool</h1>
+        <p>Use these tools to fix common issues with the Note Taker application.</p>
+        
+        <div class="fix-section">
+            <h2>🔓 Fix: Application Not Clickable</h2>
+            <p>Clears the password protection overlay that's blocking clicks.</p>
+            <button class="btn-primary" onclick="fixClickIssue()">
+                Clear Password Overlay
+            </button>
+        </div>
+        
+        <div class="fix-section">
+            <h2>📋 Fix: Corrupted Note Data</h2>
+            <p>Clears corrupted sticky notes and resets the note taker boards.</p>
+            <button class="btn-warning" onclick="fixNoteData()">
+                Clear Note Taker Data
+            </button>
+        </div>
+        
+        <div class="fix-section">
+            <h2>🧹 Fix: Clear Everything</h2>
+            <p>Nuclear option - clears ALL stored data and resets everything.</p>
+            <button class="btn-danger" onclick="clearAllData()">
+                Clear All Data
+            </button>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <button class="btn-success" onclick="openApp()">
+            ✓ Open Application
+        </button>
+        
+        <div id="status"></div>
+    </div>
+    
+    <script>
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.className = `status status-${type}`;
+            status.textContent = message;
+        }
+        
+        function fixClickIssue() {
+            try {
+                sessionStorage.removeItem('reportAuthenticated');
+                sessionStorage.clear();
+                showStatus('✓ Password overlay cleared! You can now click "Open Application" below.', 'success');
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'info');
+            }
+        }
+        
+        function fixNoteData() {
+            try {
+                localStorage.removeItem('note_boards');
+                localStorage.removeItem('current_board_id');
+                localStorage.removeItem('customTopics');
+                showStatus('✓ Note taker data cleared! Click "Open Application" to start fresh.', 'success');
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'info');
+            }
+        }
+        
+        function clearAllData() {
+            const confirmed = confirm(
+                '⚠️ WARNING: This will delete ALL data including:\n\n' +
+                '• All sticky notes\n' +
+                '• All saved boards\n' +
+                '• All settings\n' +
+                '• Password authentication\n\n' +
+                'This cannot be undone. Continue?'
+            );
+            
+            if (!confirmed) return;
+            
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                showStatus('✓ All data cleared! The application has been completely reset.', 'success');
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'info');
+            }
+        }
+        
+        function openApp() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

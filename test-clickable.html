@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page - Click Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            gap: 2rem;
+        }
+        
+        h1 { color: #1e293b; }
+        
+        button {
+            padding: 1.5rem 3rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        button:hover { background: #2563eb; }
+        
+        .result {
+            padding: 1rem 2rem;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 8px;
+            font-size: 1.25rem;
+            display: none;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn-clear {
+            background: #ef4444;
+        }
+        
+        .btn-clear:hover { background: #dc2626; }
+        
+        .btn-open {
+            background: #10b981;
+        }
+        
+        .btn-open:hover { background: #059669; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Click Test</h1>
+    
+    <button onclick="testClick()">Click Me!</button>
+    
+    <div id="result" class="result"></div>
+    
+    <div class="actions">
+        <button class="btn-clear" onclick="clearAllStorage()">🗑️ Clear All Storage</button>
+        <button class="btn-open" onclick="openApp()">📱 Open App</button>
+    </div>
+    
+    <p style="color: #64748b; margin-top: 2rem;">If clicking works here but not in the main app, there's a JavaScript error.</p>
+    
+    <script>
+        function testClick() {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.textContent = '✅ Click works! Time: ' + new Date().toLocaleTimeString();
+        }
+        
+        function clearAllStorage() {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                alert('✅ All storage cleared! Now click "Open App" to test.');
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+        }
+        
+        function openApp() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

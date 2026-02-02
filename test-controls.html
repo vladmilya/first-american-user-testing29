@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Controls</title>
+    <style>
+        body { margin: 0; padding: 20px; }
+        .controls-bar {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            background: #f9fafb;
+            padding: 1rem 2rem;
+            border: 3px solid black;
+        }
+        .controls-left {
+            flex: 0 0 auto;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid red;
+            padding: 10px;
+        }
+        .controls-center {
+            flex: 1 1 0;
+            background: rgba(0, 0, 255, 0.2);
+            border: 2px solid blue;
+            padding: 10px;
+        }
+        .controls-right {
+            flex: 0 0 auto;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid green;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test - Should see RED, BLUE, and GREEN boxes</h1>
+    <div class="controls-bar">
+        <div class="controls-left">
+            RED - Interview controls
+        </div>
+        <div class="controls-center">
+            BLUE - Topic filter
+        </div>
+        <div class="controls-right">
+            GREEN - Add to Study button
+        </div>
+    </div>
+</body>
+</html>

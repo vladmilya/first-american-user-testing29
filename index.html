@@ -4,39 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISS Iterative Testing 4.1</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="password-protection.js"></script>
+    <link rel="stylesheet" href="styles.css?v=1706857400">
+    <link rel="stylesheet" href="note-taker-clean.css?v=20260201n">
+    <style>
+        /* FINAL FIX: Proper flexbox layout for controls bar */
+        body.note-taker-active .note-taker-controls-bar {
+            display: grid !important;
+            grid-template-columns: auto 1fr auto !important;
+            align-items: center !important;
+            gap: 2rem !important;
+            background: #f9fafb !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            padding: 1rem 2rem !important;
+            width: 100% !important;
+            min-height: 70px !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            z-index: 100 !important;
+        }
+        
+        body.note-taker-active .controls-left {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 1rem !important;
+            justify-self: start !important;
+        }
+        
+        body.note-taker-active .controls-center {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 1rem !important;
+            justify-self: center !important;
+        }
+        
+        body.note-taker-active .controls-right {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            justify-self: end !important;
+        }
+        
+        body.note-taker-active .board-actions,
+        body.note-taker-active .user-navigation,
+        body.note-taker-active .topic-filter {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+        }
+        
+        body.note-taker-active .setup-users-btn,
+        body.note-taker-active .add-note-thumb,
+        body.note-taker-active .add-to-report-btn,
+        body.note-taker-active .manage-topics-btn,
+        body.note-taker-active .reset-topics-btn,
+        body.note-taker-active .clear-selection-btn {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.375rem !important;
+        }
+    </style>
+    <!-- Password protection DISABLED - uncomment to re-enable -->
+    <!-- <script src="password-protection.js"></script> -->
 </head>
 <body>
     <div class="container">
-        <header class="report-header">
+        <header class="report-header" id="main-header">
             <div>
                 <h1>ISS Iterative Testing 4.1</h1>
-                <p class="report-subtitle">Study Summary</p>
                 <div class="report-meta">
                     <span id="date"></span>
                     <span id="participant-count"></span>
                 </div>
             </div>
             <a href="#select-study" class="nav-link uxd-admin-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                </svg>
                 Select Study
             </a>
             <a href="#uxd-admin" class="nav-link uxd-admin-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
                 UXD Admin
             </a>
+        </header>
+        
+        <!-- Note Taker Header (shown when in note taker mode) -->
+        <header class="report-header note-taker-header" id="note-taker-header" style="display: none;">
+            <div class="note-taker-header-content">
+                <h1>Note Taker</h1>
+                <span class="campaign-badge" id="note-taker-campaign-header">
+                    <span class="campaign-badge-label">Study:</span>
+                    <span class="campaign-badge-name" id="note-taker-campaign-name-header">Loading...</span>
+                </span>
+            </div>
+            <div class="note-taker-header-nav">
+                <a href="#themes" class="note-taker-back-btn" onclick="goToBehavioralPatternsImportantNotes()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    Behavioral Patterns Syntheses
+                </a>
+                <a href="#uxd-admin" class="note-taker-back-btn" onclick="exitNoteTaker()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"></path>
+                    </svg>
+                    Admin
+                </a>
+            </div>
         </header>
 
         <nav class="sidebar">
             <h3>Navigation</h3>
             <ul class="nav-menu">
-                <li><a href="#executive-summary" class="nav-link active">
+                <li><a href="#executive-summary" class="nav-link">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                     Study Summary
                 </a></li>
@@ -80,8 +163,8 @@
         </nav>
 
         <main class="content">
-            <section id="executive-summary" class="section active">
-                <h2>ISS Iterative Testing 4.1 Study Summary</h2>
+            <section id="executive-summary" class="section">
+                <h2>Study Summary</h2>
                 <div class="summary-content">
                     <p class="placeholder">Upload your transcript data to generate insights...</p>
                 </div>
@@ -143,6 +226,41 @@
                         </div>
                     </div>
                     
+                    <!-- AI & Presentation Builder Info Banner -->
+                    <div id="ai-presentation-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; color: white; transition: all 0.3s ease;">
+                        <h3 style="color: white; margin-bottom: 1rem; font-size: 1.125rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <path d="M12 1v6m0 6v6m5.2-13.2l-4.3 4.3m-1.8 1.8l-4.3 4.3M23 12h-6m-6 0H1m18.2 5.2l-4.3-4.3m-1.8-1.8l-4.3-4.3"></path>
+                            </svg>
+                            AI-Powered Presentation Builder
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="color: white; font-size: 0.95rem; margin-bottom: 0.5rem;">🤖 AI Chat Assistant</h4>
+                                <p style="font-size: 0.875rem; opacity: 0.95; line-height: 1.6;">Ask questions in natural language and let AI build presentations for you. Click the purple button in bottom-right corner to get started.</p>
+                            </div>
+                            <div>
+                                <h4 style="color: white; font-size: 0.95rem; margin-bottom: 0.5rem;">📊 Manual Builder</h4>
+                                <p style="font-size: 0.875rem; opacity: 0.95; line-height: 1.6;">Click "Open Builder" button below and select sections to add to your presentation from the dropdown menu.</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button onclick="aiAssistant && aiAssistant.toggleChat()" style="padding: 0.75rem 1.25rem; background: white; color: #667eea; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Try AI Assistant
+                            </button>
+                            <button onclick="presentationBuilder && presentationBuilder.openBuilder()" style="padding: 0.75rem 1.25rem; background: rgba(255, 255, 255, 0.2); color: white; border: 2px solid white; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                </svg>
+                                Open Builder
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="slideshow-container" id="slideshow">
                         <!-- Slides will be generated here -->
                     </div>
@@ -157,33 +275,7 @@
 
             <section id="note-taker" class="section">
                 <div class="note-taker-container">
-                    <!-- Top Bar with Title and Navigation -->
-                    <div class="note-taker-top-bar">
-                        <div class="note-taker-title-section">
-                            <h2>Note Taker</h2>
-                            <span class="campaign-badge" id="note-taker-campaign">
-                                <span class="campaign-badge-label">Campaign:</span>
-                                <span class="campaign-badge-name" id="note-taker-campaign-name">Loading...</span>
-                            </span>
-                        </div>
-                        <div class="note-taker-nav">
-                            <a href="#themes" class="note-taker-back-btn" onclick="goToBehavioralPatternsImportantNotes()">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Behavioral Patterns Syntheses
-                            </a>
-                            <a href="#uxd-admin" class="note-taker-back-btn" onclick="exitNoteTaker()">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                                </svg>
-                                Admin
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Board Controls - Right above the board -->
+                    <!-- Board Controls -->
                     <div class="note-taker-controls-bar">
                         <div class="controls-left">
                             <div class="user-navigation">
@@ -199,6 +291,16 @@
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                     </svg>
                                     Setup
+                                </button>
+                                <button class="setup-users-btn" onclick="if(window.collaborationManager && window.collaborationManager.isEnabled) { window.collaborationManager.showShareDialog(); } else { alert('Collaboration not enabled. Check supabase-config.js'); }" title="Share with Team" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="18" cy="5" r="3"></circle>
+                                        <circle cx="6" cy="12" r="3"></circle>
+                                        <circle cx="18" cy="19" r="3"></circle>
+                                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                    </svg>
+                                    Share
                                 </button>
                                 <button class="add-note-thumb" onclick="addStickyNote()" title="Add Sticky Note">
                                     <span class="plus-icon">+</span>
@@ -296,7 +398,7 @@
             </section>
 
             <section id="transcripts" class="section">
-                <h2>🔧 Build Report</h2>
+                <h2>Build Study Report</h2>
                 <p style="color: var(--text-light); margin-bottom: 2rem; font-size: 1.125rem;">
                     Upload all your research data in one place. The system will process everything together to generate comprehensive insights.
                 </p>
@@ -323,8 +425,7 @@
                             📄 Upload Transcript Files (Multiple)
                         </button>
                         <div id="transcript-status" class="upload-status"></div>
-                        <div class="divider">OR</div>
-                        <textarea id="transcript-input" placeholder="Paste transcript data here..."></textarea>
+                        <div id="transcript-files-list" class="uploaded-files-list" style="margin-top: 1rem;"></div>
                     </div>
 
                     <!-- Study Evaluation -->
@@ -347,12 +448,13 @@
                                 <span class="required-badge">Required</span>
                             </div>
                         </div>
-                        <p style="color: var(--text-light); margin-bottom: 1rem;">Upload a PDF or DOC file containing your evaluation report</p>
-                        <input type="file" id="questions-file" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                        <p style="color: var(--text-light); margin-bottom: 1rem;">Upload PDF or DOC files containing participant transcripts or evaluation reports</p>
+                        <input type="file" id="questions-file" accept=".pdf,.doc,.docx,.txt" multiple style="display: none;">
                         <button class="upload-button" onclick="document.getElementById('questions-file').click()">
-                            📄 Upload Study Evaluation
+                            📄 Upload Files (Multiple)
                         </button>
                         <div id="questions-status" class="upload-status"></div>
+                        <div id="questions-files-list" class="uploaded-files-list" style="margin-top: 1rem;"></div>
                     </div>
 
                     <!-- AI Training Examples -->
@@ -400,18 +502,6 @@
                     <p style="color: var(--text-light); text-align: center; margin-top: 1rem; font-size: 0.95rem;">
                         This will process all uploaded data and generate comprehensive insights
                     </p>
-                </div>
-
-                <div class="info-box">
-                    <h4>ℹ️ How it works:</h4>
-                    <ol style="margin-left: 1.5rem; margin-top: 0.5rem; line-height: 1.8;">
-                        <li><strong>Upload research questions</strong> (required) - Defines what you're investigating</li>
-                        <li><strong>Upload interview transcripts</strong> (required) - Raw data from participants</li>
-                        <li><strong>Add AI examples</strong> (optional) - Train presentation style, ask for feedback</li>
-                        <li><strong>Click "Analyze & Generate Report"</strong> - System processes everything together</li>
-                        <li><strong>View results</strong> - Navigate to any section to see synthesized insights</li>
-                    </ol>
-                    <p style="margin-top: 1rem; color: var(--text-light);"><strong>Supported formats:</strong> PDF, DOC, DOCX, TXT, Excel, Word</p>
                 </div>
 
                 <div class="transcripts-display"></div>
@@ -603,7 +693,7 @@ Add your own custom instructions here..."></textarea>
                 </div>
             </section>
 
-            <section id="select-study" class="section">
+            <section id="select-study" class="section active">
                 <h2>Select Study</h2>
                 <p style="color: var(--text-light); margin-bottom: 2rem; font-size: 1.125rem;">
                     Choose a study to view its research findings and insights.
@@ -621,21 +711,21 @@ Add your own custom instructions here..."></textarea>
                 </p>
 
                 <div class="admin-container">
-                    <!-- Current Campaign -->
+                    <!-- Current Study -->
                     <div class="current-campaign-section">
-                        <h3>Current Campaign</h3>
+                        <h3>Current Study</h3>
                         <div class="current-campaign-card-wrapper">
                             <div class="current-campaign-card-header">
                                 <div class="campaign-info">
                                     <div class="campaign-title-row">
                                         <h4 id="current-campaign-title">ISS Iterative Testing 4.1</h4>
-                                        <button class="edit-title-btn" onclick="editCampaignTitle()" title="Edit campaign name">
+                                        <button class="edit-title-btn" onclick="editCampaignTitle()" title="Edit study name">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                             </svg>
                                         </button>
                                     </div>
-                                    <p>Active Campaign</p>
+                                    <p>Active Study</p>
                                 </div>
                                 <div class="campaign-header-actions">
                                     <a href="#transcripts" class="nav-link edit-campaign-btn">
@@ -658,28 +748,28 @@ Add your own custom instructions here..."></textarea>
                                 </div>
                             </div>
                             
-                            <!-- Current Campaign Files Display (inside card) -->
+                            <!-- Current Study Files Display (inside card) -->
                             <div id="current-campaign-files" class="current-campaign-files-inside">
                                 <!-- Files will be rendered here -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- All Campaigns List -->
+                    <!-- All Studies List -->
                     <div class="campaigns-section">
                         <div class="campaigns-header">
-                            <h3>📁 All Campaigns</h3>
+                            <h3>📁 All Studies</h3>
                             <button class="create-campaign-btn" onclick="openCreateCampaignModal()">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
                                     <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
-                                New Campaign
+                                New Study
                             </button>
                         </div>
                         
                         <div id="campaigns-list" class="campaigns-list">
-                            <!-- Campaigns will be rendered here -->
+                            <!-- Studies will be rendered here -->
                         </div>
                     </div>
                 </div>
@@ -687,14 +777,14 @@ Add your own custom instructions here..."></textarea>
         </main>
     </div>
 
-    <!-- Create/Edit Campaign Modal -->
+    <!-- Create/Edit Study Modal -->
     <div id="campaign-modal" class="campaign-modal" style="display: none;">
         <div class="campaign-modal-content">
-            <h3 id="campaign-modal-title">Create New Campaign</h3>
-            <input type="text" id="campaign-name-input" placeholder="Enter campaign name" class="campaign-input">
+            <h3 id="campaign-modal-title">Create New Study</h3>
+            <input type="text" id="campaign-name-input" placeholder="Enter study name" class="campaign-input">
             <div class="campaign-modal-actions">
                 <button class="cancel-btn" onclick="closeCampaignModal()">Cancel</button>
-                <button class="save-campaign-btn" onclick="saveCampaign()">Create Campaign</button>
+                <button class="save-campaign-btn" onclick="saveCampaign()">Create Study</button>
             </div>
         </div>
     </div>
@@ -703,14 +793,14 @@ Add your own custom instructions here..."></textarea>
     <div id="delete-modal" class="delete-modal" style="display: none;">
         <div class="delete-modal-content">
             <div class="delete-icon">⚠️</div>
-            <h3>Delete Campaign?</h3>
+            <h3>Delete Study?</h3>
             <p id="delete-campaign-name" style="margin: 1rem 0; color: var(--text);"></p>
             <p style="color: var(--danger); font-weight: 600; margin-bottom: 1.5rem;">
                 All campaign data will be permanently erased. This action cannot be undone.
             </p>
             <div class="delete-modal-actions">
                 <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
-                <button class="delete-confirm-btn" onclick="confirmDeleteCampaign()">Delete Campaign</button>
+                <button class="delete-confirm-btn" onclick="confirmDeleteCampaign()">Delete Study</button>
             </div>
         </div>
     </div>
@@ -735,24 +825,110 @@ Add your own custom instructions here..."></textarea>
     <!-- html2pdf for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
-    <script src="synthesis-data.js"></script>
-    <script src="script.js"></script>
-    <script src="file-upload.js"></script>
-    <script src="presentation.js"></script>
+    <!-- Supabase for real-time collaboration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Collaboration scripts (cache-busted) -->
+    <script src="supabase-config.js?v=20260201b"></script>
+    <script src="collaboration-manager.js?v=20260201b"></script>
+    
+    <!-- PDF.js library for parsing PDFs (local files) -->
+    <script src="lib/pdf.min.js"></script>
     <script>
-        // Force load data after page is ready
-        window.addEventListener('load', function() {
-            console.log('Page fully loaded');
-            console.log('synthesisData exists?', typeof synthesisData !== 'undefined');
-            if (typeof synthesisData !== 'undefined' && synthesisData) {
-                console.log('Attempting to load data...');
-                setTimeout(function() {
-                    loadSampleData();
-                }, 100);
+        // Set PDF.js worker
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
+            console.log('PDF.js loaded successfully');
+        } else {
+            console.error('PDF.js failed to load');
+        }
+    </script>
+    
+    <!-- Custom UI components -->
+    <script src="custom-confirm.js?v=20260201b"></script>
+    
+    <script src="synthesis-data.js?v=20260201b"></script>
+    <script src="script.js?v=1706857400"></script>
+    <script src="file-upload.js?v=20260201b"></script>
+    <script src="presentation.js?v=20260201b"></script>
+    <script src="presentation-builder.js?v=20260201b"></script>
+    <script src="ai-chat-assistant.js?v=20260201b"></script>
+    <script>
+        // ONE-TIME DATA CLEAR - Remove this block after data is cleared
+        (function() {
+            const clearFlag = localStorage.getItem('data_cleared_20260201');
+            if (!clearFlag) {
+                console.log('Clearing corrupted test data...');
+                // Clear campaign reportNotes
+                try {
+                    const stored = localStorage.getItem('uxd_campaigns');
+                    if (stored) {
+                        const campaigns = JSON.parse(stored);
+                        campaigns.forEach(c => { c.reportNotes = []; });
+                        localStorage.setItem('uxd_campaigns', JSON.stringify(campaigns));
+                    }
+                    localStorage.removeItem('note_boards');
+                    localStorage.removeItem('current_board_id');
+                    localStorage.removeItem('customTopics');
+                    localStorage.setItem('data_cleared_20260201', 'true');
+                    console.log('Data cleared successfully!');
+                } catch(e) { console.error('Clear failed:', e); }
+            }
+        })();
+        
+        // Debug: Log everything for troubleshooting
+        console.log('=== PAGE INIT START ===');
+        
+        // Set default page to Select Study if no hash is present
+        if (!window.location.hash) {
+            window.location.hash = 'select-study';
+        }
+        
+        // Handle navigation based on hash on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired');
+            const hash = window.location.hash.substring(1) || 'select-study';
+            console.log('Target section:', hash);
+            
+            if (typeof navigateToSection === 'function') {
+                console.log('navigateToSection exists, calling it');
+                navigateToSection(hash);
             } else {
-                console.error('synthesisData not found!');
+                console.error('navigateToSection function not found!');
             }
         });
+        
+        // Force load data after page is ready
+        window.addEventListener('load', function() {
+            console.log('=== PAGE LOAD COMPLETE ===');
+            console.log('synthesisData exists?', typeof synthesisData !== 'undefined');
+            console.log('loadSampleData exists?', typeof loadSampleData !== 'undefined');
+            console.log('renderInsights exists?', typeof renderInsights !== 'undefined');
+            
+            if (typeof synthesisData !== 'undefined' && synthesisData) {
+                console.log('synthesisData has', Object.keys(synthesisData).length, 'keys');
+                
+                if (typeof loadSampleData === 'function') {
+                    console.log('Calling loadSampleData...');
+                    try {
+                        loadSampleData();
+                        console.log('loadSampleData completed');
+                    } catch (error) {
+                        console.error('Error in loadSampleData:', error);
+                    }
+                } else {
+                    console.error('loadSampleData function not found!');
+                }
+            } else {
+                console.error('synthesisData not found - check if synthesis-data.js loaded');
+            }
+        });
+        
+        // Global error handler
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('Global error:', msg, 'at', url, 'line', line);
+            return false;
+        };
     </script>
 </body>
 </html>

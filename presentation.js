@@ -725,6 +725,171 @@ function exitFullscreen() {
     }
 }
 
+// Function to regenerate presentation with custom sections
+function regeneratePresentation(selectedSlides) {
+    if (!selectedSlides || selectedSlides.length === 0) {
+        // No custom slides, use default presentation
+        generateSlides();
+        return;
+    }
+    
+    const slideshowContainer = document.getElementById('slideshow');
+    if (!slideshowContainer) return;
+    
+    const slidesHTML = selectedSlides.map(slideConfig => {
+        return generateSlideFromSection(slideConfig);
+    });
+    
+    slideshowContainer.innerHTML = slidesHTML.join('');
+    slides = document.querySelectorAll('.slide');
+    
+    // Initialize charts after slides are rendered
+    setTimeout(() => {
+        initializeCharts();
+    }, 100);
+    
+    // Update counter
+    showSlide(0);
+}
+
+// Generate a slide from a section
+function generateSlideFromSection(slideConfig) {
+    const { sectionId, title } = slideConfig;
+    
+    // Check if there's a specific generator for this section
+    const generatorMap = {
+        'executive-summary': generateSummarySlideFromSection,
+        'key-findings': generateKeyFindingsSlide,
+        'themes': generateThemesSlide,
+        'pain-points': generatePainPointsSlide,
+        'quotes': generateQuotesSlide,
+        'recommendations': generateRecommendationsSlide,
+        'research-questions': generateResearchQuestionsSlide
+    };
+    
+    const generator = generatorMap[sectionId];
+    if (generator) {
+        return generator();
+    }
+    
+    // Generic slide generator - extracts content from the section
+    return generateGenericSlide(sectionId, title);
+}
+
+// Generate a generic slide from section content
+function generateGenericSlide(sectionId, title) {
+    const section = document.getElementById(sectionId);
+    if (!section) {
+        return `<div class="slide"><h2>${title}</h2><p>Content not found</p></div>`;
+    }
+    
+    // Clone the section content (excluding buttons)
+    const content = section.cloneNode(true);
+    
+    // Remove add-to-presentation buttons
+    const buttons = content.querySelectorAll('.add-to-presentation-btn, .section-presentation-controls');
+    buttons.forEach(btn => btn.remove());
+    
+    // Get the innerHTML
+    let innerHTML = content.innerHTML;
+    
+    // Wrap in slide div
+    return `
+        <div class="slide">
+            ${innerHTML}
+        </div>
+    `;
+}
+
+// Generate summary slide from section
+function generateSummarySlideFromSection() {
+    const section = document.getElementById('executive-summary');
+    if (!section || !synthesisData) {
+        return `<div class="slide"><h2>Study Summary</h2></div>`;
+    }
+    
+    return `
+        <div class="slide">
+            <h2>Study Summary</h2>
+            <div class="slide-content">
+                <div class="summary-stats">
+                    <div class="stat-box">
+                        <span class="number">${synthesisData?.metadata?.participants || '6'}</span>
+                        <span class="label">Participants</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="number">${synthesisData?.themes?.length || '0'}</span>
+                        <span class="label">Themes</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="number">${synthesisData?.keyFindings?.length || '0'}</span>
+                        <span class="label">Key Findings</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="number">${synthesisData?.recommendations?.length || '0'}</span>
+                        <span class="label">Recommendations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Generate quotes slide
+function generateQuotesSlide() {
+    if (!synthesisData?.quotes) {
+        return `<div class="slide"><h2>Notable Quotes</h2><p>No quotes available</p></div>`;
+    }
+    
+    const quotes = synthesisData.quotes.slice(0, 3);
+    return `
+        <div class="slide">
+            <h2>Notable Quotes</h2>
+            ${quotes.map(quote => `
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: var(--bg); border-radius: 8px; border-left: 4px solid ${CHART_COLORS.teal};">
+                    <p style="font-size: 1.125rem; font-style: italic; color: var(--text); margin-bottom: 0.75rem;">"${quote.quote}"</p>
+                    <p style="font-size: 0.875rem; color: var(--text-light);">— ${quote.participant}${quote.context ? ', ' + quote.context : ''}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Generate research questions slide
+function generateResearchQuestionsSlide() {
+    return `
+        <div class="slide">
+            <h2>Study Evaluation</h2>
+            <div style="padding: 1.5rem;">
+                <p style="font-size: 1.125rem; color: var(--text-light); margin-bottom: 1.5rem;">
+                    Comprehensive evaluation covering all feature areas and participant feedback
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div style="padding: 1rem; background: ${CHART_COLORS.lime}20; border-radius: 8px;">
+                        <h3 style="color: ${CHART_COLORS.lime}; margin-bottom: 0.5rem;">Auto-Deposit Recognition</h3>
+                        <p style="font-size: 0.875rem;">Wire matching and verification workflow</p>
+                    </div>
+                    <div style="padding: 1rem; background: ${CHART_COLORS.teal}20; border-radius: 8px;">
+                        <h3 style="color: ${CHART_COLORS.teal}; margin-bottom: 0.5rem;">Inline Editing</h3>
+                        <p style="font-size: 0.875rem;">Real-time data modification capabilities</p>
+                    </div>
+                    <div style="padding: 1rem; background: ${CHART_COLORS.gray}20; border-radius: 8px;">
+                        <h3 style="color: ${CHART_COLORS.gray}; margin-bottom: 0.5rem;">CD Comparison</h3>
+                        <p style="font-size: 0.875rem;">Settlement statement balancing</p>
+                    </div>
+                    <div style="padding: 1rem; background: ${CHART_COLORS.yellow}20; border-radius: 8px;">
+                        <h3 style="color: ${CHART_COLORS.yellow}; margin-bottom: 0.5rem;">User Experience</h3>
+                        <p style="font-size: 0.875rem;">Overall usability and satisfaction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Make regeneratePresentation available globally
+window.regeneratePresentation = regeneratePresentation;
+
 function downloadPDF() {
     const downloadBtn = document.getElementById('download-pdf');
     downloadBtn.textContent = '⏳ Generating PDF...';

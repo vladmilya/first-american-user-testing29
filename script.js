@@ -5,7 +5,7 @@ const state = {
     transcripts: [],
     questions: [],
     insights: null,
-    currentSection: 'executive-summary'
+    currentSection: 'select-study'
 };
 
 // Initialize on page load
@@ -14,7 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeSearch();
     initializeAnalyze();
     setDate();
-    loadSampleData(); // Optional: load sample data
+    
+    // Delay loadSampleData to ensure campaigns are initialized first
+    setTimeout(() => {
+        loadSampleData();
+    }, 100);
 });
 
 // Navigation
@@ -64,6 +68,16 @@ function navigateToSection(sectionId) {
     if (targetSection) targetSection.classList.add('active');
     if (targetLink) targetLink.classList.add('active');
     
+    // Special handling for note-taker section - expand content area
+    const contentEl = document.querySelector('.content');
+    if (contentEl) {
+        if (sectionId === 'note-taker') {
+            contentEl.classList.add('note-taker-mode');
+        } else {
+            contentEl.classList.remove('note-taker-mode');
+        }
+    }
+    
     state.currentSection = sectionId;
 }
 
@@ -106,34 +120,356 @@ function clearHighlights() {
     });
 }
 
+// Analyze uploaded transcripts and generate structured report data
+function analyzeUploadedTranscripts(participantFiles, allFiles) {
+    const participantCount = participantFiles.length;
+    
+    // Get participant names from filenames
+    const participants = participantFiles.map((file, i) => {
+        const nameMatch = file.name.replace(/\.[^/.]+$/, '').match(/^(.+?)\s*\(?(?:user|participant)\s*(\d+)\)?$/i);
+        return {
+            name: nameMatch ? nameMatch[1].trim() : `Participant ${i + 1}`,
+            number: nameMatch ? parseInt(nameMatch[2]) : i + 1,
+            text: file.extractedText || ''
+        };
+    }).sort((a, b) => a.number - b.number);
+    
+    // Combine all transcript text for analysis
+    const allText = participants.map(p => p.text).join('\n\n');
+    
+    // Extract notable quotes from transcripts
+    const quotes = [];
+    participants.forEach(p => {
+        if (p.text) {
+            // Look for meaningful sentences (longer ones with context)
+            const sentences = p.text.split(/[.!?]+/).filter(s => s.trim().length > 50 && s.trim().length < 300);
+            const meaningfulSentences = sentences.filter(s => {
+                const lower = s.toLowerCase();
+                return lower.includes('i think') || lower.includes('i feel') || lower.includes('i like') ||
+                       lower.includes('i need') || lower.includes('i want') || lower.includes('i wish') ||
+                       lower.includes('it would be') || lower.includes('should') || lower.includes('could') ||
+                       lower.includes('helpful') || lower.includes('difficult') || lower.includes('easy') ||
+                       lower.includes('confus') || lower.includes('frustrat') || lower.includes('love');
+            });
+            
+            meaningfulSentences.slice(0, 2).forEach(sentence => {
+                quotes.push({
+                    quote: sentence.trim(),
+                    participant: `${p.name} (Participant ${p.number})`,
+                    context: 'From interview transcript',
+                    category: 'feedback',
+                    feature: 'General'
+                });
+            });
+        }
+    });
+    
+    // Identify pain points from transcripts
+    const painPoints = [];
+    const painKeywords = ['problem', 'issue', 'frustrat', 'difficult', 'confus', 'hard to', 'annoying', 'slow', 'error', 'wrong', 'broken', 'doesn\'t work', 'can\'t find'];
+    
+    participants.forEach(p => {
+        if (p.text) {
+            painKeywords.forEach(keyword => {
+                const regex = new RegExp(`[^.]*${keyword}[^.]*\\.`, 'gi');
+                const matches = p.text.match(regex) || [];
+                matches.slice(0, 1).forEach(match => {
+                    if (match.length > 20 && match.length < 250 && !painPoints.some(pp => pp.description === match.trim())) {
+                        painPoints.push({
+                            description: match.trim(),
+                            participants: p.name,
+                            severity: keyword.includes('frustrat') || keyword.includes('broken') ? 'high' : 'medium',
+                            frequency: 1,
+                            category: 'usability',
+                            quote: match.trim()
+                        });
+                    }
+                });
+            });
+        }
+    });
+    
+    // Identify themes/behavioral patterns
+    const themes = [];
+    const themeKeywords = [
+        { theme: 'Workflow Efficiency', keywords: ['workflow', 'process', 'step', 'faster', 'quicker', 'save time'] },
+        { theme: 'User Experience', keywords: ['easy', 'intuitive', 'confus', 'understand', 'clear', 'simple'] },
+        { theme: 'Trust & Verification', keywords: ['trust', 'verify', 'check', 'double-check', 'confirm', 'accurate'] },
+        { theme: 'Communication', keywords: ['email', 'notify', 'notification', 'alert', 'message', 'communicate'] },
+        { theme: 'Data Entry', keywords: ['enter', 'input', 'type', 'fill', 'edit', 'change', 'update'] },
+        { theme: 'Visual Design', keywords: ['color', 'highlight', 'visual', 'see', 'view', 'display', 'look'] }
+    ];
+    
+    themeKeywords.forEach(t => {
+        let frequency = 0;
+        const examples = [];
+        t.keywords.forEach(keyword => {
+            const regex = new RegExp(keyword, 'gi');
+            const matches = allText.match(regex) || [];
+            frequency += matches.length;
+        });
+        
+        if (frequency > 2) {
+            themes.push({
+                theme: t.theme,
+                frequency: Math.min(frequency, participantCount),
+                category: 'Behavioral Pattern',
+                examples: t.keywords.slice(0, 3)
+            });
+        }
+    });
+    
+    // Sort themes by frequency
+    themes.sort((a, b) => b.frequency - a.frequency);
+    
+    // Generate key findings based on analysis
+    const keyFindings = [];
+    
+    if (themes.length > 0) {
+        keyFindings.push({
+            title: `Primary Focus: ${themes[0].theme}`,
+            severity: 'high',
+            category: 'Key Theme',
+            description: `Across ${participantCount} participants, ${themes[0].theme.toLowerCase()} emerged as a significant topic discussed frequently in the interviews.`,
+            evidence: `Mentioned approximately ${themes[0].frequency} times across transcripts.`
+        });
+    }
+    
+    if (painPoints.length > 0) {
+        keyFindings.push({
+            title: `${painPoints.length} Usability Concerns Identified`,
+            severity: 'medium',
+            category: 'Pain Points',
+            description: `Participants expressed ${painPoints.length} distinct concerns or frustrations during the study sessions.`,
+            evidence: painPoints[0]?.quote || 'See Pain Points section for details.'
+        });
+    }
+    
+    if (quotes.length > 0) {
+        keyFindings.push({
+            title: `${quotes.length} Notable Insights Captured`,
+            severity: 'medium',
+            category: 'Insights',
+            description: `${quotes.length} meaningful quotes and insights were extracted from participant interviews.`,
+            evidence: quotes[0]?.quote?.substring(0, 150) + '...' || 'See Notable Quotes section.'
+        });
+    }
+    
+    // Generate recommendations based on findings
+    const recommendations = [];
+    
+    if (painPoints.some(p => p.severity === 'high')) {
+        recommendations.push({
+            title: 'Address High-Priority Pain Points',
+            priority: 'p0',
+            description: 'Review and address the high-severity usability issues identified by participants.',
+            rationale: 'High-severity pain points directly impact user experience and should be prioritized.',
+            impact: 'Improved user satisfaction and task completion rates',
+            relatedTheme: 'User Experience'
+        });
+    }
+    
+    if (themes.some(t => t.theme === 'Trust & Verification')) {
+        recommendations.push({
+            title: 'Build Trust Through Transparency',
+            priority: 'p1',
+            description: 'Implement features that allow users to verify and validate system actions.',
+            rationale: 'Participants emphasized the need for verification and trust-building features.',
+            impact: 'Increased user confidence and adoption',
+            relatedTheme: 'Trust & Verification'
+        });
+    }
+    
+    if (themes.some(t => t.theme === 'Workflow Efficiency')) {
+        recommendations.push({
+            title: 'Streamline Key Workflows',
+            priority: 'p1',
+            description: 'Identify and optimize the most frequently used workflows based on participant feedback.',
+            rationale: 'Participants discussed workflow efficiency as a key concern.',
+            impact: 'Time savings and improved productivity',
+            relatedTheme: 'Workflow Efficiency'
+        });
+    }
+    
+    // Generate summary
+    const participantNames = participants.map(p => p.name).join(', ');
+    const summary = `This study analyzed ${participantCount} participant interview${participantCount !== 1 ? 's' : ''} (${participantNames}). ` +
+        `${keyFindings.length} key findings were identified, along with ${painPoints.length} usability concerns and ${quotes.length} notable quotes. ` +
+        (themes.length > 0 ? `The primary themes that emerged include: ${themes.slice(0, 3).map(t => t.theme).join(', ')}.` : '');
+    
+    return {
+        summary,
+        keyFindings,
+        themes,
+        painPoints: painPoints.slice(0, 10), // Limit to top 10
+        quotes: quotes.slice(0, 10), // Limit to top 10
+        recommendations
+    };
+}
+
 // Analyze transcripts
 function initializeAnalyze() {
     const analyzeBtn = document.getElementById('analyze-btn');
     
+    if (!analyzeBtn) return;
+    
     analyzeBtn.addEventListener('click', () => {
-        const transcriptText = document.getElementById('transcript-input').value;
-        const questionsText = document.getElementById('questions-input').value;
+        const campaign = getActiveCampaign();
         
-        if (!transcriptText.trim()) {
-            alert('Please paste transcript data first!');
+        if (!campaign) {
+            alert('Please select a study first!');
+            return;
+        }
+        
+        const files = campaign.files || { questions: [], transcripts: [] };
+        const hasTranscripts = files.transcripts && files.transcripts.length > 0;
+        const hasQuestions = files.questions && files.questions.length > 0;
+        
+        if (!hasTranscripts && !hasQuestions) {
+            alert('Please upload at least one transcript or study evaluation file first!');
             return;
         }
         
         analyzeBtn.disabled = true;
-        analyzeBtn.textContent = 'Analyzing...';
         
-        // Parse input
-        state.transcripts = parseTranscripts(transcriptText);
-        state.questions = parseQuestions(questionsText);
+        // Get the parent section and add progress indicator
+        const analyzeSection = analyzeBtn.closest('.master-analyze-section');
+        let progressContainer = document.getElementById('analyze-progress-container');
         
-        // Simulate analysis (in real app, this would be AI-powered)
+        if (!progressContainer) {
+            progressContainer = document.createElement('div');
+            progressContainer.id = 'analyze-progress-container';
+            progressContainer.style.cssText = 'margin-top: 1.5rem; text-align: center;';
+            analyzeSection.appendChild(progressContainer);
+        }
+        
+        // Show spinning loader and progress bar
+        progressContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <div class="analyze-spinner" style="width: 48px; height: 48px; border: 4px solid #e5e7eb; border-top-color: #22c55e; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <div style="width: 100%; max-width: 300px; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                    <div id="analyze-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); border-radius: 4px; transition: width 0.3s ease;"></div>
+                </div>
+                <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Sit tight; the report is in progress</p>
+            </div>
+        `;
+        
+        analyzeBtn.innerHTML = `
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spinning">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 6v6l4 2"></path>
+            </svg>
+            Generating Report...
+        `;
+        
+        // Animate progress bar
+        let progress = 0;
+        const progressBar = document.getElementById('analyze-progress-bar');
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            if (progressBar) progressBar.style.width = progress + '%';
+        }, 300);
+        
+        // Simulate analysis process (in real app, this would be AI-powered)
         setTimeout(() => {
-            state.insights = analyzeData(state.transcripts, state.questions);
+            clearInterval(progressInterval);
+            if (progressBar) progressBar.style.width = '100%';
+            // Get the actual participant count from uploaded files (transcripts or questions)
+            // Filter out guide files - they are not participants
+            const filterGuides = (arr) => arr ? arr.filter(f => !f.name.toLowerCase().includes('guide')) : [];
+            const uploadedTranscripts = filterGuides(files.transcripts);
+            const uploadedQuestions = filterGuides(files.questions);
+            const participantFiles = uploadedTranscripts.length > 0 ? uploadedTranscripts : uploadedQuestions;
+            const participantCount = participantFiles.length;
+            
+            // Check if this is the demo study (ISS Iterative Testing 4.1)
+            const isDemoStudy = campaign.name === 'ISS Iterative Testing 4.1';
+            
+            if (isDemoStudy && typeof synthesisData !== 'undefined' && synthesisData) {
+                // For demo study, use the pre-defined synthesisData
+                state.insights = {
+                    summary: synthesisData.executiveSummary || '',
+                    keyFindings: synthesisData.keyFindings || [],
+                    themes: synthesisData.themes || [],
+                    painPoints: synthesisData.painPoints || [],
+                    quotes: synthesisData.notableQuotes || [],
+                    recommendations: synthesisData.recommendations || [],
+                    stats: {
+                        participants: synthesisData.metadata?.participants || 6
+                    }
+                };
+                state.transcripts = synthesisData.transcripts || [];
+                state.questions = synthesisData.questions || [];
+            } else {
+                // For custom studies, analyze uploaded transcripts and generate structured data
+                const analysisResults = analyzeUploadedTranscripts(participantFiles, files);
+                
+                state.insights = {
+                    summary: analysisResults.summary,
+                    keyFindings: analysisResults.keyFindings,
+                    themes: analysisResults.themes,
+                    painPoints: analysisResults.painPoints,
+                    quotes: analysisResults.quotes,
+                    recommendations: analysisResults.recommendations,
+                    stats: {
+                        participants: participantCount
+                    }
+                };
+                state.transcripts = [];
+                state.questions = [];
+            }
+            
+            if (participantCount === 0) {
+                alert('No participant files uploaded. Please upload participant transcripts first.');
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    Analyze & Generate Report
+                `;
+                return;
+            }
+            
+            // Save the generated report to localStorage for this study
+            localStorage.setItem(`report_${campaign.id}`, JSON.stringify(state.insights));
+            
+            // Render all insights using the main render function
             renderInsights(state.insights);
+            
+            // Remove progress container
+            const progressContainer = document.getElementById('analyze-progress-container');
+            if (progressContainer) {
+                progressContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: #22c55e; font-weight: 600;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Report generated successfully!
+                    </div>
+                `;
+                setTimeout(() => {
+                    progressContainer.remove();
+                }, 3000);
+            }
+            
             analyzeBtn.disabled = false;
-            analyzeBtn.textContent = 'Analyze Transcripts';
-            navigateToSection('executive-summary');
-        }, 1500);
+            analyzeBtn.innerHTML = `
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                Analyze & Generate Report
+            `;
+            
+            // Navigate directly to Executive Summary (Study Summary page)
+            setTimeout(() => {
+                navigateToSection('executive-summary');
+            }, 500);
+        }, 3000);
     });
 }
 
@@ -414,8 +750,147 @@ function renderInsights(insights) {
     updateParticipantCount(insights.stats.participants);
 }
 
+// Generate HTML for custom study participants based on uploaded transcript files only
+function generateCustomParticipantsHTML(participantCount) {
+    const activeCampaign = getActiveCampaign();
+    const campaignFiles = activeCampaign?.files || { transcripts: [], questions: [] };
+    // Use transcript files first, or fall back to questions files for participants
+    const transcriptFiles = campaignFiles.transcripts || [];
+    const questionFiles = campaignFiles.questions || [];
+    
+    // Filter out guide files - they should not be treated as participants
+    const filterParticipantFiles = (files) => {
+        return files.filter(f => !f.name.toLowerCase().includes('guide'));
+    };
+    
+    const filteredTranscripts = filterParticipantFiles(transcriptFiles);
+    const filteredQuestions = filterParticipantFiles(questionFiles);
+    const allParticipantFiles = filteredTranscripts.length > 0 ? filteredTranscripts : filteredQuestions;
+    
+    let participantsHTML = '';
+    const actualParticipantCount = allParticipantFiles.length > 0 ? allParticipantFiles.length : participantCount;
+    
+    if (allParticipantFiles.length > 0) {
+        // Sort files by participant/user number if present in filename
+        const sortedFiles = [...allParticipantFiles].sort((a, b) => {
+            const aMatch = a.name.match(/(?:user|participant)\s*(\d+)/i);
+            const bMatch = b.name.match(/(?:user|participant)\s*(\d+)/i);
+            const aNum = aMatch ? parseInt(aMatch[1]) : 999;
+            const bNum = bMatch ? parseInt(bMatch[1]) : 999;
+            return aNum - bNum;
+        });
+        
+        participantsHTML = sortedFiles.map((file, i) => {
+            // Remove extension
+            let fileNameClean = file.name.replace(/\.[^/.]+$/, '');
+            
+            // Try to parse format: "Name(UserX)" or "Name (Participant X)" etc.
+            const userMatch = fileNameClean.match(/^(.+?)\s*\(?(?:user|participant)\s*(\d+)\)?$/i);
+            
+            let firstName, userNumber;
+            if (userMatch) {
+                // Extracted from format "Name (UserX)" or "Name(userX)"
+                firstName = userMatch[1].trim();
+                // Remove any trailing parenthesis from name
+                firstName = firstName.replace(/\($/, '').trim();
+                userNumber = userMatch[2];
+            } else {
+                // Fallback: use filename as name, order as user number
+                firstName = fileNameClean.split(/[_\-\s\(]/)[0];
+                userNumber = i + 1;
+            }
+            
+            // Capitalize first letter
+            firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+            
+            // Include campaign ID to isolate participant details per study
+            const campaignId = activeCampaign?.id || 'unknown';
+            const participantId = `${campaignId}-user-${userNumber}`;
+            
+            // Check for manually saved details first
+            const savedDetailsStr = localStorage.getItem(`participant_details_${participantId}`);
+            let details;
+            
+            if (savedDetailsStr) {
+                const saved = JSON.parse(savedDetailsStr);
+                details = {
+                    role: saved.role || '',
+                    experienceYears: saved.experienceYears || saved.experience || '',
+                    platforms: saved.platforms || ''
+                };
+            } else if (file.extractedText) {
+                details = extractParticipantDetails(file.extractedText, firstName);
+            } else {
+                details = { role: '', experienceYears: '', platforms: '' };
+            }
+            
+            const hasDetails = details.role || details.experienceYears || details.platforms;
+            
+            return `
+                <div class="participant-card" onclick="toggleParticipantDetails('${participantId}')" style="cursor: pointer;">
+                    <div class="participant-header">
+                        <div>
+                            <h4>${firstName}</h4>
+                            <div class="participant-role">Participant ${userNumber}</div>
+                        </div>
+                        <div class="expand-icon" id="icon-${participantId}">›</div>
+                    </div>
+                    <div class="participant-details" id="details-${participantId}" style="display: none;">
+                        <div class="detail-section">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <strong>Role:</strong>
+                                <button onclick="event.stopPropagation(); openRoleEditModal('${participantId}', '${firstName}', ${userNumber})" 
+                                    style="background: none; border: none; cursor: pointer; padding: 2px; opacity: 0.6; transition: opacity 0.2s; display: flex; align-items: center; gap: 4px;"
+                                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"
+                                    title="Edit role">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span style="font-size: 0.75rem; color: var(--primary);">Edit</span>
+                                </button>
+                            </div>
+                            <p>${details.role || '<span style="color: var(--text-light); font-style: italic;">Not extracted - click Edit to add</span>'}</p>
+                        </div>
+                        <div class="detail-section">
+                            <strong>Experience:</strong>
+                            <p>${details.experienceYears || '<span style="color: var(--text-light); font-style: italic;">Not found</span>'}</p>
+                        </div>
+                        <div class="detail-section">
+                            <strong>Platforms:</strong>
+                            <p>${details.platforms || 'FAST'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        participantsHTML = Array.from({length: actualParticipantCount}, (_, i) => `
+            <div class="participant-card" style="cursor: default;">
+                <div class="participant-header">
+                    <div>
+                        <h4>Participant ${i + 1}</h4>
+                        <div class="participant-role">Participant ${i + 1}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    return `
+        <h3 style="margin-bottom: 1rem; color: var(--primary);">👥 Research Participants (${actualParticipantCount})</h3>
+        <p style="color: var(--text-light); margin-bottom: 1.5rem;">Click on any participant to view their detailed profile, experience, and key contributions to this research.</p>
+        <div class="participants-grid">
+            ${participantsHTML}
+        </div>
+    `;
+}
+
 function renderExecutiveSummary(insights) {
     const section = document.querySelector('#executive-summary .summary-content');
+    
+    // Get the actual participant count from insights
+    const participantCount = insights.stats?.participants || 0;
     
     // Get participant details and metadata from synthesisData
     const participants = (typeof synthesisData !== 'undefined' && synthesisData.participantDetails) 
@@ -426,58 +901,64 @@ function renderExecutiveSummary(insights) {
         ? synthesisData.metadata 
         : {};
     
+    // Check if this is a custom study (not the demo ISS study)
+    const activeCampaign = getActiveCampaign();
+    const isDemoStudy = activeCampaign && activeCampaign.name === 'ISS Iterative Testing 4.1';
+    const isCustomStudy = !isDemoStudy;
+    
     section.innerHTML = `
-        ${metadata.studyBackground ? `
+        ${!isCustomStudy && metadata.studyBackground ? `
             <div style="background: var(--surface); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--primary); margin-bottom: 2rem;">
                 <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.25rem;">📋 Study Background</h3>
                 <p style="line-height: 1.7; color: var(--text); margin: 0;">${metadata.studyBackground}</p>
             </div>
         ` : ''}
         
-        ${metadata.studyGoals ? `
+        ${!isCustomStudy && metadata.studyGoals ? `
             <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
                 <h3 style="margin-bottom: 1rem; color: white; font-size: 1.25rem;">🎯 Study Goals</h3>
                 <p style="line-height: 1.7; color: rgba(255,255,255,0.95); margin: 0;">${metadata.studyGoals}</p>
             </div>
         ` : ''}
         
-        <h3 style="margin-bottom: 1rem; color: var(--primary);">👥 Research Participants</h3>
-        <p style="color: var(--text-light); margin-bottom: 1.5rem;">Click on any participant to view their detailed profile, experience, and key contributions to this research.</p>
-        
-        <div class="participants-grid">
-            ${participants.map(p => `
-                <div class="participant-card" onclick="toggleParticipantDetails('${p.id}')">
-                    <div class="participant-header">
-                        <div>
-                            <h4>${p.name}</h4>
-                            <div class="participant-role">${p.role}</div>
-                            <div class="participant-location">📍 ${p.location}</div>
+        ${isCustomStudy ? generateCustomParticipantsHTML(participantCount) : `
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">👥 Research Participants (${participantCount})</h3>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">Click on any participant to view their detailed profile, experience, and key contributions to this research.</p>
+            <div class="participants-grid">
+                ${participants.map(p => `
+                    <div class="participant-card" onclick="toggleParticipantDetails('${p.id}')">
+                        <div class="participant-header">
+                            <div>
+                                <h4>${p.name}</h4>
+                                <div class="participant-role">${p.role}</div>
+                                <div class="participant-location">📍 ${p.location}</div>
+                            </div>
+                            <div class="expand-icon" id="icon-${p.id}">›</div>
                         </div>
-                        <div class="expand-icon" id="icon-${p.id}">›</div>
+                        <div class="participant-details" id="details-${p.id}" style="display: none;">
+                            <div class="detail-section">
+                                <strong>Experience:</strong>
+                                <p>${p.experience}</p>
+                            </div>
+                            <div class="detail-section">
+                                <strong>Systems Used:</strong>
+                                <p>${p.systems}</p>
+                            </div>
+                            <div class="detail-section">
+                                <strong>Key Contributions:</strong>
+                                <ul>
+                                    ${p.keyContributions.map(contrib => `<li>${contrib}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="detail-section highlight-quote">
+                                <strong>Notable Quote:</strong>
+                                <p style="font-style: italic; color: var(--text-light);">"${p.topQuote}"</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="participant-details" id="details-${p.id}" style="display: none;">
-                        <div class="detail-section">
-                            <strong>Experience:</strong>
-                            <p>${p.experience}</p>
-                        </div>
-                        <div class="detail-section">
-                            <strong>Systems Used:</strong>
-                            <p>${p.systems}</p>
-                        </div>
-                        <div class="detail-section">
-                            <strong>Key Contributions:</strong>
-                            <ul>
-                                ${p.keyContributions.map(contrib => `<li>${contrib}</li>`).join('')}
-                            </ul>
-                        </div>
-                        <div class="detail-section highlight-quote">
-                            <strong>Notable Quote:</strong>
-                            <p style="font-style: italic; color: var(--text-light);">"${p.topQuote}"</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
+                `).join('')}
+            </div>
+        `}
     `;
 }
 
@@ -495,6 +976,150 @@ function toggleParticipantDetails(participantId) {
         iconEl.textContent = '›';
         iconEl.style.transform = 'rotate(0deg)';
     }
+}
+
+// Open modal to manually add participant details
+function openParticipantEditModal(participantId, name, userNumber) {
+    // Get existing data if any
+    const savedDetails = localStorage.getItem(`participant_details_${participantId}`) || '{}';
+    const details = JSON.parse(savedDetails);
+    
+    const modalHTML = `
+        <div id="participant-edit-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+            <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                <h3 style="margin: 0 0 1.5rem 0; color: var(--primary);">Edit Details: ${name} (Participant ${userNumber})</h3>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Role/Position</label>
+                    <input type="text" id="edit-role" value="${details.role || ''}" placeholder="e.g., Escrow Officer" 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 1rem;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Experience (Years)</label>
+                    <input type="text" id="edit-experience" value="${details.experienceYears || ''}" placeholder="e.g., 5 years" 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 1rem;">
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Platforms/Tools Used</label>
+                    <input type="text" id="edit-platforms" value="${details.platforms || ''}" placeholder="e.g., Encompass, Excel, First American" 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 1rem;">
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="saveParticipantDetails('${participantId}')" 
+                        style="flex: 1; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Save Details
+                    </button>
+                    <button onclick="closeParticipantEditModal()" 
+                        style="flex: 1; background: #f1f5f9; color: #64748b; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function saveParticipantDetails(participantId) {
+    const details = {
+        role: document.getElementById('edit-role').value.trim(),
+        experienceYears: document.getElementById('edit-experience').value.trim(),
+        platforms: document.getElementById('edit-platforms').value.trim()
+    };
+    
+    localStorage.setItem(`participant_details_${participantId}`, JSON.stringify(details));
+    closeParticipantEditModal();
+    
+    // Clear cached report and regenerate
+    const campaigns = getCampaigns();
+    const active = campaigns.find(c => c.isActive);
+    if (active) {
+        localStorage.removeItem(`report_${active.id}`);
+    }
+    
+    // Reload to show updated details
+    location.reload();
+}
+
+function closeParticipantEditModal() {
+    const modal = document.getElementById('participant-edit-modal');
+    if (modal) modal.remove();
+}
+
+// Open modal to edit just the role field
+function openRoleEditModal(participantId, name, userNumber) {
+    // Get existing data if any
+    const savedDetails = localStorage.getItem(`participant_details_${participantId}`) || '{}';
+    const details = JSON.parse(savedDetails);
+    
+    // Also try to get the auto-extracted role from the current display
+    const detailsEl = document.getElementById(`details-${participantId}`);
+    let currentRole = details.role || '';
+    if (!currentRole && detailsEl) {
+        const roleP = detailsEl.querySelector('.detail-section p');
+        if (roleP && !roleP.innerHTML.includes('Not extracted')) {
+            currentRole = roleP.textContent;
+        }
+    }
+    
+    const modalHTML = `
+        <div id="role-edit-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+            <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                <h3 style="margin: 0 0 1.5rem 0; color: var(--primary);">Edit Role: ${name} (Participant ${userNumber})</h3>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Role / Background</label>
+                    <textarea id="edit-role-text" placeholder="e.g., I've been here 28 years, started on the title side for 8 years, then been in escrow since then..." 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 1rem; min-height: 150px; resize: vertical;">${currentRole}</textarea>
+                    <p style="color: var(--text-light); font-size: 0.75rem; margin-top: 0.5rem;">Paste the relevant text from the transcript that describes this participant's role and background.</p>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="saveRoleEdit('${participantId}')" 
+                        style="flex: 1; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Save Role
+                    </button>
+                    <button onclick="closeRoleEditModal()" 
+                        style="flex: 1; background: #f1f5f9; color: #64748b; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function saveRoleEdit(participantId) {
+    const newRole = document.getElementById('edit-role-text').value.trim();
+    
+    // Get existing details and update just the role
+    const savedDetails = localStorage.getItem(`participant_details_${participantId}`) || '{}';
+    const details = JSON.parse(savedDetails);
+    details.role = newRole;
+    
+    localStorage.setItem(`participant_details_${participantId}`, JSON.stringify(details));
+    closeRoleEditModal();
+    
+    // Clear cached report
+    const campaigns = getCampaigns();
+    const active = campaigns.find(c => c.isActive);
+    if (active) {
+        localStorage.removeItem(`report_${active.id}`);
+    }
+    
+    // Reload to show updated details
+    location.reload();
+}
+
+function closeRoleEditModal() {
+    const modal = document.getElementById('role-edit-modal');
+    if (modal) modal.remove();
 }
 
 function renderKeyFindings(findings) {
@@ -769,13 +1394,13 @@ function renderOtherNotes(grid) {
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
             ${reportNotes.map(note => `
-                <div class="card" style="position: relative; padding: 1.5rem; background: #fff9c4; border-left: 4px solid #fbbf24;">
+                <div class="important-note-card" style="position: relative; padding: 1.5rem; background: white; border: none; border-left: 4px solid #fbbf24; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; max-width: 100%; outline: none;">
                     ${note.topic ? `
-                        <div style="display: inline-block; background: #fcd34d; color: #92400e; border: 1px solid #d97706; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem;">
+                        <div style="display: inline-block; background: #f5f5f5; color: #666; border: 1px solid #e0e0e0; padding: 0.125rem 0.5rem; border-radius: 10px; font-size: 0.625rem; font-weight: 500; margin-bottom: 0.75rem;">
                             ${escapeHtml(note.topic)}
                         </div>
                     ` : ''}
-                    <p style="color: #1f2937; line-height: 1.6; margin: 0 0 1rem 0;">${escapeHtml(note.content)}</p>
+                    <p style="color: #1f2937; line-height: 1.6; margin: 0 0 1rem 0; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%;">${escapeHtml(note.content)}</p>
                     ${note.fromBoard ? `
                         <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #6b7280; margin-top: 0.75rem;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
@@ -786,8 +1411,14 @@ function renderOtherNotes(grid) {
                         </div>
                     ` : ''}
                     <button onclick="deleteNoteFromReport('${note.id}')" 
-                            style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;"
-                            title="Delete note">×</button>
+                            style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.4; transition: opacity 0.2s;"
+                            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.4'"
+                            title="Delete note">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div>
             `).join('')}
         </div>
@@ -1129,16 +1760,31 @@ function renderResearchQuestions(questionSections) {
 
 // Delete note from report
 function deleteNoteFromReport(noteId) {
+    const performDelete = () => {
+        const campaigns = getCampaigns();
+        const activeCampaign = campaigns.find(c => c.isActive);
+        
+        if (!activeCampaign || !activeCampaign.reportNotes) return;
+        
+        // Remove the note
+        activeCampaign.reportNotes = activeCampaign.reportNotes.filter(n => n.id !== noteId);
+        saveCampaigns(campaigns);
+        
+        performDeleteNoteCleanup(noteId);
+    };
+    
+    // Use custom confirm if available
+    if (window.customConfirm) {
+        window.customConfirm('Delete this note from the study?', performDelete);
+        return;
+    }
+    
+    // Fallback
     if (!confirm('Delete this note from the study?')) return;
-    
-    const campaigns = getCampaigns();
-    const activeCampaign = campaigns.find(c => c.isActive);
-    
-    if (!activeCampaign || !activeCampaign.reportNotes) return;
-    
-    // Remove the note
-    activeCampaign.reportNotes = activeCampaign.reportNotes.filter(n => n.id !== noteId);
-    saveCampaigns(campaigns);
+    performDelete();
+}
+
+function performDeleteNoteCleanup(noteId) {
     
     // Also remove "Added to Study" status from the sticky note if it exists
     const stickyNotes = document.querySelectorAll('.sticky-note');
@@ -1181,9 +1827,33 @@ function setDate() {
 
 // Load sample data (optional, for demo purposes)
 function loadSampleData() {
-    // Check if synthesis data is available
-    if (typeof synthesisData !== 'undefined' && synthesisData) {
-        console.log('Loading synthesis data...', synthesisData);
+    // Get active campaign to check if it's the demo study
+    const activeCampaign = getActiveCampaign();
+    const isDemoStudy = activeCampaign && activeCampaign.name === 'ISS Iterative Testing 4.1';
+    
+    // Check if this study has a generated report stored
+    const storedReport = activeCampaign ? localStorage.getItem(`report_${activeCampaign.id}`) : null;
+    
+    if (storedReport) {
+        // Load previously generated report
+        console.log('Loading stored report for study...');
+        state.insights = JSON.parse(storedReport);
+        
+        // Always recalculate participant count from actual uploaded files
+        // Filter out guide files - they are not participants
+        const campaignFiles = activeCampaign?.files || { transcripts: [], questions: [] };
+        const filterGuides = (arr) => arr ? arr.filter(f => !f.name.toLowerCase().includes('guide')) : [];
+        const transcriptCount = filterGuides(campaignFiles.transcripts).length;
+        const questionCount = filterGuides(campaignFiles.questions).length;
+        const actualFileCount = transcriptCount > 0 ? transcriptCount : questionCount;
+        if (actualFileCount > 0) {
+            state.insights.stats.participants = actualFileCount;
+        }
+        
+        renderInsights(state.insights);
+        console.log('Stored report rendered successfully!');
+    } else if (isDemoStudy && typeof synthesisData !== 'undefined' && synthesisData) {
+        console.log('Loading synthesis data for ISS demo study...', synthesisData);
         
         // Auto-load the synthesized data
         state.insights = {
@@ -1206,8 +1876,40 @@ function loadSampleData() {
         renderInsights(state.insights);
         console.log('Insights rendered successfully!');
     } else {
-        console.error('synthesisData not found! Make sure synthesis-data.js is loaded.');
+        // For new studies, show empty state
+        console.log('New study - showing empty state');
+        state.insights = null;
+        renderEmptyStudyState();
     }
+}
+
+// Render empty state for new studies
+function renderEmptyStudyState() {
+    const sections = ['executive-summary', 'themes', 'quotes', 'recommendations'];
+    
+    sections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            const content = section.querySelector('.summary-content, .themes-grid, .quotes-grid, .insights-grid');
+            if (content) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; background: #f8fafc; border-radius: 12px; border: 2px dashed #e2e8f0;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin-bottom: 1rem;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="9" y1="15" x2="15" y2="15"></line>
+                        </svg>
+                        <h3 style="color: #64748b; margin-bottom: 0.5rem;">No Data Yet</h3>
+                        <p style="color: #94a3b8; margin: 0;">Upload transcripts and files in <a href="#uxd-admin" style="color: #3b82f6;">UXD Admin</a> to generate insights.</p>
+                    </div>
+                `;
+            }
+        }
+    });
+    
+    // Update participant count
+    document.getElementById('participant-count').textContent = '0 Participants';
 }
 
 // Export functionality (future enhancement)
@@ -1909,6 +2611,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCampaigns();
     renderCampaignsList();
     renderStudiesList();
+    
+    // Update Build Study Report file lists
+    setTimeout(() => {
+        updateBuildReportFileLists();
+    }, 200);
 });
 
 // Campaign storage structure
@@ -2014,6 +2721,9 @@ function setActiveCampaign(campaignId) {
     saveCampaigns(campaigns);
     updateCurrentCampaignDisplay();
     renderCampaignsList();
+    
+    // Reload data for the new active study
+    loadSampleData();
 }
 
 // Update current campaign display
@@ -2022,6 +2732,12 @@ function updateCurrentCampaignDisplay() {
     const titleEl = document.getElementById('current-campaign-title');
     if (titleEl && campaign) {
         titleEl.textContent = campaign.name;
+    }
+    
+    // Also update the main header title
+    const headerTitle = document.querySelector('#main-header h1');
+    if (headerTitle && campaign) {
+        headerTitle.textContent = campaign.name;
     }
     
     // Update current campaign files display
@@ -2044,6 +2760,107 @@ function updateCurrentCampaignDisplay() {
             filesContainer.innerHTML = '';
         }
     }
+    
+    // Update Build Study Report file lists
+    updateBuildReportFileLists();
+}
+
+// Update file lists on Build Study Report page
+// Get file icon based on file extension
+function getFileIcon(fileName) {
+    const ext = fileName.toLowerCase().split('.').pop();
+    
+    if (ext === 'pdf') {
+        // PDF icon - red document
+        return '<img src="assets/pdf-icon.svg" width="20" height="20" alt="PDF" style="flex-shrink: 0;">';
+    } else if (ext === 'doc' || ext === 'docx') {
+        // DOC icon - blue document
+        return '<img src="assets/doc-icon.png" width="20" height="20" alt="DOC" style="flex-shrink: 0;">';
+    } else if (ext === 'txt') {
+        // TXT icon - gray text file
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
+            <path d="M4 4C4 2.89543 4.89543 2 6 2H14L20 8V20C20 21.1046 19.1046 22 18 22H6C4.89543 22 4 21.1046 4 20V4Z" fill="#6b7280"/>
+            <path d="M14 2L20 8H16C14.8954 8 14 7.10457 14 6V2Z" fill="#9ca3af"/>
+            <text x="12" y="16" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="5" font-weight="bold">TXT</text>
+        </svg>`;
+    } else {
+        // Default file icon
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" style="flex-shrink: 0;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>`;
+    }
+}
+
+function updateBuildReportFileLists() {
+    const campaign = getActiveCampaign();
+    if (!campaign) return;
+    
+    const files = campaign.files || { questions: [], transcripts: [], videos: [], presentations: [] };
+    
+    // Update transcripts file list
+    const transcriptsList = document.getElementById('transcript-files-list');
+    if (transcriptsList) {
+        if (files.transcripts && files.transcripts.length > 0) {
+            transcriptsList.innerHTML = `
+                <div class="uploaded-files-header" style="font-size: 0.875rem; color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">
+                    Uploaded Files (${files.transcripts.length})
+                </div>
+                ${files.transcripts.map(file => `
+                    <div class="uploaded-file-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #f8fafc; border-radius: 6px; margin-bottom: 0.25rem;">
+                        ${getFileIcon(file.name)}
+                        <span style="font-size: 0.8125rem; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</span>
+                        <button onclick="removeFileFromCampaign('transcripts', '${file.id}')" style="background: none; border: none; cursor: pointer; padding: 2px; opacity: 0.5;" title="Remove file">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('')}
+            `;
+        } else {
+            transcriptsList.innerHTML = '';
+        }
+    }
+    
+    // Update questions/evaluation file list
+    const questionsList = document.getElementById('questions-files-list');
+    if (questionsList) {
+        if (files.questions && files.questions.length > 0) {
+            questionsList.innerHTML = `
+                <div class="uploaded-files-header" style="font-size: 0.875rem; color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">
+                    Uploaded Files (${files.questions.length})
+                </div>
+                ${files.questions.map(file => `
+                    <div class="uploaded-file-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #f8fafc; border-radius: 6px; margin-bottom: 0.25rem;">
+                        ${getFileIcon(file.name)}
+                        <span style="font-size: 0.8125rem; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</span>
+                        <button onclick="removeFileFromCampaign('questions', '${file.id}')" style="background: none; border: none; cursor: pointer; padding: 2px; opacity: 0.5;" title="Remove file">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('')}
+            `;
+        } else {
+            questionsList.innerHTML = '';
+        }
+    }
+}
+
+// Remove file from campaign
+function removeFileFromCampaign(fileType, fileId) {
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    
+    if (!activeCampaign || !activeCampaign.files || !activeCampaign.files[fileType]) return;
+    
+    activeCampaign.files[fileType] = activeCampaign.files[fileType].filter(f => f.id !== fileId);
+    saveCampaigns(campaigns);
+    updateCurrentCampaignDisplay();
 }
 
 // Edit campaign title inline
@@ -2105,6 +2922,7 @@ function editCampaignTitle() {
         
         // Update other displays
         renderCampaignsList();
+        renderStudiesList();
     };
     
     input.addEventListener('blur', saveTitle);
@@ -2140,18 +2958,6 @@ function renderCampaignsList() {
             </div>
             <div class="campaign-list-actions">
                 ${campaign.isActive ? '<span class="status-badge active">Active</span>' : '<span class="status-badge inactive">Click to activate</span>'}
-                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditCampaignModal('${campaign.id}')" title="Edit">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                </button>
-                <button class="action-btn delete-btn" onclick="event.stopPropagation(); openDeleteModal('${campaign.id}')" title="Delete">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
             </div>
         </div>
     `).join('');
@@ -2166,43 +2972,61 @@ function renderStudiesList() {
     
     const campaigns = getCampaigns();
     
+    // Add Study card (always shown) - Block Party style
+    const addStudyCard = `
+        <div class="study-card add-study-card" onclick="openCreateCampaignModal()" style="border: 1px dashed #d1d5db; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; cursor: pointer; transition: all 0.2s;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 0.75rem;">
+                <path d="M10 4.16667V15.8333M4.16667 10H15.8333" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p style="color: #6b7280; font-size: 14px; font-weight: 500; margin: 0;">Add New Study</p>
+        </div>
+    `;
+    
     if (campaigns.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-light); text-align: center; padding: 2rem;">No studies available. Create a campaign in UXD Admin to get started.</p>';
+        container.innerHTML = addStudyCard;
         return;
     }
     
-    container.innerHTML = campaigns.map(campaign => {
+    const studyCards = campaigns.map(campaign => {
         const fileCount = (campaign.files?.questions?.length || 0) + 
                           (campaign.files?.transcripts?.length || 0) + 
                           (campaign.files?.videos?.length || 0) + 
                           (campaign.files?.presentations?.length || 0);
         
         return `
-            <div class="study-card ${campaign.isActive ? 'active' : ''}" onclick="selectStudy('${campaign.id}')">
-                <div class="study-card-header">
-                    <div class="study-card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <div class="study-card ${campaign.isActive ? 'active' : ''}" onclick="selectStudy('${campaign.id}')" style="position: relative;">
+                <div class="study-card-actions" style="position: absolute; top: 8px; right: 8px; display: flex; gap: 4px;">
+                    <button onclick="event.stopPropagation(); openEditCampaignModal('${campaign.id}')" title="Edit Study" style="background: transparent; border: none; padding: 4px; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                         </svg>
-                    </div>
-                    <div>
-                        <h4 class="study-card-title">${campaign.name}</h4>
-                        <p class="study-card-date">Created: ${new Date(campaign.createdDate).toLocaleDateString()}</p>
-                    </div>
+                    </button>
+                    <button onclick="event.stopPropagation(); openDeleteModal('${campaign.id}')" title="Delete Study" style="background: transparent; border: none; padding: 4px; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
                 </div>
-                <p class="study-card-description">
-                    ${campaign.isActive ? '✓ Currently Active Study' : 'Click to view this study'}
-                </p>
+                <div class="study-card-header" style="flex-direction: column; align-items: flex-start;">
+                    <h4 class="study-card-title">${campaign.name}</h4>
+                    <p class="study-card-date">Created: ${new Date(campaign.createdDate).toLocaleDateString()}</p>
+                </div>
+                ${campaign.isActive ? `
+                <div class="study-card-status" style="display: flex; align-items: center; gap: 6px; margin: 0.5rem 0;">
+                    <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block;"></span>
+                    <span style="color: #22c55e; font-size: 13px; font-weight: 500;">Active</span>
+                </div>
+                ` : ''}
                 <div class="study-card-stats">
                     <span class="study-stat"><strong>${fileCount}</strong> files uploaded</span>
-                    <span class="study-stat"><strong>${campaign.userCount || 6}</strong> participants</span>
+                    <span class="study-stat"><strong>${campaign.files?.transcripts?.length || campaign.userCount || 0}</strong> participants</span>
                 </div>
             </div>
         `;
     }).join('');
+    
+    container.innerHTML = studyCards + addStudyCard;
 }
 
 // Select a study and navigate to its summary
@@ -2222,9 +3046,9 @@ function openCreateCampaignModal() {
     const input = document.getElementById('campaign-name-input');
     const saveBtn = document.querySelector('.save-campaign-btn');
     
-    modalTitle.textContent = 'Create New Campaign';
+    modalTitle.textContent = 'Create New Study';
     input.value = '';
-    saveBtn.textContent = 'Create Campaign';
+    saveBtn.textContent = 'Create Study';
     saveBtn.setAttribute('data-mode', 'create');
     saveBtn.removeAttribute('data-campaign-id');
     
@@ -2243,7 +3067,7 @@ function openEditCampaignModal(campaignId) {
     const input = document.getElementById('campaign-name-input');
     const saveBtn = document.querySelector('.save-campaign-btn');
     
-    modalTitle.textContent = 'Edit Campaign';
+    modalTitle.textContent = 'Edit Study';
     input.value = campaign.name;
     saveBtn.textContent = 'Save Changes';
     saveBtn.setAttribute('data-mode', 'edit');
@@ -2268,21 +3092,53 @@ function saveCampaign() {
     const name = input.value.trim();
     
     if (!name) {
-        alert('Please enter a campaign name');
+        alert('Please enter a study name');
         return;
     }
     
     const campaigns = getCampaigns();
     
     if (mode === 'create') {
-        // Create new campaign
+        // Create new campaign with empty files (isolated from other studies)
+        const newCampaignId = 'campaign-' + Date.now();
         const newCampaign = {
-            id: 'campaign-' + Date.now(),
+            id: newCampaignId,
             name: name,
             createdDate: new Date().toISOString(),
-            isActive: false
+            isActive: false,
+            files: {
+                questions: [],
+                transcripts: [],
+                videos: [],
+                presentations: []
+            },
+            reportNotes: [],
+            customTopics: []
         };
         campaigns.push(newCampaign);
+        
+        // Save and set as active
+        saveCampaigns(campaigns);
+        setActiveCampaign(newCampaignId);
+        
+        // Close modal and navigate to UXD Admin to configure the study
+        closeCampaignModal();
+        window.location.hash = 'uxd-admin';
+        navigateToSection('uxd-admin');
+        
+        // Update displays after navigation to show new study name
+        setTimeout(() => {
+            updateCurrentCampaignDisplay();
+            renderCampaignsList();
+            renderStudiesList();
+            
+            // Also update the header title
+            const headerTitle = document.querySelector('#main-header h1');
+            if (headerTitle) {
+                headerTitle.textContent = name;
+            }
+        }, 100);
+        return;
     } else if (mode === 'edit') {
         // Edit existing campaign
         const campaign = campaigns.find(c => c.id === campaignId);
@@ -2293,6 +3149,8 @@ function saveCampaign() {
     
     saveCampaigns(campaigns);
     renderCampaignsList();
+    renderStudiesList();
+    updateCurrentCampaignDisplay();
     closeCampaignModal();
 }
 
@@ -2306,13 +3164,13 @@ function openDeleteModal(campaignId) {
     
     // Prevent deleting the last campaign
     if (campaigns.length === 1) {
-        alert('Cannot delete the last campaign. You must have at least one campaign.');
+        alert('Cannot delete the last study. You must have at least one study.');
         return;
     }
     
     // Prevent deleting active campaign
     if (campaign.isActive) {
-        alert('Cannot delete the active campaign. Please switch to another campaign first.');
+        alert('Cannot delete the active study. Please switch to another study first.');
         return;
     }
     
@@ -2341,6 +3199,7 @@ function confirmDeleteCampaign() {
     
     saveCampaigns(campaigns);
     renderCampaignsList();
+    renderStudiesList();
     closeDeleteModal();
 }
 
@@ -2652,46 +3511,260 @@ function removeCompactPresentation(index) {
 
 // ========== CAMPAIGN FILE MANAGEMENT ==========
 
-// Add file to active campaign (overwrites if same name exists)
-function addFileToCampaign(fileType, fileName, fileData) {
-    const campaigns = getCampaigns();
-    const activeCampaign = campaigns.find(c => c.isActive);
-    
-    if (!activeCampaign) return;
-    
-    if (!activeCampaign.files) {
-        activeCampaign.files = {
-            questions: [],
-            transcripts: [],
-            videos: [],
-            presentations: []
-        };
+// Extract text from PDF using pdf.js
+async function extractTextFromPDF(base64Data) {
+    console.log('=== extractTextFromPDF called ===');
+    try {
+        // Check if pdf.js is loaded
+        if (typeof pdfjsLib === 'undefined') {
+            console.error('PDF.js not loaded!');
+            return '';
+        }
+        console.log('PDF.js is available');
+        
+        // Remove data URL prefix if present
+        const base64Clean = base64Data.replace(/^data:application\/pdf;base64,/, '');
+        console.log('Base64 clean length:', base64Clean.length);
+        
+        // Convert base64 to array buffer
+        const binaryString = atob(base64Clean);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Load PDF
+        const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+        let fullText = '';
+        
+        // Extract text from each page (limit to first 10 pages for performance)
+        const maxPages = Math.min(pdf.numPages, 10);
+        for (let i = 1; i <= maxPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n\n';
+        }
+        
+        // Limit text size to avoid localStorage issues
+        return fullText.substring(0, 50000);
+    } catch (error) {
+        console.error('Error extracting PDF text:', error);
+        return '';
     }
-    
-    // Check if file with same name already exists
-    const existingIndex = activeCampaign.files[fileType].findIndex(f => f.name === fileName);
-    
-    const fileObject = {
-        name: fileName,
-        uploadedDate: new Date().toISOString(),
-        data: fileData, // Store base64 or file reference
-        id: existingIndex >= 0 
-            ? activeCampaign.files[fileType][existingIndex].id  // Keep same ID if overwriting
-            : 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+}
+
+// Extract participant details from transcript text
+function extractParticipantDetails(text, participantName) {
+    const details = {
+        role: '',
+        experienceYears: '',
+        platforms: ''
     };
     
-    if (existingIndex >= 0) {
-        // Overwrite existing file
-        activeCampaign.files[fileType][existingIndex] = fileObject;
-        showFileOverwriteNotification(fileName);
-    } else {
-        // Add new file
-        activeCampaign.files[fileType].push(fileObject);
+    if (!text) return details;
+    
+    // Try to find role/background info - look for self-introduction patterns
+    const introPatterns = [
+        // "I'm [Name], I've been here/doing this for X years..."
+        /(?:I'm|I am)\s+\w+[^.]*?(?:I've been|been here|been doing|been with|been in)[^.]*?\d+\s*years[^.]{0,200}/gi,
+        // "I've been here X years, started on..."
+        /I've been (?:here|with|at|doing|in)[^.]*?\d+\s*years[^.]{0,200}/gi,
+        // "started on/in/as [role] for X years, and then..."
+        /started (?:on|in|as|with)[^.]{10,200}(?:and then|since then|after that)[^.]{0,150}/gi,
+        // "been in [department/role] for X years"
+        /been (?:in|on|with|doing|working)[^.]{5,150}\d+\s*years[^.]{0,100}/gi,
+        // "I do [role], I work on/in/with..."
+        /I (?:do|work|handle|manage|am responsible)[^.]{10,200}/gi,
+        // "my role is... / my job is... / I work as..."
+        /(?:my role|my job|my position|I work as|I am a|I'm a)[^.]{10,150}/gi,
+        // "[Name]: I've been... / So, I'm [Name]..."
+        /(?:So,?\s*)?(?:I'm|I am)\s+\w+[^.]*?(?:been|started|worked|doing)[^.]{10,200}/gi,
+        // General: mentions years + work context
+        /\d+\s*years[^.]*?(?:escrow|title|closing|sales|customer|processing|underwriting|managing|working)[^.]{0,100}/gi,
+        // Capture sentences with work-related keywords
+        /(?:escrow|title|closing|processing|underwriting)[^.]*?(?:for|about|around)\s*\d+\s*years[^.]{0,100}/gi
+    ];
+    
+    let roleDescriptions = [];
+    introPatterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+            let desc = match[0].trim();
+            // Clean up the text - normalize whitespace
+            desc = desc.replace(/\s+/g, ' ').trim();
+            // Remove speaker labels like "cbrusco:" or "Moderator:"
+            desc = desc.replace(/\b\w+:\s*/g, ' ').replace(/\s+/g, ' ').trim();
+            if (desc.length > 20 && desc.length < 350) {
+                roleDescriptions.push(desc);
+            }
+        }
+    });
+    
+    if (roleDescriptions.length > 0) {
+        // Take the most comprehensive description (longest one that's reasonable)
+        roleDescriptions.sort((a, b) => b.length - a.length);
+        let bestRole = roleDescriptions[0];
+        
+        // Clean up and format
+        bestRole = bestRole.replace(/^[,\s]+/, '').replace(/[,\s]+$/, '');
+        // Remove leading "So, " or similar
+        bestRole = bestRole.replace(/^(So,?\s*|And,?\s*|Well,?\s*)/i, '');
+        // Capitalize first letter
+        bestRole = bestRole.charAt(0).toUpperCase() + bestRole.slice(1);
+        // Limit length for display
+        if (bestRole.length > 300) {
+            bestRole = bestRole.substring(0, 297) + '...';
+        }
+        details.role = bestRole;
     }
     
-    saveCampaigns(campaigns);
-    updateCurrentCampaignDisplay();
-    renderCampaignsList();
+    // Fallback: look for simple job title keywords
+    if (!details.role) {
+        const roleTitles = [
+            'Escrow Officer', 'Escrow Assistant', 'Title Officer', 'Title Examiner',
+            'Closer', 'Settlement Agent', 'Processor', 'Underwriter', 
+            'Account Manager', 'Customer Service', 'Sales Representative',
+            'Branch Manager', 'Operations Manager', 'Team Lead', 'State Escrow Advisor',
+            'Senior Escrow Officer', 'Junior Escrow Officer', 'Escrow Coordinator'
+        ];
+        
+        for (const title of roleTitles) {
+            const regex = new RegExp(`\\b${title}\\b`, 'i');
+            if (regex.test(text)) {
+                details.role = title;
+                break;
+            }
+        }
+    }
+    
+    // Find experience years
+    const expPatterns = [
+        /(\d+)\s*(?:\+\s*)?years?\s*(?:of\s*)?(?:experience)?/i,
+        /(?:for|about|over|around)\s*(\d+)\s*years?/i,
+        /experience[:\s]+(\d+)\s*years?/i
+    ];
+    
+    expPatterns.forEach(pattern => {
+        const match = text.match(pattern);
+        if (match && !details.experienceYears) {
+            const years = match[1];
+            details.experienceYears = years + ' years';
+        }
+    });
+    
+    // Find platforms - only FAST, IGNITE, or Clarity First
+    const textUpper = text.toUpperCase();
+    const foundPlatforms = [];
+    
+    if (textUpper.includes('FAST')) {
+        foundPlatforms.push('FAST');
+    }
+    if (textUpper.includes('IGNITE')) {
+        foundPlatforms.push('IGNITE');
+    }
+    if (textUpper.includes('CLARITY FIRST') || text.toLowerCase().includes('clarity first')) {
+        foundPlatforms.push('Clarity First');
+    }
+    
+    // Default to FAST if none found
+    if (foundPlatforms.length > 0) {
+        details.platforms = foundPlatforms.join(', ');
+    } else {
+        details.platforms = 'FAST';
+    }
+    
+    return details;
+}
+
+// Add file to active campaign (overwrites if same name exists)
+async function addFileToCampaign(fileType, fileName, fileData) {
+    try {
+        console.log('=== addFileToCampaign called ===');
+        console.log('fileName:', fileName);
+        console.log('fileData type:', typeof fileData);
+        console.log('fileData starts with:', fileData?.substring(0, 50));
+        
+        const campaigns = getCampaigns();
+        const activeCampaign = campaigns.find(c => c.isActive);
+        
+        if (!activeCampaign) {
+            console.error('No active campaign found');
+            return false;
+        }
+        
+        if (!activeCampaign.files) {
+            activeCampaign.files = {
+                questions: [],
+                transcripts: [],
+                videos: [],
+                presentations: []
+            };
+        }
+        
+        // Extract text from PDF if applicable
+        let extractedText = '';
+        const isPDF = fileName.toLowerCase().endsWith('.pdf');
+        const hasValidData = fileData && typeof fileData === 'string' && fileData.startsWith('data:');
+        
+        console.log('isPDF:', isPDF);
+        console.log('hasValidData:', hasValidData);
+        console.log('pdfjsLib available:', typeof pdfjsLib !== 'undefined');
+        
+        try {
+            if (isPDF && hasValidData && typeof pdfjsLib !== 'undefined') {
+                console.log('Attempting PDF extraction...');
+                extractedText = await extractTextFromPDF(fileData);
+                console.log('Extraction result length:', extractedText.length);
+                if (extractedText.length > 0) {
+                    console.log('First 200 chars:', extractedText.substring(0, 200));
+                }
+            } else {
+                console.log('Skipping PDF extraction - conditions not met');
+            }
+        } catch (pdfError) {
+            console.error('PDF extraction failed for', fileName, pdfError);
+            extractedText = '';
+        }
+        
+        // Check if file with same name already exists
+        const existingIndex = activeCampaign.files[fileType].findIndex(f => f.name === fileName);
+        
+        const fileObject = {
+            name: fileName,
+            uploadedDate: new Date().toISOString(),
+            hasData: true,
+            extractedText: extractedText,
+            id: existingIndex >= 0 
+                ? activeCampaign.files[fileType][existingIndex].id
+                : 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+        };
+        
+        if (existingIndex >= 0) {
+            activeCampaign.files[fileType][existingIndex] = fileObject;
+            if (typeof showFileOverwriteNotification === 'function') {
+                showFileOverwriteNotification(fileName);
+            }
+        } else {
+            activeCampaign.files[fileType].push(fileObject);
+        }
+        
+        saveCampaigns(campaigns);
+        
+        // Update displays
+        if (typeof updateCurrentCampaignDisplay === 'function') {
+            updateCurrentCampaignDisplay();
+        }
+        if (typeof renderCampaignsList === 'function') {
+            renderCampaignsList();
+        }
+        
+        console.log('File added successfully:', fileName);
+        return true;
+    } catch (error) {
+        console.error('Error adding file to campaign:', error);
+        return false;
+    }
 }
 
 // Show notification when file is overwritten
@@ -2985,11 +4058,36 @@ function initNoteTaker() {
 // Enter full-screen Note Taker mode
 function enterNoteTaker() {
     document.body.classList.add('note-taker-active');
-    // Hide sidebar and header immediately
+    
+    // Explicitly show the note-taker section
+    const noteTakerSection = document.getElementById('note-taker');
+    if (noteTakerSection) {
+        // Hide all other sections
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        // Show note-taker section
+        noteTakerSection.classList.add('active');
+    }
+    
+    // Hide sidebar
     const sidebar = document.querySelector('.sidebar');
-    const header = document.querySelector('.report-header');
     if (sidebar) sidebar.style.display = 'none';
-    if (header) header.style.display = 'none';
+    
+    // Switch headers
+    const mainHeader = document.getElementById('main-header');
+    const noteTakerHeader = document.getElementById('note-taker-header');
+    if (mainHeader) mainHeader.style.display = 'none';
+    if (noteTakerHeader) noteTakerHeader.style.display = 'flex';
+    
+    // Update campaign name in header
+    const activeCampaign = getCampaigns().find(c => c.isActive);
+    if (activeCampaign) {
+        const headerCampaignName = document.getElementById('note-taker-campaign-name-header');
+        if (headerCampaignName) {
+            headerCampaignName.textContent = activeCampaign.name;
+        }
+    }
     
     // Refresh topic filter to sync with Study Evaluation topics
     populateTopicFilter();
@@ -3001,11 +4099,15 @@ function enterNoteTaker() {
 // Exit full-screen Note Taker mode
 function exitNoteTaker() {
     document.body.classList.remove('note-taker-active');
-    // Show sidebar and header
+    // Show sidebar
     const sidebar = document.querySelector('.sidebar');
-    const header = document.querySelector('.report-header');
     if (sidebar) sidebar.style.display = '';
-    if (header) header.style.display = '';
+    
+    // Switch headers back
+    const mainHeader = document.getElementById('main-header');
+    const noteTakerHeader = document.getElementById('note-taker-header');
+    if (mainHeader) mainHeader.style.display = 'flex';
+    if (noteTakerHeader) noteTakerHeader.style.display = 'none';
 }
 
 // Go to Behavioral Patterns Syntheses from Note Taker
@@ -3120,7 +4222,7 @@ function populateTopicFilter() {
         const option = document.createElement('option');
         option.value = '';
         option.disabled = true;
-        option.textContent = 'No topics added - Add in Build Report';
+        option.textContent = 'No topics added - Add in Build Study Report';
         select.appendChild(option);
         return;
     }
@@ -3315,9 +4417,9 @@ function refreshAllNoteTopicSelects() {
     });
 }
 
-// ========== BUILD REPORT TOPICS ==========
+// ========== BUILD STUDY REPORT TOPICS ==========
 
-// Add topic from Build Report page
+// Add topic from Build Study Report page
 function addTopicFromBuildReport() {
     const input = document.getElementById('build-report-topic-input');
     
@@ -3352,7 +4454,7 @@ function addTopicFromBuildReport() {
     renderBuildReportTopics();
 }
 
-// Delete topic from Build Report
+// Delete topic from Build Study Report
 function deleteTopicFromBuildReport(topicId) {
     let customTopics = getCustomTopics();
     customTopics = customTopics.filter(t => t.id !== topicId);
@@ -3360,7 +4462,7 @@ function deleteTopicFromBuildReport(topicId) {
     renderBuildReportTopics();
 }
 
-// Render topics in Build Report page
+// Render topics in Build Study Report page
 function renderBuildReportTopics() {
     const container = document.getElementById('build-report-topics-list');
     if (!container) return;
@@ -3380,7 +4482,7 @@ function renderBuildReportTopics() {
     `).join('');
 }
 
-// Initialize Build Report topics on page load
+// Initialize Build Study Report topics on page load
 document.addEventListener('DOMContentLoaded', function() {
     renderBuildReportTopics();
 });
@@ -3396,7 +4498,7 @@ function showHowItWorks(section) {
                 'Upload a PDF or DOC file with your evaluation report',
                 'Topics from the report will appear in the Note Taker filter',
                 'Use topics to organize and categorize your interview notes',
-                'Topics sync automatically between Build Report and Note Taker'
+                'Topics sync automatically between Build Study Report and Note Taker'
             ]
         },
         'transcripts': {
@@ -3609,7 +4711,7 @@ function updateNoteTakerCampaignName() {
     if (activeCampaign) {
         campaignNameEl.textContent = activeCampaign.name;
     } else {
-        campaignNameEl.textContent = 'No Campaign';
+        campaignNameEl.textContent = 'No Study';
     }
 }
 
@@ -3697,15 +4799,19 @@ function createUserBoards() {
     
     const count = parseInt(input.value) || 1;
     
-    // Confirm if there are existing boards
+    // Always confirm when creating new boards
     const existingBoards = getBoards();
     const hasNotes = existingBoards.some(b => b.notes && b.notes.length > 0);
     
     if (hasNotes) {
-        if (!confirm('This will replace all existing boards. Notes in current boards will be lost. Continue?')) {
+        if (!confirm('This will replace all existing boards and notes. Continue?')) {
             return;
         }
     }
+    
+    // Clear all existing board data to ensure fresh start
+    localStorage.removeItem('note_boards');
+    localStorage.removeItem('current_board_id');
     
     // Get participant names from report if available
     const participantNames = getParticipantNames();
@@ -3837,15 +4943,22 @@ function deleteCurrentBoard() {
     }
     
     const currentBoard = boards.find(b => b.id === currentBoardId);
-    if (!confirm(`Are you sure you want to delete "${currentBoard?.name}"? All notes will be lost.`)) {
-        return;
+    const message = `Are you sure you want to delete "${currentBoard?.name}"? All notes will be lost.`;
+    
+    const performDelete = () => {
+        const newBoards = boards.filter(b => b.id !== currentBoardId);
+        saveBoards(newBoards);
+        
+        // Switch to first available board
+        switchBoard(newBoards[0].id);
+    };
+    
+    // Use custom confirm if available
+    if (window.customConfirm) {
+        window.customConfirm(message, performDelete);
+    } else if (confirm(message)) {
+        performDelete();
     }
-    
-    const newBoards = boards.filter(b => b.id !== currentBoardId);
-    saveBoards(newBoards);
-    
-    // Switch to first available board
-    switchBoard(newBoards[0].id);
 }
 
 // Edit board name
@@ -3893,13 +5006,24 @@ function createNoteElement(noteData) {
     const board = document.getElementById('sticky-board');
     if (!board) return;
     
+    // Validate and sanitize note data
+    if (!noteData || !noteData.id) {
+        console.warn('Invalid note data, skipping:', noteData);
+        return;
+    }
+    
+    // Ensure valid values
+    const validColors = ['yellow', 'green', 'red'];
+    const color = validColors.includes(noteData.color) ? noteData.color : 'yellow';
+    const content = typeof noteData.content === 'string' ? noteData.content : '';
+    
     const note = document.createElement('div');
-    note.className = `sticky-note ${noteData.color}`;
+    note.className = `sticky-note ${color}`;
     note.id = noteData.id;
-    note.style.left = noteData.x + 'px';
-    note.style.top = noteData.y + 'px';
-    note.style.width = noteData.width;
-    note.style.minHeight = noteData.height;
+    note.style.left = (noteData.x || 0) + 'px';
+    note.style.top = (noteData.y || 0) + 'px';
+    note.style.width = noteData.width || '200px';
+    note.style.minHeight = noteData.height || '150px';
     
     // Set topic data attributes
     if (noteData.topic) {
@@ -3938,7 +5062,7 @@ function createNoteElement(noteData) {
         <div class="sticky-note-content" contenteditable="true" 
              onfocus="onNoteEdit('${noteData.id}')" 
              onblur="onNoteBlur('${noteData.id}')"
-             oninput="autoResizeFont(this)">${noteData.content || ''}</div>
+             oninput="autoResizeFont(this)">${content}</div>
         <div class="resize-handle" onmousedown="startResize(event, '${noteData.id}')"></div>
     `;
     
@@ -3949,11 +5073,16 @@ function createNoteElement(noteData) {
     if (noteData.addedToStudy) {
         note.dataset.addedToStudy = 'true';
         addStudyPill(note);
+        // Disable editing for notes added to project
+        const contentEl = note.querySelector('.sticky-note-content');
+        if (contentEl) {
+            contentEl.contentEditable = 'false';
+        }
     }
     
     // Apply auto-resize font
-    const content = note.querySelector('.sticky-note-content');
-    if (content) autoResizeFont(content);
+    const contentElement = note.querySelector('.sticky-note-content');
+    if (contentElement) autoResizeFont(contentElement);
 }
 
 // Add "Added to Study" pill to note
@@ -3963,20 +5092,107 @@ function addStudyPill(note) {
     if (existingPill) return; // Don't add duplicate
     
     // Create and add new pill
-    const pill = document.createElement('div');
+    const pill = document.createElement('button');
     pill.className = 'added-to-study-pill';
-    pill.innerHTML = '📌';
-    pill.title = 'Added to Study - Click to remove';
+    pill.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+            <defs>
+                <!-- Gradient for red pin head -->
+                <radialGradient id="pinGradient-${note.id}" cx="40%" cy="35%">
+                    <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+                    <stop offset="30%" style="stop-color:#ee5a52;stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:#dc2626;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#b91c1c;stop-opacity:1" />
+                </radialGradient>
+                
+                <!-- Gradient for needle -->
+                <linearGradient id="needleGradient-${note.id}" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#999;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#ccc;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#999;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Shadow underneath -->
+            <ellipse cx="17" cy="30" rx="5" ry="1.5" fill="rgba(0, 0, 0, 0.3)" />
+            
+            <!-- Pin needle -->
+            <rect x="15" y="14" width="2" height="15" rx="1" fill="url(#needleGradient-${note.id})" />
+            
+            <!-- Pin head back (shadow) -->
+            <circle cx="16.5" cy="11" r="7" fill="rgba(0, 0, 0, 0.25)" />
+            
+            <!-- Pin head main sphere -->
+            <circle cx="16" cy="10" r="7" fill="url(#pinGradient-${note.id})" />
+            
+            <!-- Glossy highlight -->
+            <ellipse cx="13" cy="7.5" rx="3" ry="2.5" fill="rgba(255, 255, 255, 0.6)" />
+            <ellipse cx="12.5" cy="7" rx="1.5" ry="1.2" fill="rgba(255, 255, 255, 0.85)" />
+            
+            <!-- Bottom rim shadow -->
+            <path d="M 9 13 A 7 7 0 0 0 23 13 A 6.5 6.5 0 0 1 9 13" fill="rgba(0, 0, 0, 0.2)" />
+            
+            <!-- Side shadow for depth -->
+            <path d="M 22 10 A 7 7 0 0 1 16 17 A 7 7 0 0 0 22 10" fill="rgba(0, 0, 0, 0.3)" />
+        </svg>
+    `;
+    pill.title = 'In Project - Click to remove from study';
     pill.onclick = (e) => {
         e.stopPropagation();
         removeNoteFromStudy(note);
     };
     note.appendChild(pill);
+    
+    // Disable the note content editing
+    const contentEl = note.querySelector('.sticky-note-content');
+    if (contentEl) {
+        contentEl.contentEditable = 'false';
+    }
 }
 
 // Remove note from study
 function removeNoteFromStudy(note) {
-    if (!confirm('Remove this note from the study?')) return;
+    const noteId = note.id;
+    
+    // Use custom confirm dialog
+    if (window.customConfirm) {
+        window.customConfirm('Remove this note from the project?', () => {
+            performRemoveNoteFromStudy(note, noteId);
+        });
+        return;
+    }
+    
+    // Fallback to browser confirm
+    if (!confirm('Remove this note from the project?')) return;
+    performRemoveNoteFromStudy(note, noteId);
+}
+
+// Actually perform the removal
+function performRemoveNoteFromStudy(note, noteId) {
+    
+    // Get the note content to match in reportNotes
+    const content = note.querySelector('.sticky-note-content');
+    const noteText = content ? content.textContent.trim() : '';
+    
+    // Remove from campaign's reportNotes
+    const campaigns = getCampaigns();
+    const activeCampaignId = localStorage.getItem('active_campaign');
+    const campaign = campaigns.find(c => c.id === activeCampaignId);
+    
+    if (campaign && campaign.reportNotes) {
+        // Find and remove the note by noteId
+        const originalLength = campaign.reportNotes.length;
+        campaign.reportNotes = campaign.reportNotes.filter(rn => {
+            // Remove if it matches both board and noteId
+            return !(rn.fromBoard === currentBoardId && rn.noteId === noteId);
+        });
+        const removed = originalLength - campaign.reportNotes.length;
+        
+        if (removed > 0) {
+            saveCampaigns(campaigns);
+            console.log(`Removed ${removed} note(s) from study`);
+        }
+    }
     
     // Remove the pill
     const pill = note.querySelector('.added-to-study-pill');
@@ -3985,10 +5201,22 @@ function removeNoteFromStudy(note) {
     // Unmark as added to study
     note.dataset.addedToStudy = 'false';
     
+    // Re-enable the note
+    note.style.opacity = '';
+    const contentEl = note.querySelector('.sticky-note-content');
+    if (contentEl) {
+        contentEl.style.pointerEvents = '';
+        contentEl.style.userSelect = '';
+        contentEl.contentEditable = 'true';
+    }
+    
     // Save sticky notes
     saveStickyNotes();
     
-    // TODO: Also remove from campaign reportNotes if needed
+    // Show success notification
+    if (window.presentationBuilder && window.presentationBuilder.showNotification) {
+        window.presentationBuilder.showNotification('Note removed from project', 'info');
+    }
 }
 
 // Add a new sticky note
@@ -4341,6 +5569,15 @@ function saveStickyNotes() {
     if (currentBoard) {
         currentBoard.notes = notes;
         saveBoards(boards);
+        
+        // Also save to Supabase if collaboration is enabled
+        if (window.collaborationManager && window.collaborationManager.isEnabled) {
+            window.collaborationManager.saveNotes(
+                currentBoardId, 
+                currentBoard.name, 
+                notes
+            );
+        }
     }
 }
 
@@ -4367,7 +5604,7 @@ function addSelectedToReport() {
     const activeCampaign = campaigns.find(c => c.isActive);
     
     if (!activeCampaign) {
-        alert('No active campaign found.');
+        alert('No active study found.');
         return;
     }
     
@@ -4395,7 +5632,8 @@ function addSelectedToReport() {
             type: noteColor,
             topic: noteTopic === 'No Topic' ? '' : noteTopic,
             addedAt: new Date().toISOString(),
-            fromBoard: currentBoardId
+            fromBoard: currentBoardId,
+            noteId: note.id  // Store original note ID for removal
         });
         
         // Mark note as added to study and add pill
@@ -4416,7 +5654,7 @@ function addSelectedToReport() {
         validNotes.forEach(note => {
             note.style.outline = '';
             note.classList.remove('selected');
-            // Don't remove pill - it should stay permanently
+            // Don't remove pill - note stays in project until unpinned
         });
         selectedNotes = [];
         updateSelectionCount();
@@ -4464,7 +5702,7 @@ function renderCampaignFiles(files) {
         files.questions.forEach(file => {
             html += `
                 <div class="campaign-file-item" onclick="previewFile('${file.id}', 'questions')">
-                    <div class="file-icon questions-icon">📋</div>
+                    <div class="file-icon questions-icon">${getFileIcon(file.name)}</div>
                     <div class="file-info">
                         <div class="file-name" title="${file.name}">${file.name}</div>
                         <div class="file-type">Study Evaluation</div>
@@ -4479,7 +5717,7 @@ function renderCampaignFiles(files) {
         files.transcripts.forEach(file => {
             html += `
                 <div class="campaign-file-item" onclick="previewFile('${file.id}', 'transcripts')">
-                    <div class="file-icon transcripts-icon">📝</div>
+                    <div class="file-icon transcripts-icon">${getFileIcon(file.name)}</div>
                     <div class="file-info">
                         <div class="file-name" title="${file.name}">${file.name}</div>
                         <div class="file-type">Transcript</div>
@@ -4761,3 +5999,61 @@ document.getElementById('transcript-files')?.addEventListener('change', function
         document.getElementById('transcript-status').innerHTML = `<span style="color: var(--success);">✓ ${files.length} file(s) uploaded</span>`;
     }
 });
+
+// ========================================
+// RESET NOTE TAKER DATA FUNCTION
+// ========================================
+// This function clears corrupted or test data from the note taker
+function resetNoteTakerData() {
+    const confirmed = confirm(
+        '⚠️ This will clear all note taker data including:\n\n' +
+        '• All sticky notes\n' +
+        '• All user boards\n' +
+        '• Important Notes added to study\n' +
+        '• Topic filters\n\n' +
+        'This action cannot be undone. Continue?'
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        // Clear note taker related localStorage items
+        localStorage.removeItem('note_boards');
+        localStorage.removeItem('current_board_id');
+        localStorage.removeItem('customTopics');
+        
+        // Also clear reportNotes from the active campaign
+        const campaigns = getCampaigns();
+        const activeCampaign = campaigns.find(c => c.isActive);
+        if (activeCampaign) {
+            activeCampaign.reportNotes = [];
+            saveCampaigns(campaigns);
+        }
+        
+        // Reload the page to reinitialize with clean data
+        alert('✓ Note taker data has been reset. The page will now reload.');
+        window.location.reload();
+    } catch (error) {
+        console.error('Error resetting note taker data:', error);
+        alert('Error resetting data. Please try clearing your browser cache manually.');
+    }
+}
+
+// Quick function to clear just the Important Notes
+function clearImportantNotes() {
+    const confirmed = confirm('Clear all Important Notes from the study?');
+    if (!confirmed) return;
+    
+    const campaigns = getCampaigns();
+    const activeCampaign = campaigns.find(c => c.isActive);
+    if (activeCampaign) {
+        activeCampaign.reportNotes = [];
+        saveCampaigns(campaigns);
+        alert('✓ Important Notes cleared. Refreshing...');
+        window.location.reload();
+    }
+}
+window.clearImportantNotes = clearImportantNotes;
+
+// Make the function globally available for console access
+window.resetNoteTakerData = resetNoteTakerData;

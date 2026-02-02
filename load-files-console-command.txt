@@ -1,0 +1,55 @@
+// COPY AND PASTE THIS ENTIRE BLOCK INTO YOUR BROWSER CONSOLE
+// This will load the 8 original research files into your first campaign
+
+(async function() {
+    console.log('🔄 Loading campaign files...');
+    
+    try {
+        // Fetch the campaign files data
+        const response = await fetch('./campaign-files-data.json');
+        if (!response.ok) {
+            console.error('❌ Could not load campaign-files-data.json');
+            return;
+        }
+        
+        const campaignFiles = await response.json();
+        console.log('✅ Files data loaded');
+        
+        // Get campaigns from localStorage
+        let campaigns = JSON.parse(localStorage.getItem('uxd_campaigns') || '[]');
+        
+        // Find the first campaign
+        let firstCampaign = campaigns.find(c => c.name === 'ISS Iterative Testing 4.1');
+        
+        if (!firstCampaign) {
+            console.log('⚠️ Campaign not found, creating it...');
+            firstCampaign = {
+                id: 'campaign-' + Date.now(),
+                name: 'ISS Iterative Testing 4.1',
+                createdDate: new Date().toISOString(),
+                isActive: true,
+                files: campaignFiles
+            };
+            campaigns.push(firstCampaign);
+        } else {
+            console.log('✅ Found campaign, adding files...');
+            firstCampaign.files = campaignFiles;
+        }
+        
+        // Save back to localStorage
+        localStorage.setItem('uxd_campaigns', JSON.stringify(campaigns));
+        
+        console.log('✅ Successfully added files to campaign!');
+        console.log('   - Questions: ' + campaignFiles.questions.length);
+        console.log('   - Transcripts: ' + campaignFiles.transcripts.length);
+        console.log('   - Videos: ' + campaignFiles.videos.length);
+        console.log('   - Presentations: ' + campaignFiles.presentations.length);
+        console.log('   Total: ' + (campaignFiles.questions.length + campaignFiles.transcripts.length + campaignFiles.videos.length + campaignFiles.presentations.length) + ' files');
+        
+        console.log('\n🔄 Refreshing page to show files...');
+        setTimeout(() => location.reload(), 1000);
+        
+    } catch (error) {
+        console.error('❌ Error loading files:', error);
+    }
+})();
