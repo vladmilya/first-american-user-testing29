@@ -5174,7 +5174,7 @@ function createNoteElement(noteData) {
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
                 <div class="badge-text">
-                    <div class="badge-name">${noteData.sourceBoardName}</div>
+                    <div class="badge-name">${noteData.sourceBoardName.match(/Interview (\d+)/) ? noteData.sourceBoardName.match(/Interview (\d+)/)[1] : noteData.sourceBoardName}</div>
                     <div class="badge-label">(${noteData.sourceBoardName})</div>
                 </div>
             </div>
