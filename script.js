@@ -2727,6 +2727,16 @@ function setActiveCampaign(campaignId) {
     
     // Reinitialize boards for the new campaign
     initBoards();
+    
+    // Refresh topic filter to show correct topics for this campaign
+    populateTopicFilter();
+    
+    // If manage topics modal is open, refresh it
+    const modal = document.getElementById('manage-topics-modal');
+    if (modal && modal.style.display === 'flex') {
+        renderCustomTopicsList();
+        renderReportThemesList();
+    }
 }
 
 // Update current campaign display
