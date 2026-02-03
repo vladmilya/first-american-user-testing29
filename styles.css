@@ -3920,6 +3920,31 @@ body {
     transform: translateY(-2px);
 }
 
+/* Rename Interview Button */
+.rename-interview-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.375rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.rename-interview-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.rename-interview-btn svg {
+    display: block;
+}
+
 /* Manage Topics Modal */
 .manage-topics-modal-content {
     background: white;

@@ -4759,6 +4759,54 @@ function closeUserSetupModal() {
     }
 }
 
+// Show rename interview modal
+function showRenameInterviewModal() {
+    const modal = document.getElementById('rename-interview-modal');
+    const input = document.getElementById('interview-name-input');
+    
+    if (modal && input) {
+        // Get current board name
+        const boards = getBoards();
+        const currentBoard = boards.find(b => b.id === currentBoardId);
+        
+        if (currentBoard) {
+            input.value = currentBoard.name;
+            modal.style.display = 'flex';
+            setTimeout(() => input.focus(), 100);
+        }
+    }
+}
+
+// Close rename interview modal
+function closeRenameInterviewModal() {
+    const modal = document.getElementById('rename-interview-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Confirm rename interview
+function confirmRenameInterview() {
+    const input = document.getElementById('interview-name-input');
+    const newName = input.value.trim();
+    
+    if (!newName) {
+        alert('Please enter a name for this interview');
+        return;
+    }
+    
+    // Update board name
+    const boards = getBoards();
+    const currentBoard = boards.find(b => b.id === currentBoardId);
+    
+    if (currentBoard) {
+        currentBoard.name = newName;
+        saveBoards(boards);
+        updateBoardSelector();
+        closeRenameInterviewModal();
+    }
+}
+
 // Adjust user count
 function adjustUserCount(delta) {
     const input = document.getElementById('user-count-input');

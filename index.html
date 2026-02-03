@@ -281,6 +281,12 @@
                             <div class="user-navigation">
                                 <label class="user-nav-label">Interview:</label>
                                 <select id="board-select" class="user-nav-select" onchange="switchBoard(this.value)"></select>
+                                <button class="rename-interview-btn" onclick="showRenameInterviewModal()" title="Rename Interview">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="board-actions">
                                 <button class="setup-users-btn" onclick="showUserSetupModal()" title="Set Number of Users">
@@ -371,6 +377,26 @@
                         <div class="modal-actions">
                             <button class="modal-cancel-btn" onclick="closeUserSetupModal()">Cancel</button>
                             <button class="modal-confirm-btn" onclick="createUserBoards()">Create Boards</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rename Interview Modal -->
+                <div id="rename-interview-modal" class="modal" style="display: none;">
+                    <div class="user-setup-modal-content">
+                        <h3>✏️ Rename Interview</h3>
+                        <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                            Give this interview a custom name (e.g., participant name).
+                        </p>
+                        
+                        <div class="user-count-input-section">
+                            <label for="interview-name-input">Interview Name:</label>
+                            <input type="text" id="interview-name-input" placeholder="Enter interview name" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem;">
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button class="modal-cancel-btn" onclick="closeRenameInterviewModal()">Cancel</button>
+                            <button class="modal-confirm-btn" onclick="confirmRenameInterview()">Rename</button>
                         </div>
                     </div>
                 </div>
