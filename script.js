@@ -5149,20 +5149,24 @@ function createNoteElement(noteData) {
     // Get topic options HTML
     const topicOptionsHtml = getTopicOptionsHtml(noteData.topic || '');
     
+    const isReadOnly = noteData.sourceBoardName ? true : false;
+    
     note.innerHTML = `
-        <div class="sticky-note-header">
-            <div class="color-picker">
-                <button class="color-btn yellow" onclick="changeNoteColor('${noteData.id}', 'yellow')" title="Yellow"></button>
-                <button class="color-btn green" onclick="changeNoteColor('${noteData.id}', 'green')" title="Green"></button>
-                <button class="color-btn red" onclick="changeNoteColor('${noteData.id}', 'red')" title="Red"></button>
+        ${!isReadOnly ? `
+            <div class="sticky-note-header">
+                <div class="color-picker">
+                    <button class="color-btn yellow" onclick="changeNoteColor('${noteData.id}', 'yellow')" title="Yellow"></button>
+                    <button class="color-btn green" onclick="changeNoteColor('${noteData.id}', 'green')" title="Green"></button>
+                    <button class="color-btn red" onclick="changeNoteColor('${noteData.id}', 'red')" title="Red"></button>
+                </div>
+                <button class="delete-note-btn" onclick="deleteNote('${noteData.id}')" title="Delete Note">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
-            <button class="delete-note-btn" onclick="deleteNote('${noteData.id}')" title="Delete Note">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        </div>
+        ` : ''}
         ${noteData.sourceBoardName ? `
             <div class="note-source-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -5173,24 +5177,34 @@ function createNoteElement(noteData) {
             </div>
         ` : ''}
         <div class="sticky-note-topic">
-            <select class="topic-select" onchange="changeNoteTopic('${noteData.id}', this.value)">
+            <select class="topic-select" onchange="changeNoteTopic('${noteData.id}', this.value)" ${isReadOnly ? 'disabled' : ''}>
                 <option value="">No Topic</option>
                 ${topicOptionsHtml}
             </select>
         </div>
-        <div class="text-format-toolbar">
-            <button class="format-btn text-black" onclick="formatSelectedText('black')" title="Black Text">A</button>
-            <button class="format-btn text-red" onclick="formatSelectedText('red')" title="Red Text">A</button>
-        </div>
-        <div class="sticky-note-content" contenteditable="${noteData.sourceBoardName ? 'false' : 'true'}" 
+        ${!isReadOnly ? `
+            <div class="text-format-toolbar">
+                <button class="format-btn text-black" onclick="formatSelectedText('black')" title="Black Text">A</button>
+                <button class="format-btn text-red" onclick="formatSelectedText('red')" title="Red Text">A</button>
+            </div>
+        ` : ''}
+        <div class="sticky-note-content" contenteditable="${!isReadOnly}" 
              onfocus="onNoteEdit('${noteData.id}')" 
              onblur="onNoteBlur('${noteData.id}')"
              oninput="autoResizeFont(this)">${content}</div>
-        <div class="resize-handle" onmousedown="startResize(event, '${noteData.id}')"></div>
+        ${!isReadOnly ? `<div class="resize-handle" onmousedown="startResize(event, '${noteData.id}')"></div>` : ''}
     `;
     
     board.appendChild(note);
-    note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
+    
+    // Only make draggable if not in synthesize mode
+    if (currentBoardId !== 'synthesize') {
+        note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
+    } else {
+        // In synthesize mode, make the note visually read-only
+        note.style.cursor = 'default';
+        note.classList.add('synthesize-mode');
+    }
     
     // Mark if added to study
     if (noteData.addedToStudy) {

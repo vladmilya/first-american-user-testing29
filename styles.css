@@ -4547,3 +4547,20 @@ body {
 .note-source-badge svg {
     flex-shrink: 0;
 }
+
+/* Synthesize mode read-only styling */
+.synthesize-mode {
+    opacity: 0.95;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.synthesize-mode .sticky-note-content {
+    cursor: default !important;
+    user-select: text;
+}
+
+.synthesize-mode .topic-select:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.03);
+}
