@@ -5175,7 +5175,7 @@ function createNoteElement(noteData) {
                 </svg>
                 <div class="badge-text">
                     <div class="badge-name">${noteData.sourceBoardName}</div>
-                    <div class="badge-label">(Interview Source)</div>
+                    <div class="badge-label">(${noteData.sourceBoardName})</div>
                 </div>
             </div>
         ` : ''}
