@@ -4113,7 +4113,7 @@ function enterNoteTaker() {
 }
 
 // Exit full-screen Note Taker mode
-function exitNoteTaker() {
+function exitNoteTaker(targetSection) {
     document.body.classList.remove('note-taker-active');
     // Show sidebar
     const sidebar = document.querySelector('.sidebar');
@@ -4124,6 +4124,11 @@ function exitNoteTaker() {
     const noteTakerHeader = document.getElementById('note-taker-header');
     if (mainHeader) mainHeader.style.display = 'flex';
     if (noteTakerHeader) noteTakerHeader.style.display = 'none';
+    
+    // Navigate to target section if provided
+    if (targetSection) {
+        navigateToSection(targetSection);
+    }
 }
 
 // Go to Behavioral Patterns Syntheses from Note Taker
