@@ -283,12 +283,148 @@ IMPORTANT INSTRUCTIONS:
 Return ONLY the JSON object, no additional text.`;
 }
 
-// Initialize - attach to analyze button
+// Save API key to localStorage
+function saveAPIKey() {
+    const input = document.getElementById('ai-api-key-input');
+    const key = input?.value?.trim();
+    
+    if (!key) {
+        showNotification('❌ Please enter an API key', 'error');
+        return;
+    }
+    
+    if (!key.startsWith('sk-ant-api03-')) {
+        showNotification('⚠️ Invalid Claude API key format', 'warning');
+        return;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('ai_api_key', key);
+    
+    // Clear input
+    if (input) input.value = '';
+    
+    // Update UI
+    updateAIStatus();
+    
+    showNotification('✅ API key saved successfully', 'success');
+}
+
+// Test API key connection
+async function testAPIKey() {
+    if (!isAIConfigured()) {
+        showNotification('⚠️ Please configure your API key first', 'warning');
+        return;
+    }
+    
+    const testBtn = document.querySelector('.test-api-key-btn');
+    if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spinning">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+            </svg>
+            Testing...
+        `;
+    }
+    
+    try {
+        const response = await fetch(AI_CONFIG.endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': AI_CONFIG.apiKey,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: AI_CONFIG.model,
+                max_tokens: 10,
+                messages: [{
+                    role: 'user',
+                    content: 'Hello'
+                }]
+            })
+        });
+        
+        if (response.ok) {
+            showNotification('✅ API connection successful!', 'success');
+        } else {
+            const errorData = await response.json();
+            showNotification(`❌ API Error: ${errorData.error?.message || 'Connection failed'}`, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Connection failed: ' + error.message, 'error');
+    } finally {
+        if (testBtn) {
+            testBtn.disabled = false;
+            testBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Test Connection
+            `;
+        }
+    }
+}
+
+// Update AI status display
+function updateAIStatus() {
+    const statusDot = document.getElementById('ai-status-dot');
+    const statusText = document.getElementById('ai-status-text');
+    const keyDisplay = document.getElementById('ai-key-display');
+    
+    if (isAIConfigured()) {
+        if (statusDot) {
+            statusDot.classList.remove('status-inactive');
+            statusDot.classList.add('status-active');
+        }
+        if (statusText) {
+            statusText.textContent = 'AI Configured ✓';
+            statusText.style.color = 'var(--success)';
+        }
+        if (keyDisplay) {
+            keyDisplay.textContent = getAPIKeyMasked();
+        }
+    } else {
+        if (statusDot) {
+            statusDot.classList.remove('status-active');
+            statusDot.classList.add('status-inactive');
+        }
+        if (statusText) {
+            statusText.textContent = 'AI Not Configured';
+            statusText.style.color = '';
+        }
+        if (keyDisplay) {
+            keyDisplay.textContent = 'No API key set';
+        }
+    }
+}
+
+// Check AI configuration before analysis
+function checkAIConfigBeforeAnalysis() {
+    if (!isAIConfigured()) {
+        showNotification('⚠️ Please configure your Claude API key in Admin settings first', 'warning');
+        setTimeout(() => {
+            navigateToSection('uxd-admin');
+        }, 1500);
+        return false;
+    }
+    return true;
+}
+
+// Initialize - attach to analyze button and update status
 document.addEventListener('DOMContentLoaded', () => {
     const analyzeBtn = document.getElementById('analyze-btn');
     if (analyzeBtn) {
-        analyzeBtn.addEventListener('click', analyzeResearchData);
+        analyzeBtn.addEventListener('click', () => {
+            if (checkAIConfigBeforeAnalysis()) {
+                analyzeResearchData();
+            }
+        });
     }
+    
+    // Update AI status on load
+    updateAIStatus();
 });
 
 // Add spinning animation for loading

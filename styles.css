@@ -4633,3 +4633,101 @@ body {
 .filtered-out {
     display: none !important;
 }
+
+/* AI Settings Section */
+.ai-settings-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border);
+}
+
+.ai-settings-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ai-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.ai-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-active {
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    animation: pulse 2s infinite;
+}
+
+.status-inactive {
+    background: var(--text-light);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.ai-key-masked {
+    font-family: monospace;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    background: rgba(0, 0, 0, 0.03);
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+}
+
+.ai-config-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.save-api-key-btn,
+.test-api-key-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.save-api-key-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.test-api-key-btn:hover {
+    background: var(--text-light);
+    transform: translateY(-1px);
+}
+
+.ai-info {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
