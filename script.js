@@ -4960,6 +4960,10 @@ function switchBoard(boardId) {
     // Save current board first
     saveStickyNotes();
     
+    // Save current topic filter selection
+    const topicFilter = document.getElementById('topic-filter-select');
+    const currentFilter = topicFilter ? topicFilter.value : 'all';
+    
     currentBoardId = boardId;
     localStorage.setItem('current_board_id', boardId);
     
@@ -4969,12 +4973,16 @@ function switchBoard(boardId) {
         board.innerHTML = '';
     }
     
-    // Reset topic filter
-    const topicFilter = document.getElementById('topic-filter-select');
-    if (topicFilter) topicFilter.value = 'all';
-    
     loadCurrentBoard();
     updateBoardSelector();
+    
+    // Reapply the topic filter after loading
+    if (topicFilter) {
+        topicFilter.value = currentFilter;
+        if (currentFilter !== 'all') {
+            filterByTopic(currentFilter);
+        }
+    }
 }
 
 // Create a new board
