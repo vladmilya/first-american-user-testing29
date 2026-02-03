@@ -3920,6 +3920,94 @@ body {
     transform: translateY(-2px);
 }
 
+/* Manage Topics Modal */
+.manage-topics-modal-content {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+.manage-topics-modal-content h3 {
+    color: var(--primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+}
+
+.manage-topics-modal-content h4 {
+    color: var(--text);
+    font-size: 1rem;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+}
+
+.topics-list-section {
+    margin: 1.5rem 0;
+}
+
+.custom-topics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.topic-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.topic-item:hover {
+    background: var(--surface);
+    border-color: var(--primary);
+}
+
+.topic-item-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.topic-item-name {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.delete-topic-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.delete-topic-btn:hover {
+    background: #fee;
+    color: #ef4444;
+}
+
+.empty-topics-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light);
+    font-style: italic;
+}
+
 /* Delete Modal */
 .delete-modal {
     display: none;
