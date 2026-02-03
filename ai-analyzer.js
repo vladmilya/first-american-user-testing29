@@ -319,7 +319,7 @@ function showNotification(message, type = 'info') {
 }
 
 // Save API key to localStorage
-function saveAPIKey() {
+window.saveAPIKey = function() {
     console.log('saveAPIKey called');
     const input = document.getElementById('ai-api-key-input');
     console.log('Input element:', input);
@@ -328,32 +328,37 @@ function saveAPIKey() {
     
     if (!key) {
         console.log('No key entered');
-        showNotification('❌ Please enter an API key', 'error');
+        alert('❌ Please enter an API key');
         return;
     }
     
     if (!key.startsWith('sk-ant-api03-')) {
         console.log('Invalid key format');
-        showNotification('⚠️ Invalid Claude API key format', 'warning');
+        alert('⚠️ Invalid Claude API key format. Should start with: sk-ant-api03-');
         return;
     }
     
     // Save to localStorage
     console.log('Saving to localStorage...');
-    localStorage.setItem('ai_api_key', key);
-    console.log('Saved successfully');
-    
-    // Clear input
-    if (input) input.value = '';
-    
-    // Update UI
-    updateAIStatus();
-    
-    showNotification('✅ API key saved successfully', 'success');
+    try {
+        localStorage.setItem('ai_api_key', key);
+        console.log('Saved successfully');
+        
+        // Clear input
+        if (input) input.value = '';
+        
+        // Update UI
+        updateAIStatus();
+        
+        alert('✅ API key saved successfully!');
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('❌ Error saving API key: ' + error.message);
+    }
 }
 
 // Test API key connection
-async function testAPIKey() {
+window.testAPIKey = async function() {
     if (!isAIConfigured()) {
         showNotification('⚠️ Please configure your API key first', 'warning');
         return;
