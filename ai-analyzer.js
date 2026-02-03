@@ -283,23 +283,65 @@ IMPORTANT INSTRUCTIONS:
 Return ONLY the JSON object, no additional text.`;
 }
 
+// Simple notification system
+function showNotification(message, type = 'info') {
+    // Check if custom notification exists
+    const existingNotification = document.getElementById('api-key-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.id = 'api-key-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100px)';
+        notification.style.transition = 'all 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
 // Save API key to localStorage
 function saveAPIKey() {
+    console.log('saveAPIKey called');
     const input = document.getElementById('ai-api-key-input');
+    console.log('Input element:', input);
     const key = input?.value?.trim();
+    console.log('Key value:', key ? 'Found (length: ' + key.length + ')' : 'Empty');
     
     if (!key) {
+        console.log('No key entered');
         showNotification('❌ Please enter an API key', 'error');
         return;
     }
     
     if (!key.startsWith('sk-ant-api03-')) {
+        console.log('Invalid key format');
         showNotification('⚠️ Invalid Claude API key format', 'warning');
         return;
     }
     
     // Save to localStorage
+    console.log('Saving to localStorage...');
     localStorage.setItem('ai_api_key', key);
+    console.log('Saved successfully');
     
     // Clear input
     if (input) input.value = '';
@@ -427,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAIStatus();
 });
 
-// Add spinning animation for loading
+// Add animations for loading and notifications
 const style = document.createElement('style');
 style.textContent = `
     .spinning {
@@ -437,6 +479,17 @@ style.textContent = `
     @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
+    }
+    
+    @keyframes slideIn {
+        from { 
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 `;
 document.head.appendChild(style);
