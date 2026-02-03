@@ -4550,7 +4550,6 @@ body {
 
 /* Synthesize mode read-only styling */
 .synthesize-mode {
-    opacity: 0.95;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
     cursor: grab !important;
 }
@@ -4568,4 +4567,9 @@ body {
     opacity: 0.7;
     cursor: not-allowed;
     background: rgba(0, 0, 0, 0.03);
+}
+
+/* Filtered out notes (topic filter) */
+.filtered-out {
+    display: none !important;
 }
