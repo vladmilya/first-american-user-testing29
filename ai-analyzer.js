@@ -350,7 +350,7 @@ window.saveAPIKey = function() {
         if (input) input.value = '';
         
         // Update UI
-        updateAIStatus();
+        window.updateAIStatus();
         
         alert('✅ API key saved successfully!');
     } catch (error) {
@@ -361,8 +361,8 @@ window.saveAPIKey = function() {
 
 // Test API key connection
 window.testAPIKey = async function() {
-    if (!isAIConfigured()) {
-        showNotification('⚠️ Please configure your API key first', 'warning');
+    if (!window.isAIConfigured()) {
+        alert('⚠️ Please configure your API key first');
         return;
     }
     
@@ -396,13 +396,13 @@ window.testAPIKey = async function() {
         });
         
         if (response.ok) {
-            showNotification('✅ API connection successful!', 'success');
+            alert('✅ API connection successful!');
         } else {
             const errorData = await response.json();
-            showNotification(`❌ API Error: ${errorData.error?.message || 'Connection failed'}`, 'error');
+            alert(`❌ API Error: ${errorData.error?.message || 'Connection failed'}`);
         }
     } catch (error) {
-        showNotification('❌ Connection failed: ' + error.message, 'error');
+        alert('❌ Connection failed: ' + error.message);
     } finally {
         if (testBtn) {
             testBtn.disabled = false;
@@ -417,12 +417,12 @@ window.testAPIKey = async function() {
 }
 
 // Update AI status display
-function updateAIStatus() {
+window.updateAIStatus = function() {
     const statusDot = document.getElementById('ai-status-dot');
     const statusText = document.getElementById('ai-status-text');
     const keyDisplay = document.getElementById('ai-key-display');
     
-    if (isAIConfigured()) {
+    if (window.isAIConfigured()) {
         if (statusDot) {
             statusDot.classList.remove('status-inactive');
             statusDot.classList.add('status-active');
@@ -432,7 +432,7 @@ function updateAIStatus() {
             statusText.style.color = 'var(--success)';
         }
         if (keyDisplay) {
-            keyDisplay.textContent = getAPIKeyMasked();
+            keyDisplay.textContent = window.getAPIKeyMasked();
         }
     } else {
         if (statusDot) {
@@ -451,7 +451,7 @@ function updateAIStatus() {
 
 // Check AI configuration before analysis
 function checkAIConfigBeforeAnalysis() {
-    if (!isAIConfigured()) {
+    if (!window.isAIConfigured()) {
         showNotification('⚠️ Please configure your Claude API key in Admin settings first', 'warning');
         setTimeout(() => {
             navigateToSection('uxd-admin');
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Update AI status on load
-    updateAIStatus();
+    window.updateAIStatus();
     console.log('✅ AI Status updated');
 });
 
