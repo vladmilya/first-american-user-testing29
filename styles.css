@@ -4532,39 +4532,21 @@ body {
 /* Note Source Badge (for Synthesize mode) */
 .note-source-badge {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     margin: 0.5rem 0.75rem 0.25rem;
     background: rgba(0, 0, 0, 0.03);
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 6px;
-}
-
-.note-source-badge svg {
-    flex-shrink: 0;
-    margin-top: 0.125rem;
-    color: #000;
-}
-
-.note-source-badge .badge-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    line-height: 1.2;
-}
-
-.note-source-badge .badge-name {
     font-size: 0.813rem;
     font-weight: 700;
     color: #000;
 }
 
-.note-source-badge .badge-label {
-    font-size: 0.688rem;
-    font-weight: 500;
+.note-source-badge svg {
+    flex-shrink: 0;
     color: #000;
-    opacity: 0.7;
 }
 
 /* Synthesize mode read-only styling */

@@ -5173,10 +5173,7 @@ function createNoteElement(noteData) {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <div class="badge-text">
-                    <div class="badge-name">${noteData.sourceBoardName.match(/Interview (\d+)/) ? noteData.sourceBoardName.match(/Interview (\d+)/)[1] : noteData.sourceBoardName}</div>
-                    <div class="badge-label">(${noteData.sourceBoardName})</div>
-                </div>
+                ${noteData.sourceBoardName.match(/Interview (\d+)/) ? 'Participant ' + noteData.sourceBoardName.match(/Interview (\d+)/)[1] : noteData.sourceBoardName}
             </div>
         ` : ''}
         <div class="sticky-note-topic">
