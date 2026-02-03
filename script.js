@@ -2724,6 +2724,9 @@ function setActiveCampaign(campaignId) {
     
     // Reload data for the new active study
     loadSampleData();
+    
+    // Reinitialize boards for the new campaign
+    initBoards();
 }
 
 // Update current campaign display
@@ -3033,6 +3036,9 @@ function renderStudiesList() {
 function selectStudy(campaignId) {
     setActiveCampaign(campaignId);
     renderStudiesList();
+    
+    // Reinitialize boards for the new campaign
+    initBoards();
     
     // Navigate to the evaluation details
     window.location.hash = 'executive-summary';
