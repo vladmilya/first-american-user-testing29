@@ -3,6 +3,31 @@
 
 console.log('🤖 AI Analyzer script loaded');
 
+// AI Configuration - loads API key from localStorage
+const AI_CONFIG = {
+    provider: 'anthropic',
+    get apiKey() {
+        // Load from localStorage (set in Settings page)
+        return localStorage.getItem('ai_api_key') || '';
+    },
+    model: 'claude-3-5-sonnet-20241022',
+    endpoint: 'https://api.anthropic.com/v1/messages'
+};
+
+// Check if API key is configured
+window.isAIConfigured = function() {
+    return !!AI_CONFIG.apiKey;
+}
+
+// Get API key for display (masked)
+window.getAPIKeyMasked = function() {
+    const key = AI_CONFIG.apiKey;
+    if (!key) return 'Not configured';
+    return key.substring(0, 10) + '...' + key.substring(key.length - 4);
+}
+
+console.log('✅ AI Config functions registered');
+
 // Analyze uploaded files and generate structured report data
 async function analyzeResearchData() {
     try {
