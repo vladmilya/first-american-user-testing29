@@ -16,3 +16,4 @@ populate-campaign-files.js
 # API Keys (DO NOT COMMIT)
 ai-config.js
 set-api-key-local.js
+LOCAL_API_KEY.txt
