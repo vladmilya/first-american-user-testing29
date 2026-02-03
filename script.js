@@ -4941,24 +4941,38 @@ function updateBoardSelector() {
     
     const boards = getBoards();
     
-    select.innerHTML = boards.map(board => `
+    // Add Synthesize option at the top
+    const synthesizeOption = `<option value="synthesize" ${currentBoardId === 'synthesize' ? 'selected' : ''}>🔍 Synthesize - All Interviews</option>`;
+    
+    const boardOptions = boards.map(board => `
         <option value="${board.id}" ${board.id === currentBoardId ? 'selected' : ''}>
             ${board.name}
         </option>
     `).join('');
     
+    select.innerHTML = synthesizeOption + boardOptions;
+    
     // Update current board name display
-    const currentBoard = boards.find(b => b.id === currentBoardId);
-    const nameEl = document.getElementById('current-board-name');
-    if (nameEl && currentBoard) {
-        nameEl.textContent = currentBoard.name;
+    if (currentBoardId === 'synthesize') {
+        const nameEl = document.getElementById('current-board-name');
+        if (nameEl) {
+            nameEl.textContent = 'Synthesize - All Interviews';
+        }
+    } else {
+        const currentBoard = boards.find(b => b.id === currentBoardId);
+        const nameEl = document.getElementById('current-board-name');
+        if (nameEl && currentBoard) {
+            nameEl.textContent = currentBoard.name;
+        }
     }
 }
 
 // Switch to a different board
 function switchBoard(boardId) {
-    // Save current board first
-    saveStickyNotes();
+    // Save current board first (unless switching to synthesize mode)
+    if (currentBoardId !== 'synthesize') {
+        saveStickyNotes();
+    }
     
     // Save current topic filter selection
     const topicFilter = document.getElementById('topic-filter-select');
@@ -5053,6 +5067,34 @@ function loadCurrentBoard() {
     if (!board) return;
     
     const boards = getBoards();
+    
+    // Handle Synthesize mode - load notes from all boards
+    if (currentBoardId === 'synthesize') {
+        // Update name display
+        const nameEl = document.getElementById('current-board-name');
+        if (nameEl) {
+            nameEl.textContent = 'Synthesize - All Interviews';
+        }
+        
+        // Load notes from all boards
+        board.innerHTML = '';
+        
+        boards.forEach(boardData => {
+            if (boardData.notes && boardData.notes.length > 0) {
+                boardData.notes.forEach(noteData => {
+                    // Add board name to note data for display
+                    const noteWithSource = {
+                        ...noteData,
+                        sourceBoardName: boardData.name
+                    };
+                    createNoteElement(noteWithSource);
+                });
+            }
+        });
+        return;
+    }
+    
+    // Normal mode - load single board
     const currentBoard = boards.find(b => b.id === currentBoardId);
     
     if (!currentBoard) return;
@@ -5121,6 +5163,15 @@ function createNoteElement(noteData) {
                 </svg>
             </button>
         </div>
+        ${noteData.sourceBoardName ? `
+            <div class="note-source-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                ${noteData.sourceBoardName}
+            </div>
+        ` : ''}
         <div class="sticky-note-topic">
             <select class="topic-select" onchange="changeNoteTopic('${noteData.id}', this.value)">
                 <option value="">No Topic</option>
@@ -5131,7 +5182,7 @@ function createNoteElement(noteData) {
             <button class="format-btn text-black" onclick="formatSelectedText('black')" title="Black Text">A</button>
             <button class="format-btn text-red" onclick="formatSelectedText('red')" title="Red Text">A</button>
         </div>
-        <div class="sticky-note-content" contenteditable="true" 
+        <div class="sticky-note-content" contenteditable="${noteData.sourceBoardName ? 'false' : 'true'}" 
              onfocus="onNoteEdit('${noteData.id}')" 
              onblur="onNoteBlur('${noteData.id}')"
              oninput="autoResizeFont(this)">${content}</div>
@@ -5333,6 +5384,11 @@ function addStickyNote(x = null, y = null) {
 
 // Start dragging a note
 function startDrag(e, noteId) {
+    // Don't allow dragging in synthesize mode (read-only)
+    if (currentBoardId === 'synthesize') {
+        return;
+    }
+    
     // Don't drag if clicking on buttons, content, or resize handle
     if (e.target.closest('.color-btn') || 
         e.target.closest('.delete-note-btn') || 
