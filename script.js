@@ -5197,12 +5197,11 @@ function createNoteElement(noteData) {
     
     board.appendChild(note);
     
-    // Only make draggable if not in synthesize mode
-    if (currentBoardId !== 'synthesize') {
-        note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
-    } else {
-        // In synthesize mode, make the note visually read-only
-        note.style.cursor = 'default';
+    // Make draggable (even in synthesize mode for repositioning)
+    note.addEventListener('mousedown', (e) => startDrag(e, noteData.id));
+    
+    // In synthesize mode, add visual styling for read-only content
+    if (currentBoardId === 'synthesize') {
         note.classList.add('synthesize-mode');
     }
     
@@ -5398,11 +5397,6 @@ function addStickyNote(x = null, y = null) {
 
 // Start dragging a note
 function startDrag(e, noteId) {
-    // Don't allow dragging in synthesize mode (read-only)
-    if (currentBoardId === 'synthesize') {
-        return;
-    }
-    
     // Don't drag if clicking on buttons, content, or resize handle
     if (e.target.closest('.color-btn') || 
         e.target.closest('.delete-note-btn') || 
@@ -5683,6 +5677,9 @@ function applyZoom() {
 function saveStickyNotes() {
     const board = document.getElementById('sticky-board');
     if (!board || !currentBoardId) return;
+    
+    // Don't save in synthesize mode (it's just a view)
+    if (currentBoardId === 'synthesize') return;
     
     const notes = [];
     board.querySelectorAll('.sticky-note').forEach(note => {
