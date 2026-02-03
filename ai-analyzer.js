@@ -1,6 +1,8 @@
 // AI-Powered Research Analysis Module
 // Uses Claude 3.5 Sonnet to analyze uploaded research data
 
+console.log('🤖 AI Analyzer script loaded');
+
 // Analyze uploaded files and generate structured report data
 async function analyzeResearchData() {
     try {
@@ -320,7 +322,7 @@ function showNotification(message, type = 'info') {
 
 // Save API key to localStorage
 window.saveAPIKey = function() {
-    console.log('saveAPIKey called');
+    console.log('✅ saveAPIKey called');
     const input = document.getElementById('ai-api-key-input');
     console.log('Input element:', input);
     const key = input?.value?.trim();
@@ -459,8 +461,13 @@ function checkAIConfigBeforeAnalysis() {
     return true;
 }
 
+// Confirm functions are registered
+console.log('✅ saveAPIKey function registered:', typeof window.saveAPIKey);
+console.log('✅ testAPIKey function registered:', typeof window.testAPIKey);
+
 // Initialize - attach to analyze button and update status
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 AI Analyzer DOMContentLoaded');
     const analyzeBtn = document.getElementById('analyze-btn');
     if (analyzeBtn) {
         analyzeBtn.addEventListener('click', () => {
@@ -472,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Update AI status on load
     updateAIStatus();
+    console.log('✅ AI Status updated');
 });
 
 // Add animations for loading and notifications
