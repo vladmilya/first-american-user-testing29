@@ -4369,11 +4369,55 @@ function addCustomTopic() {
 }
 
 // Delete custom topic
+// Add new custom topic
+function addNewCustomTopic() {
+    const input = document.getElementById('new-topic-input');
+    if (!input) return;
+    
+    const topicName = input.value.trim();
+    
+    // Validate input
+    if (!topicName) {
+        showNotification('⚠️ Please enter a topic name', 'warning');
+        return;
+    }
+    
+    // Check for duplicates
+    const customTopics = getCustomTopics();
+    const exists = customTopics.some(t => t.name.toLowerCase() === topicName.toLowerCase());
+    
+    if (exists) {
+        showNotification('⚠️ Topic already exists', 'warning');
+        return;
+    }
+    
+    // Create new topic
+    const newTopic = {
+        id: `custom-topic-${Date.now()}`,
+        name: topicName,
+        category: 'custom'
+    };
+    
+    // Add to custom topics
+    customTopics.push(newTopic);
+    saveCustomTopics(customTopics);
+    
+    // Update UI
+    renderCustomTopicsList();
+    populateTopicFilter();
+    
+    // Clear input
+    input.value = '';
+    
+    showNotification(`✅ Topic "${topicName}" added successfully`, 'success');
+}
+
 function deleteCustomTopic(topicId) {
     let customTopics = getCustomTopics();
     customTopics = customTopics.filter(t => t.id !== topicId);
     saveCustomTopics(customTopics);
     renderCustomTopicsList();
+    populateTopicFilter();
 }
 
 // Render custom topics list
@@ -4384,7 +4428,7 @@ function renderCustomTopicsList() {
     const customTopics = getCustomTopics();
     
     if (customTopics.length === 0) {
-        container.innerHTML = '<div class="empty-topics-message">No custom topics yet. Add topics from your scenario file above.</div>';
+        container.innerHTML = '<div class="empty-topics-message">No custom topics yet. Add topics using the form below or upload your scenario file.</div>';
         return;
     }
     

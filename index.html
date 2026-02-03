@@ -416,6 +416,20 @@
                             </div>
                         </div>
                         
+                        <div class="add-topic-section">
+                            <h4>Add New Topic</h4>
+                            <div class="add-topic-input-group">
+                                <input type="text" id="new-topic-input" placeholder="Enter topic name..." maxlength="50" onkeypress="if(event.key === 'Enter') addNewCustomTopic()">
+                                <button class="add-topic-btn" onclick="addNewCustomTopic()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Add Topic
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="modal-actions">
                             <button class="modal-confirm-btn" onclick="closeManageTopicsModal()">Done</button>
                         </div>
